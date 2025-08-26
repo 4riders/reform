@@ -17,7 +17,7 @@ export function Form(props: FormProps) {
     }, [form])
 
     return (
-        <FormContext value={ form }>
+        <FormContext.Provider value={ form }>
             <form ref={ formRef } onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
                 <fieldset disabled={ disabled }>{ children }</fieldset>
                 
@@ -42,6 +42,6 @@ export function Form(props: FormProps) {
                 </div>
                 }
             </form>
-        </FormContext>
+        </FormContext.Provider>
     )
 }

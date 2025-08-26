@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server"
 import { FormManager, InternalFormManager } from "./FormManager"
 
 interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
-    form: FormManager
+    form: FormManager<unknown>
     disabled?: boolean
 }
 

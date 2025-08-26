@@ -1,7 +1,41 @@
 import { describe, expect, it } from "vitest"
-import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString } from "../src"
+import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol } from "../src"
+
+function textField(props?: any) {
+    return string({ input: () => {}, ...props })
+}
+
+function getMetadata(model: any) {
+    return (model as any)[Symbol.metadata]?.[validationSymbol]?.fields
+}
 
 describe("Yop", () => {
+
+    it("clone", () => {
+        
+        class Test {
+            @textField({ label: "Nom", disabled: true, ignored: true } as any)
+            nom: string | null = null
+        }
+
+        class Test2 extends Test {
+            @textField({ label: "Nom de famille", ignored: false, required: true } as any)
+            override nom: string = ""
+        }
+
+        // console.log(getMetadata(Test))
+        // console.log(getMetadata(Test2))
+
+        expect(getMetadata(Test).nom.disabled).toBe(true)
+        expect(getMetadata(Test).nom.ignored).toBe(true)
+        expect(getMetadata(Test).nom.required).toBeUndefined()
+        expect(getMetadata(Test).nom.label).toBe("Nom")
+
+        expect(getMetadata(Test2).nom.disabled).toBe(true)
+        expect(getMetadata(Test2).nom.ignored).toBe(false)
+        expect(getMetadata(Test2).nom.required).toBe(true)
+        expect(getMetadata(Test2).nom.label).toBe("Nom de famille")
+    })
 
     describe("utility", () => {
         
@@ -552,6 +586,7 @@ describe("Yop", () => {
                 constraint: 1,
                 message: "Must be greater or equal to 1"
             }])
+            expect(Yop.validate(0, number({ min: [undefined, "Should be a positive number"] }))).toEqual([])
             expect(Yop.validate(0, number({ min: [1, "Should be a positive number"] }))).toEqual([{
                 level: "error",
                 path: "",
@@ -726,6 +761,45 @@ describe("Yop", () => {
                 constraint: "number",
                 message: "Wrong value type (expected number)"
             }])
+        })
+
+        it("number.minMax", () => {
+            class Test {
+                
+                @string()
+                prop1: string | null = null
+
+                @number()
+                prop2: number | null = null
+
+                @number({
+                    min: context => [context.parent.prop1?.length, "Too short"],
+                    max: context => [context.parent.prop2, "Too long"]
+                })
+                prop3: number | null = null
+            }
+
+            expect(expect(Yop.validate({}, instance({ of: Test }))).toEqual([]))
+            expect(expect(Yop.validate({ prop3: 3 }, instance({ of: Test }))).toEqual([]))
+            expect(expect(Yop.validate({ prop1: "abc", prop3: 3 }, instance({ of: Test }))).toEqual([]))
+            expect(expect(Yop.validate({ prop1: "abcd", prop3: 3 }, instance({ of: Test }))).toEqual([{
+                level: "error",
+                path: "prop3",
+                value: 3,
+                kind: "number",
+                code: "min",
+                constraint: 4,
+                message: "Too short"
+            }]))
+            expect(expect(Yop.validate({ prop1: "abc", prop2: 3, prop3: 4 }, instance({ of: Test }))).toEqual([{
+                level: "error",
+                path: "prop3",
+                value: 4,
+                kind: "number",
+                code: "max",
+                constraint: 3,
+                message: "Too long"
+            }]))
         })
     })
 

@@ -1,4 +1,3 @@
-export * from "./reform/accessors"
 export * from "./reform/ArrayHelper"
 export * from "./reform/Form"
 export * from "./reform/FormManager"
@@ -36,7 +35,7 @@ export * from "./yop/decorators/time"
 
 export * from "./yop/MessageProvider"
 export * from "./yop/Metadata"
-export * from "./yop/PathUtil"
+export * from "./yop/ObjectsUtil"
 export * from "./yop/TypesUtil"
 export * from "./yop/ValidationContext"
 export * from "./yop/Yop"

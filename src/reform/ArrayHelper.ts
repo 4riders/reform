@@ -1,4 +1,4 @@
-import { Path } from "../yop/PathUtil"
+import { Path } from "../yop/ObjectsUtil"
 import { InternalFormManager } from "./FormManager"
 
 export class ArrayHelper<T = any> {

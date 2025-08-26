@@ -1,8 +1,8 @@
 import { FormEvent } from "react"
-import { clone, equal, get, set, SetResult, unset } from "./accessors"
+import { clone, equal, get, set, SetResult, unset } from "../yop/ObjectsUtil"
 import { DeepPartial, FormConfig } from "./useForm"
 import { ValidationForm, ResolvedConstraints, ValidationSettings, Yop } from "../yop/Yop"
-import { joinPath, Path } from "../yop/PathUtil"
+import { joinPath, Path } from "../yop/ObjectsUtil"
 import { ValidationStatus } from "../yop/ValidationContext"
 import { ignored } from "../yop/decorators/ignored"
 import { ArrayHelper } from "./ArrayHelper"
@@ -19,14 +19,14 @@ export type SetValueOptionsObject = {
 
 export type SetValueOptions = boolean | SetValueOptionsObject
 
-export interface FormManager extends ValidationForm {
+export interface FormManager<T> extends ValidationForm {
 
     render(): void
 
     setSubmitting(submitting: boolean): void
     
-    readonly initialValues: unknown
-    readonly values: unknown
+    readonly initialValues: DeepPartial<T> | null | undefined
+    readonly values: T
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
     validate(): Map<string, ValidationStatus>
@@ -47,7 +47,7 @@ const UNSET_VALUES = {}
 
 const ReformSetValueEventType = 'reform:set-value'
 export interface ReformSetValueEvent<T = any> extends CustomEvent<{
-    readonly form: FormManager,
+    readonly form: FormManager<unknown>,
     readonly path: string,
     readonly previousValue: T,
     readonly value: T,
@@ -56,7 +56,7 @@ export interface ReformSetValueEvent<T = any> extends CustomEvent<{
 }
 
 function createReformSetValueEvent<T = any>(
-    form: FormManager,
+    form: FormManager<unknown>,
     path: string,
     previousValue: T,
     value: T,
@@ -65,7 +65,7 @@ function createReformSetValueEvent<T = any>(
     return new CustomEvent(ReformSetValueEventType, { detail: { form, path, previousValue, value, options }})
 }
 
-export class InternalFormManager<T> implements FormManager {
+export class InternalFormManager<T> implements FormManager<T> {
     
     private config: FormConfig<T> = { validationSchema: ignored() }
     private yop = new Yop()
@@ -116,13 +116,13 @@ export class InternalFormManager<T> implements FormManager {
         return this.config.initialValues
     }
 
-    get values(): unknown {
+    get values(): T {
         if (this._values === UNSET_VALUES) {
             this._values = clone(this.config.initialValues)
             this.touched = null
             this._statuses = new Map()
         }
-        return this._values
+        return this._values as T
     }
 
     getValue<V = any>(path: string | Path): V | undefined {

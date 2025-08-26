@@ -1,7 +1,7 @@
 import { InternalValidationContext, Level, ValidationContext, ValidationStatus } from "../ValidationContext"
 import { ConstraintFunction, ConstraintMessage } from "./Constraint"
 import { isFunction } from "../TypesUtil"
-import { joinPath } from "../PathUtil"
+import { joinPath } from "../ObjectsUtil"
 
 export type TestConstraintMessage = ConstraintMessage | readonly [ConstraintMessage, Level] | boolean | undefined
 export type TestConstraintFunction<Value, Parent = unknown> = ConstraintFunction<NonNullable<Value>, TestConstraintMessage, Parent>

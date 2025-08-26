@@ -64,6 +64,6 @@ export type InputAttributes<InputType extends HTMLInputTypeAttribute> = (
 )
 
 export type ReformEvents<Value> = {
-    onChange?: (value: Value | null, form: FormManager) => void
-    onBlur?: (value: Value | null, form: FormManager) => void
+    onChange?: (value: Value | null, form: FormManager<unknown>) => void
+    onBlur?: (value: Value | null, form: FormManager<unknown>) => void
 }

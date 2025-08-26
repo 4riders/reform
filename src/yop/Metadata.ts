@@ -1,3 +1,4 @@
+import { clone } from "./ObjectsUtil"
 import { InternalConstraints, InternalCommonConstraints, ContraintsParent, ContraintsValue, Traverser, Validator, validateCommonConstraints, validateTypeConstraint, CommonConstraints } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
 import { TestConstraintFunction, validateTestConstraint } from "./constraints/TestConstraint"
@@ -48,7 +49,7 @@ export function validateClass(context: InternalValidationContext<Record<string, 
 export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
     const metadata = decoratorMetadata as unknown as { [validationSymbol]: InternalClassConstraints }    
     if (!Object.hasOwnProperty.bind(metadata)(validationSymbol))
-        metadata[validationSymbol] = { ...metadata[validationSymbol], fields: { ...metadata[validationSymbol]?.fields ?? {} }}
+        metadata[validationSymbol] = clone(metadata[validationSymbol] ?? {})
     
     const validation = metadata[validationSymbol]
     validation.validate ??= validateClass
@@ -74,7 +75,7 @@ export function fieldValidationDecorator<
     return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {
         const classConstraints = initClassConstraints(context.metadata)
         if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
-            classConstraints.fields = { ...classConstraints.fields }
+            classConstraints.fields = clone(classConstraints.fields ?? {})
 
         const fieldName = context.name as string
         const fields = classConstraints.fields!

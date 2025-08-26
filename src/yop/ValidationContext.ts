@@ -1,5 +1,5 @@
 import { ConstraintMessage } from "./constraints/Constraint"
-import { joinPath } from "./PathUtil"
+import { joinPath } from "./ObjectsUtil"
 import { ValidationSettings, Yop } from "./Yop"
 
 export type Group = string | ((string | undefined)[])

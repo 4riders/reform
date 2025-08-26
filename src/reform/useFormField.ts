@@ -10,11 +10,10 @@ export type FieldState<Value, MinMax> = {
     value: Value | undefined
     touched: boolean
     status?: ValidationStatus
-    form: FormManager
+    form: FormManager<unknown>
     render: () => void
     constraints?: ResolvedConstraints<MinMax>
 }
-
 
 export function useFormField<Value, MinMax>(name: string): FieldState<Value, MinMax> {
     const render = useRender()

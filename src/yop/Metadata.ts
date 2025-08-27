@@ -30,6 +30,9 @@ export function validateClass(context: InternalValidationContext<Record<string, 
 
     const parent = context.value
     for (const [fieldName, fieldConstraints] of Object.entries(constraints.fields!)) {
+        if (fieldConstraints.validate == null)
+            continue
+        
         const fieldContext = context.createChildContext({
             kind: fieldConstraints.kind,
             value: parent[fieldName],

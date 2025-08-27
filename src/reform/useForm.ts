@@ -9,6 +9,7 @@ export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T
 export type FormConfig<T> = {
     readonly initialValues?: DeepPartial<T> | null
     readonly validationSchema?: ((_: unknown, context: ClassFieldDecoratorContext<unknown, T>) => void)
+    readonly validationPath?: string
     readonly onSubmit?: (form: FormManager<T>) => void
     readonly dispatchEvent?: boolean
 }

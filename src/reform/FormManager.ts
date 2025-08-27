@@ -195,7 +195,7 @@ export class InternalFormManager<T> implements FormManager<T> {
     }
 
     validate(touchedOnly = true): Map<string, ValidationStatus> {
-        const options: ReformValidationSettings = { method: "validate", form: this }
+        const options: ReformValidationSettings = { method: "validate", form: this, path: this.config.validationPath }
         if (!this._submitted && touchedOnly)
             options.ignore = path => !this.isTouched(path)
         

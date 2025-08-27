@@ -60,6 +60,21 @@ export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
 
 export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void
 
+export function fieldDecorator<Parent, Value>(properties: object, reset = false) {
+    return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {
+        const classConstraints = initClassConstraints(context.metadata)
+        if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
+            classConstraints.fields = clone(classConstraints.fields ?? {})
+
+        const fieldName = context.name as string
+        const fields = classConstraints.fields!
+        if (reset || !Object.hasOwnProperty.bind(fields)(fieldName))
+            fields[fieldName] = {} as InternalCommonConstraints
+
+        Object.assign(fields[fieldName], { ...properties })
+    }
+}
+
 export function fieldValidationDecorator<
     Constraints extends CommonConstraints<any, any>,
     Value = ContraintsValue<Constraints>,
@@ -72,27 +87,15 @@ export function fieldValidationDecorator<
     isMinMaxType?: (value: any) => boolean,
     traverse?: Traverser<Constraints>,
 ) {
-    return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {
-        const classConstraints = initClassConstraints(context.metadata)
-        if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
-            classConstraints.fields = clone(classConstraints.fields ?? {})
-
-        const fieldName = context.name as string
-        const fields = classConstraints.fields!
-        if (!Object.hasOwnProperty.bind(fields)(fieldName))
-            fields[fieldName] = {} as InternalCommonConstraints
-
-        const validate = (context: InternalValidationContext<any, any>, constraints: Constraints) =>  {
-            if (context.ignored() || !validateConstraint(context, constraints, "ignored", isBoolean, (_, constraint) => constraint === false, undefined, undefined, false))
-                return true
-            if (!validateCommonConstraints(context, constraints))
-                return false
-            if (context.value == null)
-                return true
-            return validator(context, constraints)
-        }
-
-        Object.assign(fields[fieldName], { ...constraints, groups, kind, validate, traverse, isMinMaxType })
+    const validate = (context: InternalValidationContext<any, any>, constraints: Constraints) =>  {
+        if (context.ignored() || !validateConstraint(context, constraints, "ignored", isBoolean, (_, constraint) => constraint === false, undefined, undefined, false))
+            return true
+        if (!validateCommonConstraints(context, constraints))
+            return false
+        if (context.value == null)
+            return true
+        return validator(context, constraints)
     }
+    return fieldDecorator<Parent, Value>({ ...constraints, groups, kind, validate, traverse, isMinMaxType })
 }
 

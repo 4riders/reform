@@ -12,19 +12,27 @@ function getMetadata(model: any) {
 describe("Yop", () => {
 
     it("clone", () => {
+        
+        const symbolKey = Symbol("SymbolKey")
 
         class Test {
-            @textField({ label: "Nom", disabled: true, ignored: true, match: /^[a-b]+$/ } as any)
+            @textField({ label: "Nom", disabled: true, ignored: true, match: /^[a-b]+$/ })
             nom: string | null = null
         }
 
         class Test2 extends Test {
-            @textField({ label: "Nom de famille", ignored: false, required: true } as any)
+            @textField({ label: "Nom de famille", ignored: false, required: true })
             override nom: string = ""
         }
 
-        // console.log(getMetadata(Test))
-        // console.log(getMetadata(Test2))
+        class Test3 extends Test2 {
+            [symbolKey]: string = "Test3"
+        }
+
+        class Test4 extends Test3 {
+            @textField({ label: "X", ignored: false, required: true })
+            xxx: string = "Test4"
+        }   
 
         expect(getMetadata(Test).nom.disabled).toBe(true)
         expect(getMetadata(Test).nom.ignored).toBe(true)
@@ -38,8 +46,8 @@ describe("Yop", () => {
         expect(getMetadata(Test2).nom.label).toBe("Nom de famille")
         expect(getMetadata(Test2).nom.match).toEqual(/^[a-b]+$/)
 
-        const a = [new Test(), new Test2(), new Date(), new Set([6,7,8]), new Map([[1, 2], [3, 4]])]
-        const b = clone(a)
+        const a = [new Test(), new Test3(), new Test4(), new Date(), new Set([6,7,8]), new Map([[1, 2], [3, 4]]), symbolKey, { [symbolKey]: 18 }]
+        const b = clone(a, { symbols: true })
         expect(b).toEqual(a)
     })
 

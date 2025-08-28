@@ -247,7 +247,7 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
             if (!Array.isArray(parent[key]))
                 parent[key] = []
         }
-        else if (Object.getPrototypeOf(parent[key]) !== Object.prototype)
+        else if (!(parent[key] instanceof Object))
             parent[key] = {}
         parent = parent[key]
     }
@@ -293,25 +293,32 @@ export function equal(a: unknown, b: unknown): boolean {
     return fdeEqual(a, b)
 }
 
-export function clone(value: any, stack?: Set<any>): any {
+export function clone(value: any, options = { symbols: false }, stack?: Set<any>): any {
     if (value == null || typeof value  !== 'object' || stack?.has(value))
         return value
         
     stack ??= new Set<any>()
     stack.add(value)
 
+    if (Array.isArray(value))
+        return value.map(element => clone(element, options, stack))
     if (value instanceof Date)
         return new Date(value)
     if (value instanceof RegExp)
         return new RegExp(value)
     if (value instanceof Set)
-        return new Set([...value].map(v => clone(v, stack)))
+        return new Set([...value].map(v => clone(v, options, stack)))
     if (value instanceof Map)
-        return new Map([...value].map(([k, v]) => [clone(k, stack), clone(v, stack)]))
+        return new Map([...value].map(([k, v]) => [clone(k, options, stack), clone(v, options, stack)]))
 
     const copy = new value.constructor()
     for (const key in value)
-        copy[key] = clone(value[key], stack)
+        copy[key] = clone(value[key], options, stack)
+    if (options.symbols) {
+        const symbols = Object.getOwnPropertySymbols(value)
+        for (const symbol of symbols)
+            copy[symbol] = clone(value[symbol], options, stack)
+    }
     return copy
 }
 

@@ -39,7 +39,7 @@ export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V
     render: () => void
 }
 
-export function BaseTextField<Value extends string = string>(props: BaseTextFieldProps<Value>) {
+export function BaseTextField<Value = string>(props: BaseTextFieldProps<Value>) {
 
     const { onChange, onBlur, toModelValue, toTextValue, acceptInputValue, formatDisplayedValue, formatOnEdit, render, ...inputProps } = props
     const { value: fieldValue, form } = useFormField<Value | null, number>(props.name)

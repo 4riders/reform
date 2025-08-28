@@ -43,8 +43,6 @@ export interface FormManager<T> extends ValidationForm {
     removeReformEventListener(listener: EventListener): void
 }
 
-const UNSET_VALUES = {}
-
 const ReformSetValueEventType = 'reform:set-value'
 export interface ReformSetValueEvent<T = any> extends CustomEvent<{
     readonly form: FormManager<unknown>,
@@ -71,7 +69,8 @@ export class InternalFormManager<T> implements FormManager<T> {
     private yop = new Yop()
     private pathCache = new Map<string, Path>()
 
-    private _values: unknown = UNSET_VALUES
+    private _initialValues: unknown = undefined
+    private _values: unknown = undefined
     private _statuses = new Map<string, ValidationStatus>()
     private touched: object | true | null = null
     private _submitting = false
@@ -113,12 +112,15 @@ export class InternalFormManager<T> implements FormManager<T> {
     }
 
     get initialValues(): DeepPartial<T> | null | undefined {
-        return this.config.initialValues
+        return this._initialValues as DeepPartial<T> | null | undefined
     }
 
     get values(): T {
-        if (this._values === UNSET_VALUES) {
-            this._values = clone(this.config.initialValues)
+        if (this._values == null && this.config.initialValues != null) {
+            this._initialValues = clone(this.config.initialValues)
+            if (this.config.initialValuesConverter != null)
+                this._initialValues = this.config.initialValuesConverter(this._initialValues as DeepPartial<T>)
+            this._values = clone(this._initialValues)
             this.touched = null
             this._statuses = new Map()
         }
@@ -163,8 +165,8 @@ export class InternalFormManager<T> implements FormManager<T> {
 
     isDirty(path?: string | Path) {
         if (path == null || path.length === 0)
-            return !equal(this.values, this.config.initialValues)
-        return !equal(get(this.values, path, this.pathCache), get(this.config.initialValues, path, this.pathCache))
+            return !equal(this.values, this._initialValues)
+        return !equal(get(this.values, path, this.pathCache), get(this._initialValues, path, this.pathCache))
     }
 
     isTouched(path: string | Path = []) {

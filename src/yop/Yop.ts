@@ -66,14 +66,14 @@ export class Yop {
         Yop.classIds.set(id, constructor)
     }
 
-    static resolveClass(id: unknown) {
+    static resolveClass<T>(id: unknown, silent = false): Constructor<T> | undefined {
         if (typeof id === "string") {
             const resolved = Yop.classIds.get(id)
-            if (resolved == null)
+            if (resolved == null && silent === false)
                 console.error(`Class "${ id }" unregistered in Yop. Did you forget to add a @constraints({ id: "${ id }" }) decorator to the class?`)
-            return resolved
+            return resolved as Constructor<T>
         }
-        return id
+        return id as Constructor<T> | undefined
     }
 
     private contextAt(decorator: ClassFieldDecorator<any>, value: any, settings: ValidationSettings, traverseNullish = false) {

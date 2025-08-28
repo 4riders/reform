@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol } from "../src"
+import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -12,9 +12,9 @@ function getMetadata(model: any) {
 describe("Yop", () => {
 
     it("clone", () => {
-        
+
         class Test {
-            @textField({ label: "Nom", disabled: true, ignored: true } as any)
+            @textField({ label: "Nom", disabled: true, ignored: true, match: /^[a-b]+$/ } as any)
             nom: string | null = null
         }
 
@@ -30,11 +30,17 @@ describe("Yop", () => {
         expect(getMetadata(Test).nom.ignored).toBe(true)
         expect(getMetadata(Test).nom.required).toBeUndefined()
         expect(getMetadata(Test).nom.label).toBe("Nom")
+        expect(getMetadata(Test).nom.match).toEqual(/^[a-b]+$/)
 
         expect(getMetadata(Test2).nom.disabled).toBe(true)
         expect(getMetadata(Test2).nom.ignored).toBe(false)
         expect(getMetadata(Test2).nom.required).toBe(true)
         expect(getMetadata(Test2).nom.label).toBe("Nom de famille")
+        expect(getMetadata(Test2).nom.match).toEqual(/^[a-b]+$/)
+
+        const a = [new Test(), new Test2(), new Date(), new Set([6,7,8]), new Map([[1, 2], [3, 4]])]
+        const b = clone(a)
+        expect(b).toEqual(a)
     })
 
     describe("utility", () => {

@@ -293,13 +293,22 @@ export function equal(a: unknown, b: unknown): boolean {
     return fdeEqual(a, b)
 }
 
-export function clone(value: any, stack?: Set<any>) {
+export function clone(value: any, stack?: Set<any>): any {
     if (value == null || typeof value  !== 'object' || stack?.has(value))
         return value
-    
+        
     stack ??= new Set<any>()
     stack.add(value)
-    
+
+    if (value instanceof Date)
+        return new Date(value)
+    if (value instanceof RegExp)
+        return new RegExp(value)
+    if (value instanceof Set)
+        return new Set([...value].map(v => clone(v, stack)))
+    if (value instanceof Map)
+        return new Map([...value].map(([k, v]) => [clone(k, stack), clone(v, stack)]))
+
     const copy = new value.constructor()
     for (const key in value)
         copy[key] = clone(value[key], stack)

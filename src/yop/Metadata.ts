@@ -2,9 +2,9 @@ import { clone } from "./ObjectsUtil"
 import { InternalConstraints, InternalCommonConstraints, ContraintsParent, ContraintsValue, Traverser, Validator, validateCommonConstraints, validateTypeConstraint, CommonConstraints } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
 import { TestConstraintFunction, validateTestConstraint } from "./constraints/TestConstraint"
-import { isBoolean, isObject } from "./TypesUtil"
+import { Constructor, isBoolean, isObject } from "./TypesUtil"
 import { InternalValidationContext } from "./ValidationContext"
-import { validationSymbol } from "./Yop"
+import { validationSymbol, Yop } from "./Yop"
 
 export interface InternalClassConstraints<Class = any> extends InternalConstraints {
     test?: TestConstraintFunction<Class>
@@ -62,6 +62,13 @@ export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
 }
 
 export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void
+
+export function getMetadataConstructor<T>(value: any): Constructor<T> | undefined {
+    const of = value?.of
+    if (typeof of === "string")
+        return Yop.resolveClass(of, true)
+    return typeof of === "function" && of[Symbol.metadata]?.[validationSymbol] != null ? of : undefined
+}
 
 export function fieldDecorator<Parent, Value>(properties: object, reset = false) {
     return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {

@@ -7,6 +7,7 @@ export * from "./reform/useFormField"
 export * from "./reform/useRender"
 
 // export * from "./reform/components/BaseCheckboxField"
+export * from "./reform/components/BaseDateField"
 // export * from "./reform/components/BaseFileField"
 export * from "./reform/components/BaseRadioField"
 // export * from "./reform/components/BaseSelectField"

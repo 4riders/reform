@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useMemo } from "react"
 import { useRender } from "./useRender"
 import { FormManager, InternalFormManager } from "./FormManager"
 import { Constructor } from "../yop/TypesUtil"
@@ -29,8 +29,9 @@ export function useForm<T extends CheckClass<T>>(configOrModel: FormConfig<T> | 
             dispatchEvent
         }
     }
+    
     const render = useRender()
-    const managerRef = useRef<InternalFormManager<T>>(new InternalFormManager<T>(render))
-    managerRef.current.onRender(configOrModel as FormConfig<T>)
-    return managerRef.current
+    const manager = useMemo(() => new InternalFormManager<T>(render), [])
+    manager.onRender(configOrModel as FormConfig<T>)
+    return manager
 }

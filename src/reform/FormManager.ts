@@ -148,7 +148,7 @@ export class InternalFormManager<T> implements FormManager<T> {
             this.render()
         }
 
-        if (this.config.dispatchEvent !== false && propagate === true) {
+        if (this.config.dispatchEvent !== false && propagate !== false) {
             setTimeout(() => {
                 this.eventTarget.dispatchEvent(createReformSetValueEvent(
                     this,

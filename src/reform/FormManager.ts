@@ -137,7 +137,7 @@ export class InternalFormManager<T> implements FormManager<T> {
             return undefined
         this._values = result.root
 
-        const { touch, validate, propagate } = typeof options === "boolean" ? { validate: options, touch: undefined, propagate: undefined } : options ?? {}
+        const { touch, validate, propagate } = { propagate: true, ...(typeof options === "boolean" ? { validate: options } : options) }
         if (touch === false)
             this.untouch(path)
         else if (validate || touch)
@@ -148,7 +148,7 @@ export class InternalFormManager<T> implements FormManager<T> {
             this.render()
         }
 
-        if (this.config.dispatchEvent !== false && propagate !== false) {
+        if (this.config.dispatchEvent !== false && propagate === true) {
             setTimeout(() => {
                 this.eventTarget.dispatchEvent(createReformSetValueEvent(
                     this,

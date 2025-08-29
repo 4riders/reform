@@ -70,7 +70,7 @@ export function getMetadataConstructor<T>(value: any): Constructor<T> | undefine
     return typeof of === "function" && of[Symbol.metadata]?.[validationSymbol] != null ? of : undefined
 }
 
-export function fieldDecorator<Parent, Value>(properties: object, reset = false) {
+export function fieldDecorator<Parent, Value>(properties: object | ((field: InternalCommonConstraints) => void), reset = false) {
     return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {
         const classConstraints = initClassConstraints(context.metadata)
         if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
@@ -81,7 +81,10 @@ export function fieldDecorator<Parent, Value>(properties: object, reset = false)
         if (reset || !Object.hasOwnProperty.bind(fields)(fieldName))
             fields[fieldName] = {} as InternalCommonConstraints
 
-        Object.assign(fields[fieldName], { ...properties })
+        if (typeof properties === "function")
+            properties(fields[fieldName])
+        else
+            Object.assign(fields[fieldName], { ...properties })
     }
 }
 

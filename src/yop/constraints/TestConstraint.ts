@@ -1,6 +1,6 @@
 import { InternalValidationContext, Level, ValidationContext, ValidationStatus } from "../ValidationContext"
 import { ConstraintFunction, ConstraintMessage } from "./Constraint"
-import { isFunction } from "../TypesUtil"
+import { isFunction, isObject } from "../TypesUtil"
 import { joinPath } from "../ObjectsUtil"
 
 export type TestConstraintMessage = ConstraintMessage | readonly [ConstraintMessage, Level] | boolean | undefined
@@ -15,7 +15,7 @@ export interface AsyncTestConstraint<Value, Parent = unknown> {
 }
 
 export interface TestConstraint<Value, Parent = unknown> {
-    test?: TestConstraintFunction<Value, Parent> | AsyncTestConstraint<Value, Parent>
+    test?: TestConstraintFunction<Value, Parent> | AsyncTestConstraint<Value, Parent> | readonly [TestConstraintFunction<Value, Parent>, AsyncTestConstraint<Value, Parent>]
 }
 
 const defaultGetDependencies = (context: InternalValidationContext<unknown>) => context.value
@@ -45,9 +45,13 @@ function _validateTestConstraint<Value, Parent>(
     testConstraint: TestConstraint<Value, Parent>
 ) {
     const test = testConstraint.test!
-    if (isFunction(test))
-        return _validateTestConstraintFunction(context as InternalValidationContext<NonNullable<Value>, Parent>, test)
-    return _validateAsyncTestConstraint(context as InternalValidationContext<NonNullable<Value>, Parent>, test)
+
+    const syncTest = (isFunction(test) ? test : Array.isArray(test) ? test[0] : undefined) as TestConstraintFunction<Value, Parent> | undefined
+    if (syncTest != null && !_validateTestConstraintFunction(context as InternalValidationContext<NonNullable<Value>, Parent>, syncTest))
+        return false
+
+    const asyncTest = (isObject(test) ? test : Array.isArray(test) ? test[1] : undefined) as AsyncTestConstraint<Value, Parent> | undefined
+    return asyncTest == null || _validateAsyncTestConstraint(context as InternalValidationContext<NonNullable<Value>, Parent>, asyncTest)
 }
 
 function _validateTestConstraintFunction<Value, Parent>(

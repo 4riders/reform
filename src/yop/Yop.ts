@@ -12,9 +12,7 @@ export const validationSymbol = Symbol('YopValidation')
 
 export type AsyncValidationStatus = {
     status?: ValidationStatus | undefined
-    dependencies: unknown
-    getDependencies: (context: InternalValidationContext<any, any>) => any
-    shouldRevalidate: (previous: unknown, current: unknown, status: ValidationStatus | undefined) => boolean
+    dependencies: any[]
 }
 
 export type ResolvedConstraints<MinMax = unknown> = {
@@ -28,6 +26,7 @@ export interface ValidationForm {
     readonly submitted: boolean
     readonly submitting: boolean
     readonly statuses: Map<string, ValidationStatus>
+    readonly store: Map<string, any>
     readonly htmlForm?: HTMLFormElement
 
     getValue<T = any>(path: string | Path): T | undefined
@@ -60,7 +59,16 @@ export class Yop {
 
     private locale: string = Yop.defaultInstance?.locale ?? "en-US"
     
-    readonly asyncStatuses = new Map<string, AsyncValidationStatus>()
+    private _store = new Map<string, any>()
+    private _asyncStatuses = new Map<string, AsyncValidationStatus>()
+
+    get store() {
+        return this._store
+    }
+
+    get asyncStatuses() {
+        return this._asyncStatuses
+    }
 
     static registerClass(id: string, constructor: Constructor<unknown>) {
         Yop.classIds.set(id, constructor)

@@ -29,6 +29,8 @@ export interface ValidationContext<Value, Parent = unknown> {
     readonly rootContext: ValidationContext<unknown> | undefined
 
     readonly settings: ValidationSettings | undefined
+
+    readonly store: Map<string, any>
 }
 
 export const UndefinedParent = Object.freeze(Object.create(null))
@@ -46,6 +48,8 @@ export class InternalValidationContext<Value, Parent = unknown> implements Valid
     readonly rootContext: InternalValidationContext<unknown> | undefined
 
     readonly settings: ValidationSettings | undefined
+
+    readonly store: Map<string, any>
 
     readonly statuses: Map<string, ValidationStatus>
 
@@ -70,6 +74,8 @@ export class InternalValidationContext<Value, Parent = unknown> implements Valid
         this.rootContext = props.rootContext
         this.settings = props.settings
         this.statuses = props.statuses ?? new Map()
+
+        this.store = props.yop.store
 
         this.path = props.key == null ? [] : (props.parentContext?.path.concat(props.key) ?? [props.key])
     }

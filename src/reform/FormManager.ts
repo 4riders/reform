@@ -100,6 +100,10 @@ export class InternalFormManager<T> implements FormManager<T> {
         return this._submitting
     }
 
+    get store() {
+        return this.yop.store
+    }
+
     setSubmitting(submitting: boolean): void {
         this._submitting = submitting
         this.render()

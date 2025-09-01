@@ -1,6 +1,6 @@
 import { ConstraintMessage } from "./constraints/Constraint"
 import { joinPath } from "./ObjectsUtil"
-import { ValidationSettings, Yop } from "./Yop"
+import { ValidationForm, ValidationSettings, Yop } from "./Yop"
 
 export type Group = string | ((string | undefined)[])
 export type Level = "info" | "warning" | "error" | "pending" | "unavailable"
@@ -29,6 +29,8 @@ export interface ValidationContext<Value, Parent = unknown> {
     readonly rootContext: ValidationContext<unknown> | undefined
 
     readonly settings: ValidationSettings | undefined
+
+    readonly form: ValidationForm | undefined
 
     readonly store: Map<string, any>
 }
@@ -90,6 +92,10 @@ export class InternalValidationContext<Value, Parent = unknown> implements Valid
 
     get groups() {
         return this.settings?.groups
+    }
+
+    get form() {
+        return this.settings?.form
     }
 
     getRoot<T>() {

@@ -201,7 +201,12 @@ export class InternalFormManager<T> implements FormManager<T> {
     }
 
     validate(touchedOnly = true): Map<string, ValidationStatus> {
-        const options: ReformValidationSettings = { method: "validate", form: this, path: this.config.validationPath }
+        const options: ReformValidationSettings = {
+            method: "validate",
+            form: this,
+            path: this.config.validationPath,
+            groups: this.config.validationGroups
+        }
         if (!this._submitted && touchedOnly)
             options.ignore = path => !this.isTouched(path)
         
@@ -214,7 +219,12 @@ export class InternalFormManager<T> implements FormManager<T> {
         if (change == null)
             return false
         
-        const options: ReformValidationSettings = { method: "validateAt", form: this, path, skipAsync }
+        const options: ReformValidationSettings = {
+            method: "validateAt",
+            form: this, path,
+            skipAsync,
+            groups: this.config.validationGroups
+        }
         if (!this._submitted && touchedOnly)
             options.ignore = path => !this.isTouched(path)
         

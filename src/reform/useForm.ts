@@ -3,6 +3,7 @@ import { useRender } from "./useRender"
 import { FormManager, InternalFormManager } from "./FormManager"
 import { Constructor } from "../yop/TypesUtil"
 import { CheckClass, instance } from "../yop/decorators/instance"
+import { Group } from "../yop/ValidationContext"
 
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
@@ -11,6 +12,7 @@ export type FormConfig<T> = {
     readonly initialValuesConverter?: (values: DeepPartial<T>) => DeepPartial<T>
     readonly validationSchema?: ((_: unknown, context: ClassFieldDecoratorContext<unknown, T>) => void)
     readonly validationPath?: string
+    readonly validationGroups?: Group
     readonly onSubmit?: (form: FormManager<T>) => void
     readonly dispatchEvent?: boolean
 }

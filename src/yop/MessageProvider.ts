@@ -123,8 +123,8 @@ export const messageProvider_fr_FR = new BasicMessageProvider("fr-FR", [
     ["number.min", ({ constraint }) => `Doit être supérieur ou égal à ${ constraint.formatted }`],
     ["number.max", ({ constraint }) => `Doit être inférieur ou égal à ${ constraint.formatted }`],
 
-    ["date.min", ({ constraint }) => `La date doit être égale ou postérieure au ${ constraint.formatted }`],
-    ["date.max", ({ constraint }) => `La date doit être égale ou antérieure au ${ constraint.formatted }`],
+    ["date.min", ({ constraint }) => `La date doit être postérieure ou égale au ${ constraint.formatted }`],
+    ["date.max", ({ constraint }) => `La date doit être antérieure ou égale au ${ constraint.formatted }`],
 
     ["file.min", ({ constraint }) => `Le fichier doit avoir une taille d'au moins ${ constraint.formatted } octet${ s(constraint.plural) }`],
     ["file.max", ({ constraint }) => `Le fichier doit avoir une taille d'au plus ${ constraint.formatted } octet${ s(constraint.plural) }`],

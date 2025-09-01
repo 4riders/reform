@@ -26,7 +26,7 @@ export function useFormField<Value, MinMax>(name: string): FieldState<Value, Min
         status.constraint.finally(() => {
             if (promiseRef.current === status.constraint) {
                 form.updateAsyncStatus(name)
-                render()
+                form.render()
             }
         })
     }

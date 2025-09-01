@@ -3,6 +3,7 @@ import { FormContext } from "./useFormContext"
 import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { FormManager, InternalFormManager } from "./FormManager"
+import { ValidationStatus } from "../yop/ValidationContext"
 
 interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
     form: FormManager<unknown>
@@ -16,12 +17,14 @@ export function Form(props: FormProps) {
         (form as InternalFormManager<unknown>).htmlForm = htmlForm
     }, [form])
 
+    const errors = new Map<string, ValidationStatus>([...form.statuses].filter(([_, status]) => status.level === "error"))
+
     return (
         <FormContext.Provider value={ form }>
             <form ref={ formRef } onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
                 <fieldset disabled={ disabled }>{ children }</fieldset>
                 
-                { form.statuses.size > 0 /*&& Reform.debugFormErrors*/ &&
+                { errors.size > 0 /*&& Reform.debugFormErrors*/ &&
                 <div style={{
                     all: "initial",
                     display: "block",
@@ -35,7 +38,7 @@ export function Form(props: FormProps) {
                     whiteSpace: "pre-wrap"
                 }}>
                     { JSON.stringify(
-                        Object.fromEntries(form.statuses.entries()),
+                        Object.fromEntries(errors.entries()),
                         (key, value) => key === "message" && React.isValidElement(value) ? renderToStaticMarkup(value) : value,
                         4
                     )}

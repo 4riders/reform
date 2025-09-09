@@ -63,7 +63,7 @@ function createReformSetValueEvent<T = any>(
     return new CustomEvent(ReformSetValueEventType, { detail: { form, path, previousValue, value, options }})
 }
 
-export class InternalFormManager<T> implements FormManager<T> {
+export class InternalFormManager<T extends object | null | undefined> implements FormManager<T> {
     
     private config: FormConfig<T> = { validationSchema: ignored() }
     private yop = new Yop()

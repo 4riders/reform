@@ -14,7 +14,7 @@ export function Form(props: FormProps) {
     const { form, children, disabled, ...formAttrs } = props
     
     const formRef = useCallback((htmlForm: HTMLFormElement) => {
-        (form as InternalFormManager<unknown>).htmlForm = htmlForm
+        (form as InternalFormManager<any>).htmlForm = htmlForm
     }, [form])
 
     const errors = new Map<string, ValidationStatus>([...form.statuses].filter(([_, status]) => status.level === "error"))

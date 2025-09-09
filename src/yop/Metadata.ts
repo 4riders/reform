@@ -70,8 +70,14 @@ export function getMetadataConstructor<T>(value: any): Constructor<T> | undefine
     return typeof of === "function" && of[Symbol.metadata]?.[validationSymbol] != null ? of : undefined
 }
 
+const decoratorSymbol = Symbol("YopValidationDecorator")
+
+export function getValidationDecoratorKind(value: any): string | undefined {
+    return value?.[decoratorSymbol]
+}
+
 export function fieldDecorator<Parent, Value>(properties: object | ((field: InternalCommonConstraints) => void), reset = false) {
-    return function decorateClassField(_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) {
+    return (_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) => {
         const classConstraints = initClassConstraints(context.metadata)
         if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
             classConstraints.fields = clone(classConstraints.fields ?? {})
@@ -109,6 +115,8 @@ export function fieldValidationDecorator<
             return true
         return validator(context, constraints)
     }
-    return fieldDecorator<Parent, Value>({ ...constraints, groups, kind, validate, traverse, isMinMaxType })
-}
+    const decorator = fieldDecorator<Parent, Value>({ ...constraints, groups, kind, validate, traverse, isMinMaxType })
+    Object.defineProperty(decorator, decoratorSymbol, { value: kind })
+    return decorator
 
+}

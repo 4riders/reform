@@ -1,11 +1,12 @@
 import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
 import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
-import { InternalClassConstraints } from "../Metadata"
+import { getValidationDecoratorKind, InternalClassConstraints } from "../Metadata"
 import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 import { fieldValidationDecorator } from "../Metadata"
+import { InstanceConstraints, instanceKind } from "./instance"
 
 export type ArrayValue = any[] | null | undefined
 
@@ -22,7 +23,7 @@ export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
 
 function resolveOf<Value extends ArrayValue, Parent>(constraints: ArrayConstraints<Value, Parent>) {
     let of: any = Yop.resolveClass(constraints.of)
-    if (of?.[Symbol.metadata] == null && typeof of === "function") {
+    if (getValidationDecoratorKind(of) != null) {
         const metadata = { [validationSymbol]: {} as InternalClassConstraints }
         of(null, { metadata, name: "of" })
         of = { [Symbol.metadata]: { [validationSymbol]: metadata[validationSymbol]!.fields!.of }}
@@ -41,6 +42,16 @@ function traverseArray<Value extends ArrayValue, Parent>(
     const of = resolveOf(constraints)
     const elementConstraints = of?.[Symbol.metadata]?.[validationSymbol]
     return [elementConstraints, context.value?.[propertyOrIndex as number]]
+}
+
+export function resolveArrayOf<Value extends ArrayValue>(constraints: ArrayConstraints<Value, any>) {
+    let of: any = Yop.resolveClass(constraints.of)
+    if (getValidationDecoratorKind(of) === instanceKind) {
+        const metadata = { [validationSymbol]: {} as InternalClassConstraints }
+        of(null, { metadata, name: "of" })
+        return (metadata[validationSymbol]!.fields!.of as unknown as InstanceConstraints<any, any>).of
+    }
+    return (constraints.of as any) = of
 }
 
 function validateArray<Value extends ArrayValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: ArrayConstraints<Value, Parent>) {

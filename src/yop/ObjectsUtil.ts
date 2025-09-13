@@ -1,5 +1,3 @@
-import fdeEqual from "fast-deep-equal/es6"
-
 const DOT = 1
 const OPEN_BRACKET = 2
 const SINGLE_QUOTE = 3
@@ -42,7 +40,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                     segment += '\\'
                 escape = !escape
                 continue
-        
+
             case ' ': case '\t': case '\r': case '\n':
                 if (state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
@@ -73,7 +71,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                 else
                     return undefined
                 break
-            
+
             case '[':
                 if (escape || state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
@@ -101,7 +99,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                 else
                     return undefined
                 break
-            
+
             case ']':
                 if (escape || state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
@@ -148,8 +146,8 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                     return undefined
                 segment += c
                 break
-        }    
-        
+        }
+
         escape = false
     }
 
@@ -179,7 +177,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
             cache.clear()
         cache.set(path, segments.slice())
     }
-    
+
     return segments
 }
 
@@ -218,29 +216,29 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
     clone?: boolean
     condition?: (currentValue: unknown) => boolean
 } = { clone: false }): SetResult {
-    
+
     const keys = typeof path === "string" ? splitPath(path, cache) : path
     if (keys == null)
         return undefined
 
     if (options.clone)
         newValue = clone(newValue)
-    
+
     const lastKey = keys.pop()
     if (lastKey == null)
         return { root: newValue }
-    
+
     const root = (
         typeof (keys[0] ?? lastKey) === "number" ?
         Array.isArray(value) ? value : [] :
         value != null && typeof value === "object" ? value : {}
     )
-    
+
     let parent: any = root
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        const array = typeof (keys[i+1] ?? lastKey) === "number"
-        
+        const array = typeof (keys[i + 1] ?? lastKey) === "number"
+
         if (parent[key] == null)
             parent[key] = array ? [] : {}
         else if (array) {
@@ -261,11 +259,11 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
 export function unset(value: unknown, path: string | Path, cache?: Map<string, Path>): boolean | undefined {
     if (value == null)
         return false
-    
+
     const keys = typeof path === "string" ? splitPath(path, cache) : path
     if (keys == null)
         return undefined
-    
+
     const lastKey = keys.pop()
     if (lastKey == null)
         return undefined
@@ -289,14 +287,95 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
-export function equal(a: unknown, b: unknown): boolean {
-    return fdeEqual(a, b)
+export function equal(a: any, b: any): boolean {
+    if (a === b)
+        return true
+
+    if (a == null || b == null)
+        return false
+
+    if ((typeof a == 'object') && (typeof b == 'object')) {
+        if (a.constructor !== b.constructor)
+            return false
+
+        let aIsType = Array.isArray(a)
+        let bIsType = Array.isArray(b)
+        if (aIsType !== bIsType)
+            return false
+        else if (aIsType) {
+            const length = (a as any[]).length
+            if (length !== (b as any[]).length)
+                return false
+            for (let i = length; i-- !== 0; ) {
+                if (!equal((a as any[])[i], (b as any[])[i]))
+                    return false
+            }
+            return true
+        }
+
+        aIsType = (a instanceof Map)
+        bIsType = (b instanceof Map)
+        if (aIsType !== bIsType)
+            return false
+        if (aIsType) {
+            if ((a as Map<any, any>).size !== (b as Map<any, any>).size)
+                return false
+            for (const entry of (a as Map<any, any>).entries()) {
+                if (!(b as Map<any, any>).has(entry[0]))
+                    return false
+            }
+            for (const entry of (a as Map<any, any>).entries()) {
+                if (!equal(entry[1], (b as Map<any, any>).get(entry[0])))
+                    return false
+            }
+            return true
+        }
+
+        aIsType = (a instanceof Set)
+        bIsType = (b instanceof Set)
+        if (aIsType !== bIsType)
+            return false
+        if (aIsType) {
+            if ((a as Set<any>).size !== (b as Set<any>).size)
+                return false
+            for (const entry of (a as Set<any>).entries()) {
+                if (!(b as Set<any>).has(entry[0]))
+                    return false
+            }
+            return true
+        }
+
+        aIsType = (a instanceof RegExp)
+        bIsType = (b instanceof RegExp)
+        if (aIsType !== bIsType)
+            return false
+        if (aIsType)
+            return (a as RegExp).source === (b as RegExp).source && (a as RegExp).flags === (b as RegExp).flags
+
+        const keys = Object.keys(a)
+        const length = keys.length
+        if (length !== Object.keys(b).length)
+            return false
+        for (let i = length; i-- !== 0;) {
+            if (!Object.prototype.hasOwnProperty.call(b, keys[i]))
+                return false
+        }
+        for (let i = length; i-- !== 0;) {
+            const key = keys[i]
+            if (!equal(a[key], b[key]))
+                return false
+        }
+
+        return true
+    }
+
+    return a !== a && b !== b
 }
 
 export function clone(value: any, options = { symbols: false }, stack?: Set<any>): any {
-    if (value == null || typeof value  !== 'object' || stack?.has(value))
+    if (value == null || typeof value !== 'object' || stack?.has(value))
         return value
-        
+
     stack ??= new Set<any>()
     stack.add(value)
 

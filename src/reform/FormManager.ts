@@ -29,7 +29,7 @@ export interface FormManager<T> extends ValidationForm {
     readonly values: T
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
-    validate(): Map<string, ValidationStatus>
+    validate(touchedOnly?: boolean): Map<string, ValidationStatus>
     validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): boolean
     updateAsyncStatus(path: string | Path): void
 

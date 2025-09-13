@@ -302,7 +302,7 @@ export function equal(a: any, b: any): boolean {
         let bIsType = Array.isArray(b)
         if (aIsType !== bIsType)
             return false
-        else if (aIsType) {
+        if (aIsType) {
             const length = (a as any[]).length
             if (length !== (b as any[]).length)
                 return false

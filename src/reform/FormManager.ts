@@ -64,8 +64,8 @@ function createReformSetValueEvent<T = any>(
 }
 
 export class InternalFormManager<T extends object | null | undefined> implements FormManager<T> {
-    
-    private config: FormConfig<T> = { validationSchema: ignored() }
+
+    private _config: FormConfig<T> = { validationSchema: ignored() }
     private yop = new Yop()
     private pathCache = new Map<string, Path>()
 
@@ -91,13 +91,16 @@ export class InternalFormManager<T extends object | null | undefined> implements
         this.eventTarget.removeEventListener(ReformSetValueEventType, listener)
     }
 
-
     get submitted() {
         return this._submitted
     }
 
     get submitting() {
         return this._submitting
+    }
+
+    get config() {
+        return this._config
     }
 
     get store() {
@@ -109,10 +112,19 @@ export class InternalFormManager<T extends object | null | undefined> implements
         this.render()
     }
 
+    commitInitialValues() {
+        this._initialValues = clone(this._config.initialValues)
+        if (this._config.initialValuesConverter != null)
+            this._initialValues = this._config.initialValuesConverter(this._initialValues as DeepPartial<T>)
+        this._values = clone(this._initialValues)
+        this.touched = null
+        this._statuses = new Map()
+    }
+
     onRender(config: FormConfig<T>) {
         if (config.validationSchema == null)
             config = { ...config, validationSchema: ignored() }
-        this.config = config
+        this._config = config
     }
 
     get initialValues(): DeepPartial<T> | null | undefined {
@@ -120,14 +132,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
     }
 
     get values(): T {
-        if (this._values == null && this.config.initialValues != null) {
-            this._initialValues = clone(this.config.initialValues)
-            if (this.config.initialValuesConverter != null)
-                this._initialValues = this.config.initialValuesConverter(this._initialValues as DeepPartial<T>)
-            this._values = clone(this._initialValues)
-            this.touched = null
-            this._statuses = new Map()
-        }
+        if (this._values == null && this._config.initialValues != null)
+            this.commitInitialValues()
         return this._values as T
     }
 
@@ -152,7 +158,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
             this.render()
         }
 
-        if (this.config.dispatchEvent !== false && propagate === true) {
+        if (this._config.dispatchEvent !== false && propagate === true) {
             setTimeout(() => {
                 this.eventTarget.dispatchEvent(createReformSetValueEvent(
                     this,
@@ -204,13 +210,13 @@ export class InternalFormManager<T extends object | null | undefined> implements
         const options: ReformValidationSettings = {
             method: "validate",
             form: this,
-            path: this.config.validationPath,
-            groups: this.config.validationGroups
+            path: this._config.validationPath,
+            groups: this._config.validationGroups
         }
         if (!this._submitted && touchedOnly)
             options.ignore = path => !this.isTouched(path)
         
-        this._statuses = this.yop.rawValidate(this.values, this.config.validationSchema!, options)?.statuses ?? new Map()
+        this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map()
         return this._statuses
     }
 
@@ -223,19 +229,19 @@ export class InternalFormManager<T extends object | null | undefined> implements
             method: "validateAt",
             form: this, path,
             skipAsync,
-            groups: this.config.validationGroups
+            groups: this._config.validationGroups
         }
         if (!this._submitted && touchedOnly)
             options.ignore = path => !this.isTouched(path)
         
-        const statuses = this.yop.rawValidate(this.values, this.config.validationSchema!, options)?.statuses
+        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses
         statuses?.forEach((status, path) => this._statuses.set(path, status))
         return change || (statuses != null && statuses.size > 0)
     }
 
     constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined {
         const settings: ReformValidationSettings = { method: "constraintsAt", form: this, path }
-        return this.yop.constraintsAt(this.config.validationSchema!, this.values, settings)
+        return this.yop.constraintsAt(this._config.validationSchema!, this.values, settings)
     }
 
     updateAsyncStatus(path: string | Path) {
@@ -272,7 +278,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
 
             const errors = statuses.filter(status => status.level === "error" || (status.level === "unavailable" && status.message))
             if (errors.length === 0)
-                (this.config.onSubmit ?? (form => form.setSubmitting(false)))(this)
+                (this._config.onSubmit ?? (form => form.setSubmitting(false)))(this)
             else {
                 const element = errors
                     .map(status => window.document.getElementById(status.path))

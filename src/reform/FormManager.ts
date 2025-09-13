@@ -26,6 +26,7 @@ export interface FormManager<T> extends ValidationForm {
     setSubmitting(submitting: boolean): void
     
     readonly initialValues: DeepPartial<T> | null | undefined
+    readonly initialValuesPending: boolean
     readonly values: T
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
@@ -70,6 +71,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
     private pathCache = new Map<string, Path>()
 
     private _initialValues: unknown = undefined
+    private _initialValuesPending = false
     private _values: unknown = undefined
     private _statuses = new Map<string, ValidationStatus>()
     private touched: object | true | null = null
@@ -91,6 +93,10 @@ export class InternalFormManager<T extends object | null | undefined> implements
         this.eventTarget.removeEventListener(ReformSetValueEventType, listener)
     }
 
+    get initialValuesPending() {
+        return this._initialValuesPending
+    }
+
     get submitted() {
         return this._submitted
     }
@@ -105,6 +111,10 @@ export class InternalFormManager<T extends object | null | undefined> implements
 
     get store() {
         return this.yop.store
+    }
+
+    set initialValuesPending(pending: boolean) {
+        this._initialValuesPending = pending
     }
 
     setSubmitting(submitting: boolean): void {

@@ -40,11 +40,13 @@ export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.De
         else if (typeof configOrModel.initialValues === "function") {
             let initialValues = configOrModel.initialValues()
             if (isPromise(initialValues)) {
+                newManager.initialValuesPending = true
                 initialValues.then((value: any) => {
                     setTimeout(() => {
                         configOrModel = { ...newManager.config, initialValues: value }
                         newManager.onRender(configOrModel)
                         newManager.commitInitialValues()
+                        newManager.initialValuesPending = false
                         render()
                     }, 0)
                 })

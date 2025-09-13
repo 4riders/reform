@@ -19,13 +19,14 @@ export type FormConfig<T extends object | null | undefined> = {
 
 type Model<T> = new (...args: any) => NonNullable<T>
 
-export function useForm<T extends object | null | undefined>(config: FormConfig<T>): FormManager<T>
-export function useForm<T extends CheckClass<T>>(model: Model<T>, onSubmit: (form: FormManager<T>) => void, validationPath?: string): FormManager<T>
+export function useForm<T extends object | null | undefined>(config: FormConfig<T>, deps?: React.DependencyList): FormManager<T>
+export function useForm<T extends CheckClass<T>>(model: Model<T>, onSubmit: (form: FormManager<T>) => void, deps?: React.DependencyList): FormManager<T>
 
-export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) => void, validationPath?: string) {
+export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.DependencyList = []) {
 
     const render = useRender()
 
+    deps = Array.isArray(onSubmitOrDeps) ? onSubmitOrDeps : deps
     const manager = useMemo(() => {
         const newManager = new InternalFormManager(render)
         
@@ -33,8 +34,7 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
             configOrModel = {
                 initialValues: new configOrModel(),
                 validationSchema: instance({ of: configOrModel, required: true }),
-                onSubmit,
-                validationPath,
+                onSubmit: onSubmitOrDeps as ((form: FormManager<any>) => void),
             }
         }
         else if (typeof configOrModel.initialValues === "function") {
@@ -55,10 +55,10 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
         
         newManager.onRender(configOrModel)
         return newManager
-    }, [])
+    }, deps)
 
     if (typeof configOrModel === "function")
-        configOrModel = { ...manager.config, onSubmit, validationPath }
+        configOrModel = { ...manager.config, onSubmit: onSubmitOrDeps as ((form: FormManager<any>) => void) }
     else if (typeof configOrModel.initialValues === "function")
         configOrModel = { ...configOrModel, initialValues: manager.initialValues }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone } from "../src"
+import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone, equal } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -2569,6 +2569,58 @@ describe("Yop", () => {
                 constraint: ["a", "b", "c"],
                 message: "Must be one of: a, b, or c"
             }])
+        })
+    })
+
+    describe("util", () => {
+
+        it("equal", () => {
+            expect(equal(1, 1)).toBe(true)
+            expect(equal(1, 2)).toBe(false)
+            expect(equal("abc", "abc")).toBe(true)
+            expect(equal("abc", "def")).toBe(false)
+            expect(equal(true, true)).toBe(true)
+            expect(equal(true, false)).toBe(false)
+            expect(equal(null, null)).toBe(true)
+            expect(equal(null, undefined)).toBe(false)
+            expect(equal(undefined, undefined)).toBe(true)
+            expect(equal(new Date(2024, 11, 21), new Date(2024, 11, 21))).toBe(true)
+            expect(equal(new Date(2024, 11, 21), new Date(2024, 11, 22))).toBe(false)
+            expect(equal([1, 2, 3], [1, 2, 3])).toBe(true)
+            expect(equal([1, 2, 3], [1, 2, 4])).toBe(false)
+            expect(equal([1, [2, 3]], [1, [2, 3]])).toBe(true)
+            expect(equal([1, [2, 3]], [1, [2, 4]])).toBe(false)
+            expect(equal({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true)
+            expect(equal({ a: 1, b: 2 }, { a: 1, b: 3 })).toBe(false)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toBe(true)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } })).toBe(false)
+            expect(equal({ a: 1, b: 2 }, { a: 1 })).toBe(false)
+            expect(equal({ a: 1 }, { a: 1, b: 2 })).toBe(false)
+            expect(equal(new File([], "a.txt"), new File([], "a.txt"))).toBe(true)
+            expect(equal(new File([], "a.txt"), new File([], "b.txt"))).toBe(false)
+            expect(equal(new File([new ArrayBuffer(1)], "a.txt"), new File([new ArrayBuffer(1)], "a.txt"))).toBe(true)
+            expect(equal(new File([new ArrayBuffer(1)], "a.txt"), new File([new ArrayBuffer(2)], "a.txt"))).toBe(false)
+            expect(equal(/abc/, /abc/)).toBe(true)
+            expect(equal(/abc/, /def/)).toBe(false)
+            expect(equal(/abc/i, /abc/)).toBe(false)
+            expect(equal(/abc/g, /abc/g)).toBe(true)
+            expect(equal(/abc/gm, /abc/g)).toBe(false)
+            
+            const obj1: any = {}
+            obj1.self = obj1
+            const obj2: any = {}
+            obj2.self = obj2
+            expect(equal(obj1, obj2)).toBe(true)
+            obj2.self = obj1
+            expect(equal(obj1, obj2)).toBe(true)
+            obj2.self = {}
+            expect(equal(obj1, obj2)).toBe(false)
+            obj2.self = { a: 1 }
+            expect(equal(obj1, obj2)).toBe(false)
+
+            class Test {}
+            expect(equal(new Test(), new Test())).toBe(true)
+            expect(equal(new Test(), {})).toBe(false)
         })
     })
 

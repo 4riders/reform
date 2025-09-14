@@ -287,7 +287,7 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
-export function equal(a: any, b: any): boolean {
+export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
     if (a === b)
         return true
 
@@ -298,71 +298,86 @@ export function equal(a: any, b: any): boolean {
         if (a.constructor !== b.constructor)
             return false
 
-        let aIsType = Array.isArray(a)
-        let bIsType = Array.isArray(b)
-        if (aIsType !== bIsType)
-            return false
-        if (aIsType) {
-            const length = (a as any[]).length
-            if (length !== (b as any[]).length)
-                return false
-            for (let i = length; i-- !== 0; ) {
-                if (!equal((a as any[])[i], (b as any[])[i]))
-                    return false
-            }
-            return true
-        }
+        if (a instanceof Date)
+            return a.getTime() === (b as Date).getTime()
 
-        aIsType = (a instanceof Map)
-        bIsType = (b instanceof Map)
-        if (aIsType !== bIsType)
-            return false
-        if (aIsType) {
-            if ((a as Map<any, any>).size !== (b as Map<any, any>).size)
-                return false
-            for (const entry of (a as Map<any, any>).entries()) {
-                if (!(b as Map<any, any>).has(entry[0]))
-                    return false
-            }
-            for (const entry of (a as Map<any, any>).entries()) {
-                if (!equal(entry[1], (b as Map<any, any>).get(entry[0])))
-                    return false
-            }
-            return true
-        }
+        if (a instanceof RegExp)
+            return a.source === (b as RegExp).source && a.flags === (b as RegExp).flags
+        
+        if (a instanceof File)
+            return a.name === (b as File).name && a.size === (b as File).size && a.type === (b as File).type && a.lastModified === (b as File).lastModified
 
-        aIsType = (a instanceof Set)
-        bIsType = (b instanceof Set)
-        if (aIsType !== bIsType)
-            return false
-        if (aIsType) {
-            if ((a as Set<any>).size !== (b as Set<any>).size)
+        if (a instanceof Set) {
+            if (a.size !== (b as Set<any>).size)
                 return false
-            for (const entry of (a as Set<any>).entries()) {
+            for (const entry of a.entries()) {
                 if (!(b as Set<any>).has(entry[0]))
                     return false
             }
             return true
         }
 
-        aIsType = (a instanceof RegExp)
-        bIsType = (b instanceof RegExp)
-        if (aIsType !== bIsType)
-            return false
-        if (aIsType)
-            return (a as RegExp).source === (b as RegExp).source && (a as RegExp).flags === (b as RegExp).flags
+        if (a instanceof ArrayBuffer || ArrayBuffer.isView(a)) {
+            if (ArrayBuffer.isView(a)) {
+                if (a.byteLength !== (b as ArrayBufferView).byteLength || a.byteOffset !== (b as ArrayBufferView).byteOffset)
+                    return false
+                a = new Uint8Array(a.buffer, a.byteOffset, a.byteLength)
+                b = new Uint8Array((b as ArrayBufferView).buffer, (b as ArrayBufferView).byteOffset, (b as ArrayBufferView).byteLength)
+            }
+            else {
+                if (a.byteLength !== (b as ArrayBuffer).byteLength)
+                    return false
+                a = new Uint8Array(a)
+                b = new Uint8Array(b)
+            }
+            for (let i = (a as Uint8Array).length; i-- !== 0; ) {
+                if ((a as Uint8Array)[i] !== (b as Uint8Array)[i])
+                    return false
+            }
+            return true
+        }
+
+        stack ??= new Map<any, any>()
+        if (stack.get(a) === b)
+            return true
+        stack.set(a, b)
+
+        if (Array.isArray(a)) {
+            const length = a.length
+            if (length !== (b as any[]).length)
+                return false
+            for (let i = length; i-- !== 0; ) {
+                if (!equal(a[i], (b as any[])[i], stack))
+                    return false
+            }
+            return true
+        }
+
+        if (a instanceof Map) {
+            if (a.size !== (b as Map<any, any>).size)
+                return false
+            for (const entry of a.entries()) {
+                if (!(b as Map<any, any>).has(entry[0]))
+                    return false
+            }
+            for (const entry of a.entries()) {
+                if (!equal(entry[1], (b as Map<any, any>).get(entry[0]), stack))
+                    return false
+            }
+            return true
+        }
 
         const keys = Object.keys(a)
         const length = keys.length
         if (length !== Object.keys(b).length)
             return false
-        for (let i = length; i-- !== 0;) {
+        for (let i = length; i-- !== 0; ) {
             if (!Object.prototype.hasOwnProperty.call(b, keys[i]))
                 return false
         }
-        for (let i = length; i-- !== 0;) {
+        for (let i = length; i-- !== 0; ) {
             const key = keys[i]
-            if (!equal(a[key], b[key]))
+            if (!equal(a[key], b[key], stack))
                 return false
         }
 

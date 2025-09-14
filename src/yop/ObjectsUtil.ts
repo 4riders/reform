@@ -341,6 +341,7 @@ export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
         if (stack.get(a) === b)
             return true
         stack.set(a, b)
+        stack.set(b, a)
 
         if (Array.isArray(a)) {
             const length = a.length

@@ -2617,6 +2617,12 @@ describe("Yop", () => {
             expect(equal(obj1, obj2)).toBe(false)
             obj2.self = { a: 1 }
             expect(equal(obj1, obj2)).toBe(false)
+            
+            const obj4: any = {}
+            const obj5: any = {}
+            obj4.self = obj5
+            obj5.self = obj4
+            expect(equal(obj4, obj5)).toBe(true)
 
             class Test {}
             expect(equal(new Test(), new Test())).toBe(true)

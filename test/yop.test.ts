@@ -2628,6 +2628,41 @@ describe("Yop", () => {
             expect(equal(new Test(), new Test())).toBe(true)
             expect(equal(new Test(), {})).toBe(false)
         })
+
+        it("clone", () => {
+            expect(clone(1)).toBe(1)
+            expect(clone("abc")).toBe("abc")
+            expect(clone(true)).toBe(true)
+            expect(clone(null)).toBe(null)
+            expect(clone(undefined)).toBe(undefined)
+            const date = new Date(2024, 11, 21)
+            expect(clone(date)).toEqual(date)
+            expect(clone(date)).not.toBe(date)
+            const array = [1, 2, 3]
+            expect(clone(array)).toEqual(array)
+            expect(clone(array)).not.toBe(array)
+            const nestedArray = [1, [2, 3]]
+            expect(clone(nestedArray)).toEqual(nestedArray)
+            expect(clone(nestedArray)).not.toBe(nestedArray)
+            const object = { a: 1, b: 2 }
+            expect(clone(object)).toEqual(object)
+            expect(clone(object)).not.toBe(object)
+            const nestedObject = { a: 1, b: { c: 2 } }
+            expect(clone(nestedObject)).toEqual(nestedObject)
+            expect(clone(nestedObject)).not.toBe(nestedObject)
+            const file = new File([], "a.txt")
+            expect(clone(file)).toEqual(file)
+            expect(clone(file)).toBe(file)
+            const regex = /abc/g
+            expect(clone(regex)).toEqual(regex)
+            expect(clone(regex)).not.toBe(regex)
+            
+            const obj1: any = {}
+            obj1.self = obj1
+            const clonedObj1: any = clone(obj1)
+            expect(clonedObj1).toEqual(obj1)
+            expect(clonedObj1).not.toBe(obj1)
+        })
     })
 
     describe("custom", () => {

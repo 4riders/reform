@@ -287,7 +287,7 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
-export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
+export function equal(a: any, b: any, known?: Map<any, any>): boolean {
     if (a === b)
         return true
 
@@ -337,18 +337,18 @@ export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
             return true
         }
 
-        stack ??= new Map<any, any>()
-        if (stack.get(a) === b)
+        known ??= new Map<any, any>()
+        if (known.get(a) === b)
             return true
-        stack.set(a, b)
-        stack.set(b, a)
+        known.set(a, b)
+        known.set(b, a)
 
         if (Array.isArray(a)) {
             const length = a.length
             if (length !== (b as any[]).length)
                 return false
             for (let i = length; i-- !== 0; ) {
-                if (!equal(a[i], (b as any[])[i], stack))
+                if (!equal(a[i], (b as any[])[i], known))
                     return false
             }
             return true
@@ -362,7 +362,7 @@ export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
                     return false
             }
             for (const entry of a.entries()) {
-                if (!equal(entry[1], (b as Map<any, any>).get(entry[0]), stack))
+                if (!equal(entry[1], (b as Map<any, any>).get(entry[0]), known))
                     return false
             }
             return true
@@ -378,7 +378,7 @@ export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
         }
         for (let i = length; i-- !== 0; ) {
             const key = keys[i]
-            if (!equal(a[key], b[key], stack))
+            if (!equal(a[key], b[key], known))
                 return false
         }
 
@@ -388,32 +388,61 @@ export function equal(a: any, b: any, stack?: Map<any, any>): boolean {
     return a !== a && b !== b
 }
 
-export function clone(value: any, options = { symbols: false }, stack?: Set<any>): any {
-    if (value == null || typeof value !== 'object' || stack?.has(value))
+export function clone(value: any, options = { symbols: false }, cloned?: Map<any, any>): any {
+    if (value == null || typeof value !== 'object')
         return value
 
-    stack ??= new Set<any>()
-    stack.add(value)
+    if (cloned == null)
+        cloned = new Map<any, any>()
+    else {
+        const copy = cloned.get(value)
+        if (copy != null)
+            return copy
+    }
 
-    if (Array.isArray(value))
-        return value.map(element => clone(element, options, stack))
-    if (value instanceof Date)
-        return new Date(value)
-    if (value instanceof RegExp)
-        return new RegExp(value)
-    if (value instanceof Set)
-        return new Set([...value].map(v => clone(v, options, stack)))
-    if (value instanceof Map)
-        return new Map([...value].map(([k, v]) => [clone(k, options, stack), clone(v, options, stack)]))
+    if (Array.isArray(value)) {
+        const copy = new Array()
+        cloned.set(value, copy)
+        value.forEach(item => copy.push(clone(item, options, cloned)))
+        return copy
+    }
+    if (value instanceof Date) {
+        const copy = new Date(value)
+        cloned.set(value, copy)
+        return copy
+    }
+    if (value instanceof RegExp) {
+        const copy = new RegExp(value)
+        cloned.set(value, copy)
+        return copy
+    }
+    if (value instanceof Set) {
+        const copy = new Set()
+        cloned.set(value, copy)
+        value.forEach(item => copy.add(clone(item, options, cloned)))
+        return copy
+    }
+    if (value instanceof Map) {
+        const copy = new Map()
+        cloned.set(value, copy)
+        value.forEach((val, key) => copy.set(clone(key, options, cloned), clone(val, options, cloned)))
+        return copy
+    }
+    if (value instanceof File) {
+        cloned.set(value, value)
+        return value
+    }
 
     const copy = new value.constructor()
+    cloned.set(value, copy)
     for (const key in value)
-        copy[key] = clone(value[key], options, stack)
+        copy[key] = clone(value[key], options, cloned)
     if (options.symbols) {
         const symbols = Object.getOwnPropertySymbols(value)
         for (const symbol of symbols)
-            copy[symbol] = clone(value[symbol], options, stack)
+            copy[symbol] = clone(value[symbol], options, cloned)
     }
+
     return copy
 }
 

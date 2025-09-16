@@ -33,6 +33,7 @@ export interface FormManager<T> extends ValidationForm {
     validate(touchedOnly?: boolean): Map<string, ValidationStatus>
     validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): boolean
     updateAsyncStatus(path: string | Path): void
+    scrollToFirstError(): void
 
     constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined
 
@@ -290,18 +291,23 @@ export class InternalFormManager<T extends object | null | undefined> implements
             if (errors.length === 0)
                 (this._config.onSubmit ?? (form => form.setSubmitting(false)))(this)
             else {
-                const element = errors
-                    .map(status => window.document.getElementById(status.path))
-                    .filter(elt => elt !=  null)
-                    .sort((elt1, elt2) => elt1.compareDocumentPosition(elt2) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
-                    .shift()
-                if (element != null) {
-                    element.scrollIntoView({ behavior: "smooth", block: "center" })
-                    element.focus({ preventScroll: true })
-                }
+                this.scrollToFirstError(errors)
                 this.setSubmitting(false)
             }
         })
+    }
+
+    scrollToFirstError(errors?: ValidationStatus[]) {
+        errors ??= Array.from(this.statuses.values()).filter(status => status.level === "error" || (status.level === "unavailable" && status.message))
+        const element = errors
+            .map(status => window.document.getElementById(status.path))
+            .filter(elt => elt !=  null)
+            .sort((elt1, elt2) => elt1.compareDocumentPosition(elt2) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+            .shift()
+        if (element != null) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" })
+            element.focus({ preventScroll: true })
+        }
     }
 
     array<T = any>(path: string): ArrayHelper<T> | undefined {

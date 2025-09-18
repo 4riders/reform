@@ -13,6 +13,7 @@ export type FormConfig<T extends object | null | undefined> = {
     readonly validationSchema?: ((_: unknown, context: ClassFieldDecoratorContext<unknown, T>) => void)
     readonly validationPath?: string
     readonly validationGroups?: Group
+    readonly submitGuard?: (form: FormManager<T>) => boolean
     readonly onSubmit?: (form: FormManager<T>) => void
     readonly dispatchEvent?: boolean
 }

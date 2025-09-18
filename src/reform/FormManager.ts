@@ -292,10 +292,12 @@ export class InternalFormManager<T extends object | null | undefined> implements
             }
 
             const errors = statuses.filter(status => status.level === "error" || (status.level === "unavailable" && status.message))
-            if (errors.length === 0)
+            const canSubmit = this._config.submitGuard?.(this)
+            if (errors.length === 0 && canSubmit !== false)
                 (this._config.onSubmit ?? (form => form.setSubmitting(false)))(this)
             else {
-                this.scrollToFirstError(errors)
+                if (canSubmit !== false)
+                    this.scrollToFirstError(errors)
                 this.setSubmitting(false)
             }
         })

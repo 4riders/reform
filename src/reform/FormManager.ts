@@ -217,6 +217,10 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return this._statuses
     }
 
+    get errors(): ValidationStatus[] {
+        return Array.from(this._statuses.values()).filter(status => status.level === "error")
+    }
+
     validate(touchedOnly = true): Map<string, ValidationStatus> {
         const options: ReformValidationSettings = {
             method: "validate",

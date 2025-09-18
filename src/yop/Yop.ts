@@ -26,6 +26,7 @@ export interface ValidationForm {
     readonly submitted: boolean
     readonly submitting: boolean
     readonly statuses: Map<string, ValidationStatus>
+    readonly errors: ValidationStatus[]
     readonly store: Map<string, any>
     readonly htmlForm?: HTMLFormElement
 

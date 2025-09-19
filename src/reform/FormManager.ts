@@ -30,7 +30,7 @@ export interface FormManager<T> extends ValidationForm {
     readonly values: T
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
-    validate(touchedOnly?: boolean): Map<string, ValidationStatus>
+    validate(touchedOnly?: boolean, ignore?: (path: Path) => boolean): Map<string, ValidationStatus>
     validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): boolean
     updateAsyncStatus(path: string | Path): void
     scrollToFirstError(): void
@@ -221,15 +221,16 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return Array.from(this._statuses.values()).filter(status => status.level === "error")
     }
 
-    validate(touchedOnly = true): Map<string, ValidationStatus> {
+    validate(touchedOnly = true, ignore?: (path: Path) => boolean): Map<string, ValidationStatus> {
         const options: ReformValidationSettings = {
             method: "validate",
             form: this,
             path: this._config.validationPath,
-            groups: this._config.validationGroups
+            groups: this._config.validationGroups,
+            ignore
         }
         if (!this._submitted && touchedOnly)
-            options.ignore = path => !this.isTouched(path)
+            options.ignore = path => !this.isTouched(path) || ignore?.(path) === true
         
         this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map()
         return this._statuses

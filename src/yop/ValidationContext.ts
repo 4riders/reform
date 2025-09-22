@@ -1,5 +1,5 @@
 import { ConstraintMessage } from "./constraints/Constraint"
-import { joinPath } from "./ObjectsUtil"
+import { joinPath, Path } from "./ObjectsUtil"
 import { ValidationForm, ValidationSettings, Yop } from "./Yop"
 
 export type Group = string | ((string | undefined)[])
@@ -20,7 +20,7 @@ export interface ValidationContext<Value, Parent = unknown> {
     readonly kind: string
 
     readonly value: Value
-    readonly path: (string | number)[]
+    readonly path: Path
 
     readonly parent: Parent
     readonly parentContext: ValidationContext<Parent> | undefined
@@ -44,7 +44,7 @@ export class InternalValidationContext<Value, Parent = unknown> implements Valid
     readonly kind: string
 
     readonly value: Value
-    readonly path: (string | number)[]
+    readonly path: Path
 
     readonly parentContext: InternalValidationContext<Parent> | undefined
     readonly rootContext: InternalValidationContext<unknown> | undefined

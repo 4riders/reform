@@ -184,10 +184,10 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return result
     }
 
-    isDirty(path?: string | Path) {
+    isDirty(path?: string | Path, ignoredPath?: string | Path) {
         if (path == null || path.length === 0)
-            return !equal(this.values, this._initialValues)
-        return !equal(get(this.values, path, this.pathCache), get(this._initialValues, path, this.pathCache))
+            return !equal(this.values, this._initialValues, ignoredPath)
+        return !equal(get(this.values, path, this.pathCache), get(this._initialValues, path, this.pathCache), ignoredPath)
     }
 
     isTouched(path: string | Path = []) {

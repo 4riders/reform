@@ -287,7 +287,11 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
-export function equal(a: any, b: any, known?: Map<any, any>): boolean {
+export function equal(a: any, b: any, ignoredPath?: string | Path) {
+    return _equal(a, b, new Map(), ignoredPath ? typeof ignoredPath === "string" ? splitPath(ignoredPath) : ignoredPath : undefined)
+}
+
+function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boolean {
     if (a === b)
         return true
 
@@ -337,18 +341,22 @@ export function equal(a: any, b: any, known?: Map<any, any>): boolean {
             return true
         }
 
-        known ??= new Map<any, any>()
         if (known.get(a) === b)
             return true
-        known.set(a, b)
-        known.set(b, a)
+        known.set(a, b).set(b, a)
 
         if (Array.isArray(a)) {
             const length = a.length
             if (length !== (b as any[]).length)
                 return false
             for (let i = length; i-- !== 0; ) {
-                if (!equal(a[i], (b as any[])[i], known))
+                if (ignoredPath != null && i === ignoredPath[0]) {
+                    if (ignoredPath.length === 1)
+                        continue
+                    if (!_equal(a[i], (b as any[])[i], known, ignoredPath.slice(1)))
+                        return false
+                }
+                if (!_equal(a[i], (b as any[])[i], known))
                     return false
             }
             return true
@@ -362,7 +370,14 @@ export function equal(a: any, b: any, known?: Map<any, any>): boolean {
                     return false
             }
             for (const entry of a.entries()) {
-                if (!equal(entry[1], (b as Map<any, any>).get(entry[0]), known))
+                const key = entry[0]
+                if (ignoredPath != null && key === ignoredPath[0]) {
+                    if (ignoredPath.length === 1)
+                        continue
+                    if (!_equal(entry[1], (b as Map<any, any>).get(key), known, ignoredPath.slice(1)))
+                        return false
+                }
+                if (!_equal(entry[1], (b as Map<any, any>).get(key), known))
                     return false
             }
             return true
@@ -378,7 +393,13 @@ export function equal(a: any, b: any, known?: Map<any, any>): boolean {
         }
         for (let i = length; i-- !== 0; ) {
             const key = keys[i]
-            if (!equal(a[key], b[key], known))
+            if (ignoredPath != null && key === ignoredPath[0]) {
+                if (ignoredPath.length === 1)
+                    continue
+                if (!_equal(a[key], b[key], known, ignoredPath.slice(1)))
+                    return false
+            }
+            if (!_equal(a[key], b[key], known))
                 return false
         }
 

@@ -2627,6 +2627,21 @@ describe("Yop", () => {
             class Test {}
             expect(equal(new Test(), new Test())).toBe(true)
             expect(equal(new Test(), {})).toBe(false)
+            
+            expect(equal([1, [2, 4]], [1, [2, 3]])).toBe(false)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "[1][0]")).toBe(false)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "[1][1]")).toBe(true)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "[1]")).toBe(true)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "[0]")).toBe(false)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "[2]")).toBe(false)
+            expect(equal([1, [2, 4]], [1, [2, 3]], "a")).toBe(false)
+            
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toBe(true)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } })).toBe(false)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "b.c")).toBe(true)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "b")).toBe(true)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "a")).toBe(false)
+            expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "[1]")).toBe(false)
         })
 
         it("clone", () => {

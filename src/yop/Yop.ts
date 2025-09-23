@@ -36,7 +36,7 @@ export interface ValidationForm {
     touch(path?: string | Path): void
     untouch(path?: string | Path): void
 
-    isDirty(path?: string | Path): boolean
+    isDirty(path?: string | Path, ignoredPath?: string | Path): boolean
 }
 
 export interface ValidationSettings {

@@ -39,7 +39,8 @@ export function BaseDateField<Value = Date>(props: BaseDateFieldProps<Value>) {
             const value = getInputValue(event)
             if (value !== fieldValue) {
                 form.setValue(props.name, value)
-                form.validateAt(props.name) && render()
+                if (form.validateAt(props.name).changed)
+                    render()
                 onChange?.(value, form)
             }
         }

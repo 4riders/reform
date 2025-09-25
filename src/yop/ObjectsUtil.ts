@@ -409,7 +409,7 @@ function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boole
     return a !== a && b !== b
 }
 
-export function clone(value: any, options = { symbols: false }, cloned?: Map<any, any>): any {
+export function clone<T>(value: T, options = { symbols: false }, cloned?: Map<any, any>): T {
     if (value == null || typeof value !== 'object')
         return value
 
@@ -425,45 +425,45 @@ export function clone(value: any, options = { symbols: false }, cloned?: Map<any
         const copy = new Array()
         cloned.set(value, copy)
         value.forEach(item => copy.push(clone(item, options, cloned)))
-        return copy
+        return copy as T
     }
     if (value instanceof Date) {
         const copy = new Date(value)
         cloned.set(value, copy)
-        return copy
+        return copy as T
     }
     if (value instanceof RegExp) {
         const copy = new RegExp(value)
         cloned.set(value, copy)
-        return copy
+        return copy as T
     }
     if (value instanceof Set) {
         const copy = new Set()
         cloned.set(value, copy)
         value.forEach(item => copy.add(clone(item, options, cloned)))
-        return copy
+        return copy as T
     }
     if (value instanceof Map) {
         const copy = new Map()
         cloned.set(value, copy)
         value.forEach((val, key) => copy.set(clone(key, options, cloned), clone(val, options, cloned)))
-        return copy
+        return copy as T
     }
     if (value instanceof File) {
         cloned.set(value, value)
         return value
     }
 
-    const copy = new value.constructor()
+    const copy = new (value as any).constructor()
     cloned.set(value, copy)
     for (const key in value)
         copy[key] = clone(value[key], options, cloned)
     if (options.symbols) {
         const symbols = Object.getOwnPropertySymbols(value)
         for (const symbol of symbols)
-            copy[symbol] = clone(value[symbol], options, cloned)
+            copy[symbol] = clone((value as any)[symbol], options, cloned)
     }
 
-    return copy
+    return copy as T
 }
 

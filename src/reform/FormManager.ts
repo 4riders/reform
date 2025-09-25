@@ -31,7 +31,10 @@ export interface FormManager<T> extends ValidationForm {
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
     validate(touchedOnly?: boolean, ignore?: (path: Path) => boolean): Map<string, ValidationStatus>
-    validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): boolean
+    validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): {
+        changed: boolean,
+        statuses: Map<string, ValidationStatus>
+    }
     updateAsyncStatus(path: string | Path): void
     scrollToFirstError(): void
 
@@ -237,22 +240,29 @@ export class InternalFormManager<T extends object | null | undefined> implements
     }
 
     validateAt(path: string | Path, touchedOnly = true, skipAsync = true) {
-        const change = this._statuses.delete(typeof path === "string" ? path : joinPath(path))
-        if (change == null)
-            return false
+        if (touchedOnly && !this.submitted && !this.isTouched(path))
+            return { changed: false, statuses: new Map<string, ValidationStatus>() }
+
+        let changed = false
+        const prefix = typeof path === "string" ? path : joinPath(path)
+        for (const key of this._statuses.keys()) {
+            if (key.startsWith(prefix) && (key.length === prefix.length || ['.', '['].includes(key.charAt(prefix.length)))) {
+                this._statuses.delete(key)
+                changed = true
+            }
+        }
         
         const options: ReformValidationSettings = {
             method: "validateAt",
-            form: this, path,
+            form: this,
+            path,
             skipAsync,
             groups: this._config.validationGroups
         }
-        if (!this._submitted && touchedOnly)
-            options.ignore = path => !this.isTouched(path)
         
-        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses
-        statuses?.forEach((status, path) => this._statuses.set(path, status))
-        return change || (statuses != null && statuses.size > 0)
+        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map<string, ValidationStatus>()
+        statuses.forEach((status, path) => this._statuses.set(path, status))
+        return { changed: changed || statuses.size > 0, statuses }
     }
 
     constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined {

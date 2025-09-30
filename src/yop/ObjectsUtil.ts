@@ -474,11 +474,15 @@ export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) 
     }})
 }
 
-export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean }): T & U {
+export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean, includes?: (keyof U)[], excludes?: (keyof U)[] }): T & U {
     const descriptors = Object.getOwnPropertyDescriptors(source)
-    if (options?.skipUndefined) {
+    if (options && (options.skipUndefined || options.includes || options.excludes)) {
         for (const [name, descriptor] of Object.entries(descriptors)) {
-            if (descriptor.get == null && descriptor.value === undefined)
+            if (options.skipUndefined && descriptor.get == null && descriptor.value === undefined)
+                delete descriptors[name]
+            else if (options.includes && !options.includes.includes(name as keyof U))
+                delete descriptors[name]
+            else if (options.excludes?.includes(name as keyof U))
                 delete descriptors[name]
         }
     }

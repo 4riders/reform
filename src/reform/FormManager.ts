@@ -1,6 +1,6 @@
 import { FormEvent } from "react"
 import { clone, equal, get, set, SetResult, unset } from "../yop/ObjectsUtil"
-import { DeepPartial, FormConfig } from "./useForm"
+import { FormConfig } from "./useForm"
 import { ValidationForm, ResolvedConstraints, ValidationSettings, Yop } from "../yop/Yop"
 import { joinPath, Path } from "../yop/ObjectsUtil"
 import { ValidationStatus } from "../yop/ValidationContext"
@@ -25,7 +25,7 @@ export interface FormManager<T> extends ValidationForm {
 
     setSubmitting(submitting: boolean): void
     
-    readonly initialValues: DeepPartial<T> | null | undefined
+    readonly initialValues: T | null | undefined
     readonly initialValuesPending: boolean
     readonly values: T
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
@@ -129,7 +129,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
     commitInitialValues() {
         this._initialValues = clone(this._config.initialValues)
         if (this._config.initialValuesConverter != null)
-            this._initialValues = this._config.initialValuesConverter(this._initialValues as DeepPartial<T>)
+            this._initialValues = this._config.initialValuesConverter(this._initialValues as T)
         this._values = clone(this._initialValues)
         this.touched = null
         this._statuses = new Map()
@@ -141,8 +141,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
         this._config = config
     }
 
-    get initialValues(): DeepPartial<T> | null | undefined {
-        return this._initialValues as DeepPartial<T> | null | undefined
+    get initialValues(): T | null | undefined {
+        return this._initialValues as T | null | undefined
     }
 
     get values(): T {

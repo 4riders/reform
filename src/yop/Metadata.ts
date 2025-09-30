@@ -1,10 +1,12 @@
-import { clone } from "./ObjectsUtil"
-import { InternalConstraints, InternalCommonConstraints, ContraintsParent, ContraintsValue, Traverser, Validator, validateCommonConstraints, validateTypeConstraint, CommonConstraints } from "./constraints/CommonConstraints"
+import { assign, clone } from "./ObjectsUtil"
+import { ClassConstructor, isBoolean, isObject } from "./TypesUtil"
+import { InternalValidationContext } from "./ValidationContext"
+import { validationSymbol } from "./Yop"
+import { CommonConstraints, ContraintsParent, ContraintsValue, InternalCommonConstraints, InternalConstraints, Traverser, validateCommonConstraints, validateTypeConstraint, Validator } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
 import { TestConstraintFunction, validateTestConstraint } from "./constraints/TestConstraint"
-import { Constructor, isBoolean, isObject } from "./TypesUtil"
-import { InternalValidationContext } from "./ValidationContext"
-import { validationSymbol, Yop } from "./Yop"
+import { ArrayConstraints, arrayKind } from "./decorators/array"
+import { InstanceConstraints, instanceKind } from "./decorators/instance"
 
 export interface InternalClassConstraints<Class = any> extends InternalConstraints {
     test?: TestConstraintFunction<Class>
@@ -63,11 +65,27 @@ export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
 
 export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void
 
-export function getMetadataConstructor<T>(value: any): Constructor<T> | undefined {
-    const of = value?.of
-    if (typeof of === "string")
-        return Yop.resolveClass(of, true)
-    return typeof of === "function" && of[Symbol.metadata]?.[validationSymbol] != null ? of : undefined
+export function getMetadata<T>(model: ClassConstructor<T>) {
+    return model?.[Symbol.metadata]?.[validationSymbol] as CommonConstraints<any, T> | undefined
+}
+
+export function getMetadataFields<T>(model: ClassConstructor<T>) {
+    const metadata = model?.[Symbol.metadata]?.[validationSymbol] as InternalClassConstraints | undefined
+    return metadata?.fields as Record<keyof T, CommonConstraints<any, T>> | undefined
+}
+
+export function getClassConstructor<T>(metadata: any): ClassConstructor<T> | undefined {
+    if (metadata?.kind === arrayKind) {
+        const of = (metadata as unknown as ArrayConstraints<any, any>).of
+        if (typeof of === "function")
+            return of as ClassConstructor<T>
+        metadata = (of as any)?.[Symbol.metadata]?.[validationSymbol] as unknown as InternalConstraints
+    }
+    return (
+        metadata?.kind === instanceKind ?
+        (metadata as unknown as InstanceConstraints<any, any>).of as ClassConstructor<T> :
+        undefined
+    )
 }
 
 const decoratorSymbol = Symbol("YopValidationDecorator")
@@ -90,7 +108,7 @@ export function fieldDecorator<Parent, Value>(properties: object | ((field: Inte
         if (typeof properties === "function")
             properties(fields[fieldName])
         else
-            Object.assign(fields[fieldName], { ...properties })
+            assign(fields[fieldName], properties)
     }
 }
 
@@ -115,8 +133,8 @@ export function fieldValidationDecorator<
             return true
         return validator(context, constraints)
     }
-    const decorator = fieldDecorator<Parent, Value>({ ...constraints, groups, kind, validate, traverse, isMinMaxType })
+    constraints = assign(clone(constraints), { groups, kind, validate, traverse, isMinMaxType })
+    const decorator = fieldDecorator<Parent, Value>(constraints)
     Object.defineProperty(decorator, decoratorSymbol, { value: kind })
     return decorator
-
 }

@@ -43,7 +43,7 @@ describe('Reform', () => {
                         age: 24,
                     }]
                 },
-            },
+            } as Test,
             validationSchema: instance({ of: Test })
         }))
 

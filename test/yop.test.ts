@@ -46,9 +46,18 @@ describe("Yop", () => {
         expect(getMetadata(Test2).nom.label).toBe("Nom de famille")
         expect(getMetadata(Test2).nom.match).toEqual(/^[a-b]+$/)
 
-        const a = [new Test(), new Test3(), new Test4(), new Date(), new Set([6,7,8]), new Map([[1, 2], [3, 4]]), symbolKey, { [symbolKey]: 18 }]
-        const b = clone(a, { symbols: true })
+        const a = [new Test(), new Test3(), new Test4(), new Date(), new Set([6,7,8]), new Map([[1, 2], [3, 4]]), symbolKey, { [symbolKey]: 18 }] as const
+        const b = clone(a)
         expect(b).toEqual(a)
+
+        b[4].add(9)
+        b[2].nom = "Modified"
+
+        expect(b).not.toEqual(a)
+        expect(b[4].has(9)).toBe(true)
+        expect(a[4].has(9)).toBe(false)
+        expect(b[2].nom).toBe("Modified")
+        expect(a[2].nom).toBe("")
     })
 
     describe("utility", () => {

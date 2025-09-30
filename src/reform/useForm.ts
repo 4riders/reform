@@ -5,11 +5,9 @@ import { CheckClass, instance } from "../yop/decorators/instance"
 import { Group } from "../yop/ValidationContext"
 import { isPromise } from "../yop/TypesUtil"
 
-export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T
-
 export type FormConfig<T extends object | null | undefined> = {
-    readonly initialValues?: DeepPartial<T> | (() => DeepPartial<T>) | (() => Promise<DeepPartial<T>>) | null
-    readonly initialValuesConverter?: (values: DeepPartial<T>) => DeepPartial<T>
+    readonly initialValues?: T | (() => T) | (() => Promise<T>) | null
+    readonly initialValuesConverter?: (values: T) => T
     readonly validationSchema?: ((_: unknown, context: ClassFieldDecoratorContext<unknown, T>) => void)
     readonly validationPath?: string
     readonly validationGroups?: Group

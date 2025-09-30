@@ -1,10 +1,11 @@
 import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { InternalClassConstraints, validateClass } from "../Metadata"
-import { Constructor, isObject } from "../TypesUtil"
+import { ClassConstructor, isObject } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 import { fieldValidationDecorator } from "../Metadata"
+import { defineLazyProperty } from "../ObjectsUtil"
 
 type ExcludeFromObject<T extends object | null | undefined, U extends object, M = { [K in keyof T]: T[K] }> =
     M extends object ?
@@ -33,7 +34,7 @@ export type InstanceValue = object | null | undefined
 export interface InstanceConstraints<Value extends InstanceValue, Parent> extends
     CommonConstraints<Value, Parent>,
     TestConstraint<Value, Parent> {
-    of: Constructor<Value> | string
+    of: ClassConstructor<CheckClass<Value>> | string
 }
 
 function traverseInstance<Value extends InstanceValue, Parent>(
@@ -42,7 +43,7 @@ function traverseInstance<Value extends InstanceValue, Parent>(
     key: string | number,
     traverseNullish?: boolean
 ): readonly [InternalCommonConstraints | undefined, any] {
-    if (((constraints.of as any) = Yop.resolveClass(constraints.of)) == null)
+    if (constraints.of == null)
         return [undefined, undefined] as const
     const classConstraints = (constraints.of as any)[Symbol.metadata]?.[validationSymbol] as InternalClassConstraints | undefined
     if (classConstraints == null)
@@ -63,5 +64,9 @@ function validateInstance<Value extends InstanceValue, Parent>(context: Internal
 export const instanceKind = "instance"
 
 export function instance<Value extends CheckClass<Value>, Parent>(constraints?: InstanceConstraints<Value, Parent>, groups?: Record<string, InstanceConstraints<Value, Parent>>) {
+    if (typeof constraints?.of === "string") {
+        const of = constraints.of
+        defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of, true))
+    }
     return fieldValidationDecorator(instanceKind, constraints ?? ({} as InstanceConstraints<Value, Parent>), groups, validateInstance, undefined, traverseInstance)
 }

@@ -1,10 +1,12 @@
 
+export type ClassConstructor<Type> = new (...args: any) => NonNullable<Type>
+
 export type Constructor<Type = unknown> =
-    Type extends unknown ? abstract new (...args: any) => NonNullable<Type> | StringConstructor | BooleanConstructor | NumberConstructor :
+    Type extends unknown ? ClassConstructor<Type> | StringConstructor | BooleanConstructor | NumberConstructor :
     [Type] extends [string | null | undefined] ? StringConstructor :
     [Type] extends [boolean | null | undefined] ? BooleanConstructor :
     [Type] extends [number | null | undefined] ? NumberConstructor :
-    abstract new (...args: any) => NonNullable<Type>
+    ClassConstructor<Type>
 
 export type ArrayElementType<ArrayType> = ArrayType extends Array<infer ElementType> ? ElementType : never
 

@@ -409,7 +409,7 @@ function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boole
     return a !== a && b !== b
 }
 
-export function clone<T>(value: T, options = { symbols: false }, cloned?: Map<any, any>): T {
+export function clone<T>(value: T, cloned?: Map<any, any>): T {
     if (value == null || typeof value !== 'object')
         return value
 
@@ -424,7 +424,7 @@ export function clone<T>(value: T, options = { symbols: false }, cloned?: Map<an
     if (Array.isArray(value)) {
         const copy = new Array()
         cloned.set(value, copy)
-        value.forEach(item => copy.push(clone(item, options, cloned)))
+        value.forEach(item => copy.push(clone(item, cloned)))
         return copy as T
     }
     if (value instanceof Date) {
@@ -440,13 +440,13 @@ export function clone<T>(value: T, options = { symbols: false }, cloned?: Map<an
     if (value instanceof Set) {
         const copy = new Set()
         cloned.set(value, copy)
-        value.forEach(item => copy.add(clone(item, options, cloned)))
+        value.forEach(item => copy.add(clone(item, cloned)))
         return copy as T
     }
     if (value instanceof Map) {
         const copy = new Map()
         cloned.set(value, copy)
-        value.forEach((val, key) => copy.set(clone(key, options, cloned), clone(val, options, cloned)))
+        value.forEach((val, key) => copy.set(clone(key, cloned), clone(val, cloned)))
         return copy as T
     }
     if (value instanceof File) {
@@ -454,16 +454,36 @@ export function clone<T>(value: T, options = { symbols: false }, cloned?: Map<an
         return value
     }
 
-    const copy = new (value as any).constructor()
+    const copy = Object.create(Object.getPrototypeOf(value))
     cloned.set(value, copy)
-    for (const key in value)
-        copy[key] = clone(value[key], options, cloned)
-    if (options.symbols) {
-        const symbols = Object.getOwnPropertySymbols(value)
-        for (const symbol of symbols)
-            copy[symbol] = clone((value as any)[symbol], options, cloned)
+    const descriptors = Object.getOwnPropertyDescriptors(value)
+    for (const descriptor of Object.values(descriptors)) {
+        if (descriptor.get == null)
+            descriptor.value = clone(descriptor.value, cloned)
     }
+    Object.defineProperties(copy, descriptors)
 
     return copy as T
 }
+
+export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) => unknown)) {
+    Object.defineProperty(o, name, { configurable: true, enumerable: true, get: function() {
+        const value = get(this)
+        Object.defineProperty(this, name, { value, configurable: true, enumerable: true, writable: true })
+        return value
+    }})
+}
+
+export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean }): T & U {
+    const descriptors = Object.getOwnPropertyDescriptors(source)
+    if (options?.skipUndefined) {
+        for (const [name, descriptor] of Object.entries(descriptors)) {
+            if (descriptor.get == null && descriptor.value === undefined)
+                delete descriptors[name]
+        }
+    }
+    Object.defineProperties(target, descriptors)
+    return target as T & U
+}
+
 

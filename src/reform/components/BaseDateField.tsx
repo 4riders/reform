@@ -3,35 +3,37 @@ import { useFormField } from "../useFormField"
 import { BaseTextFieldHTMLAttributes } from "./BaseTextField"
 import { ReformEvents } from "./InputHTMLProps"
 
-type BaseDateFieldProps<Value> = BaseTextFieldHTMLAttributes & ReformEvents<Value> & {
-    toModelValue?: (value: string) => Value | null
-    toTextValue?: (value: Value | null) => string
+const toTextValue = (date: Date | null | undefined) => {
+    if (date && !isNaN(date.getTime())) {
+        const iso = date.toISOString()
+        const timeIndex = iso.indexOf("T")
+        return timeIndex >= 0 ? iso.substring(0, timeIndex) : iso
+    }
+    return ""
+}
 
-    /**
-     * Method to re-render this `BaseDateField` together with its parent component.
-     * 
-     * You can use {@link useRender} in the parent component:
-     * ```
-     * const render = useRender()
-     * ...
-     * return <BaseDateField render={ render } ... />
-     * ```
-     */
+const toModelValue = (value: string) => {
+    if (!value)
+        return null
+    const date = new Date(value)
+    return isNaN(date.getTime()) ? null : date
+}
+
+
+type BaseDateFieldProps = BaseTextFieldHTMLAttributes & ReformEvents<Date> & {
     render: () => void
 }
 
-export function BaseDateField<Value = Date>(props: BaseDateFieldProps<Value>) {
+export function BaseDateField(props: BaseDateFieldProps) {
 
-    const { onChange, onBlur, toModelValue, toTextValue, render, ...inputProps } = props
-    const { value: fieldValue, form } = useFormField<Value, number>(props.name)
+    const { onChange, onBlur, render, ...inputProps } = props
+    const { value: fieldValue, form } = useFormField<Date | null, number>(props.name)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
     const getInputValue = (event: React.SyntheticEvent<HTMLInputElement>) => {
         const value = event.currentTarget.value
-        if (toModelValue)
-            return toModelValue(value)
-        return value === '' ? null : value as Value
+        return toModelValue(value)
     }
 
     const internalOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,7 +57,7 @@ export function BaseDateField<Value = Date>(props: BaseDateFieldProps<Value>) {
 
     // If this is the first render or if this input isn't currently edited
     if (inputRef.current == null || inputRef.current !== document.activeElement) {
-        const value = toTextValue?.(fieldValue ?? null) ?? String(fieldValue ?? '')
+        const value = toTextValue(fieldValue)
         if (inputRef.current)
             inputRef.current.value = value
         else

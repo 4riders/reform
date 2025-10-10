@@ -4,6 +4,7 @@ import React from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { FormManager, InternalFormManager } from "./FormManager"
 import { ValidationStatus } from "../yop/ValidationContext"
+import { Reform } from "./Reform"
 
 interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
     form: FormManager<unknown>
@@ -24,7 +25,7 @@ export function Form(props: FormProps) {
             <form ref={ formRef } onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
                 <fieldset disabled={ disabled }>{ children }</fieldset>
                 
-                { errors.size > 0 /*&& Reform.debugFormErrors*/ &&
+                { errors.size > 0 && Reform.debugFormErrors &&
                 <div style={{
                     all: "initial",
                     display: "block",

@@ -31,7 +31,7 @@ export type BaseSelectFieldHTMLAttributes = (
     }
 )
 
-export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEvents<V | null> & {
+export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEvents<V> & {
     modelValues: V[]
     toOptionValue: (modelValue: V) => string
     toOptionContent: (modelValue: V) => string

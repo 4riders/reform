@@ -19,7 +19,7 @@ export type BaseTextFieldHTMLAttributes = Omit<InputAttributes<"text" | "search"
     'width'
 >
 
-export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V | null> & {
+export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V> & {
     toModelValue?: (value: string) => V | null
     toTextValue?: (value: V | null) => string
     acceptInputValue?: (value: string) => boolean

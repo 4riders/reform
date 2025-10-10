@@ -6,7 +6,7 @@ import { ValidationStatus } from "../yop/ValidationContext";
 import { ResolvedConstraints } from "../yop/Yop";
 import { isPromise } from "../yop/TypesUtil";
 
-export type FieldState<Value, MinMax, Root = unknown> = {
+export type FieldState<Value, MinMax, Root = any> = {
     value: Value | undefined
     touched: boolean
     status?: ValidationStatus
@@ -15,7 +15,7 @@ export type FieldState<Value, MinMax, Root = unknown> = {
     constraints?: ResolvedConstraints<MinMax>
 }
 
-export function useFormField<Value, MinMax, Root = unknown>(name: string): FieldState<Value, MinMax, Root> {
+export function useFormField<Value, MinMax, Root = any>(name: string): FieldState<Value, MinMax, Root> {
     const render = useRender()
     const form = useFormContext<Root>()
     const promiseRef = useRef<Promise<unknown>>(undefined)

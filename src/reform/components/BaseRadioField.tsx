@@ -24,7 +24,7 @@ export type BaseRadioFieldHTMLAttributes = Omit<InputAttributes<'radio'>,
     'width'
 >
 
-export type BaseRadioFieldProps<V> = BaseRadioFieldHTMLAttributes & ReformEvents<V | null> & {
+export type BaseRadioFieldProps<V> = BaseRadioFieldHTMLAttributes & ReformEvents<V> & {
     modelValue: V
     render: () => void
 }

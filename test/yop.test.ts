@@ -140,13 +140,100 @@ describe("Yop", () => {
 
     describe("ignored", () => {
 
+        class Test {
+
+            @string({ required: true }, { recap: { required: true, min: 3 }})
+            name: string | null = null
+        }
+        
+        class Test2 extends Test {
+
+            @ignored()
+            override name: string | null = null
+        }
+        
+        class Test3 extends Test {
+
+            @ignored(false)
+            override name: string | null = null
+        }
+        
+        class Test4 extends Test {
+
+            @ignored(context => context.parent == null)
+            override name: string | null = null
+        }
+        
+        class Test5 extends Test {
+
+            @ignored(false, { recap: context => context.value === "yo" })
+            override name: string | null = null
+        }
+
         it("ignored", () => {
-            expect(Yop.validate(undefined, ignored())).toEqual([])
-            expect(Yop.validate(null, ignored())).toEqual([])
-            expect(Yop.validate({}, ignored())).toEqual([])
-            expect(Yop.validate([], ignored())).toEqual([])
-            expect(Yop.validate(1, ignored())).toEqual([])
-            expect(Yop.validate("abc", ignored())).toEqual([])
+
+            expect(Yop.validate({}, instance({ of: Test }))).toEqual([{
+                level: "error",
+                path: "name",
+                value: undefined,
+                kind: "string",
+                code: "required",
+                constraint: true,
+                message: "Required field"
+            }])
+
+            expect(Yop.validate({}, instance({ of: Test2 }))).toEqual([])
+
+            expect(Yop.validate({}, instance({ of: Test3 }))).toEqual([{
+                level: "error",
+                path: "name",
+                value: undefined,
+                kind: "string",
+                code: "required",
+                constraint: true,
+                message: "Required field"
+            }])
+
+            expect(Yop.validate({}, instance({ of: Test4 }))).toEqual([{
+                level: "error",
+                path: "name",
+                value: undefined,
+                kind: "string",
+                code: "required",
+                constraint: true,
+                message: "Required field"
+            }])
+
+            expect(Yop.validate({}, instance({ of: Test5 }))).toEqual([{
+                level: "error",
+                path: "name",
+                value: undefined,
+                kind: "string",
+                code: "required",
+                constraint: true,
+                message: "Required field"
+            }])
+
+            expect(Yop.validate({ name: "" }, instance({ of: Test5 }))).toEqual([])
+            expect(Yop.validate({ name: "" }, instance({ of: Test5 }), { groups: "recap" })).toEqual([{
+                level: "error",
+                path: "name",
+                value: "",
+                kind: "string",
+                code: "min",
+                constraint: 3,
+                message: "Minimum 3 characters"
+            }])
+            expect(Yop.validate({ name: "yo" }, instance({ of: Test5 }), { groups: "recap" })).toEqual([])
+            expect(Yop.validate({ name: "yi" }, instance({ of: Test5 }), { groups: "recap" })).toEqual([{
+                level: "error",
+                path: "name",
+                value: "yi",
+                kind: "string",
+                code: "min",
+                constraint: 3,
+                message: "Minimum 3 characters"
+            }])
         })
     })
 
@@ -2607,8 +2694,9 @@ describe("Yop", () => {
             expect(equal({ a: 1 }, { a: 1, b: 2 })).toBe(false)
             expect(equal(new File([], "a.txt"), new File([], "a.txt"))).toBe(true)
             expect(equal(new File([], "a.txt"), new File([], "b.txt"))).toBe(false)
-            expect(equal(new File([new ArrayBuffer(1)], "a.txt"), new File([new ArrayBuffer(1)], "a.txt"))).toBe(true)
-            expect(equal(new File([new ArrayBuffer(1)], "a.txt"), new File([new ArrayBuffer(2)], "a.txt"))).toBe(false)
+            const arrayBuffer = new ArrayBuffer(1)
+            expect(equal(new File([arrayBuffer], "a.txt"), new File([arrayBuffer], "a.txt"))).toBe(true)
+            expect(equal(new File([arrayBuffer], "a.txt"), new File([new ArrayBuffer(2)], "a.txt"))).toBe(false)
             expect(equal(/abc/, /abc/)).toBe(true)
             expect(equal(/abc/, /def/)).toBe(false)
             expect(equal(/abc/i, /abc/)).toBe(false)

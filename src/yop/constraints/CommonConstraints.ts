@@ -53,7 +53,7 @@ export interface InternalConstraints {
 }
     
 
-export interface InternalCommonConstraints extends CommonConstraints<unknown>, InternalConstraints {
+export interface InternalCommonConstraints extends CommonConstraints<any, any>, InternalConstraints {
 }
 
 export function validateCommonConstraints<Value, Parent>(context: InternalValidationContext<Value, Parent>, constraints: CommonConstraints<Value, Parent>) {

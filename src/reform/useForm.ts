@@ -4,6 +4,7 @@ import { FormManager, InternalFormManager } from "./FormManager"
 import { CheckClass, instance } from "../yop/decorators/instance"
 import { Group } from "../yop/ValidationContext"
 import { isPromise } from "../yop/TypesUtil"
+import { Path } from "../yop/ObjectsUtil"
 
 export type FormConfig<T extends object | null | undefined> = {
     readonly initialValues?: T | (() => T) | (() => Promise<T>) | null
@@ -11,6 +12,7 @@ export type FormConfig<T extends object | null | undefined> = {
     readonly validationSchema?: ((_: unknown, context: ClassFieldDecoratorContext<unknown, T>) => void)
     readonly validationPath?: string
     readonly validationGroups?: Group
+    readonly ignore?: (path: Path) => boolean
     readonly submitGuard?: (form: FormManager<T>) => boolean
     readonly onSubmit?: (form: FormManager<T>) => void
     readonly dispatchEvent?: boolean

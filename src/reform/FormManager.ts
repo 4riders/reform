@@ -225,15 +225,29 @@ export class InternalFormManager<T extends object | null | undefined> implements
     }
 
     validate(touchedOnly = true, ignore?: (path: Path) => boolean): Map<string, ValidationStatus> {
+        let ignoreFn = ignore
+        if (this._config.ignore != null) {
+            if (ignore != null)
+                ignoreFn = path => ignore(path) || this._config.ignore!(path)
+            else
+                ignoreFn = this._config.ignore
+        }
+        if (!this._submitted && touchedOnly) {
+            if (ignoreFn == null)
+                ignoreFn = path => !this.isTouched(path)
+            else {
+                const previousIgnore = ignoreFn
+                ignoreFn = path => !this.isTouched(path) || previousIgnore(path)
+            }
+        }
+
         const options: ReformValidationSettings = {
             method: "validate",
             form: this,
             path: this._config.validationPath,
             groups: this._config.validationGroups,
-            ignore
+            ignore: ignoreFn
         }
-        if (!this._submitted && touchedOnly)
-            options.ignore = path => !this.isTouched(path) || ignore?.(path) === true
         
         this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map()
         return this._statuses
@@ -257,7 +271,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
             form: this,
             path,
             skipAsync,
-            groups: this._config.validationGroups
+            groups: this._config.validationGroups,
+            ignore: this._config.ignore
         }
         
         const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map<string, ValidationStatus>()

@@ -224,9 +224,11 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
     if (options.clone)
         newValue = clone(newValue)
 
-    const lastKey = keys.pop()
-    if (lastKey == null)
+    if (keys.length === 0)
         return { root: newValue }
+
+    const lastKeyIndex = keys.length - 1
+    const lastKey = keys[lastKeyIndex]
 
     const root = (
         typeof (keys[0] ?? lastKey) === "number" ?
@@ -235,7 +237,7 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
     )
 
     let parent: any = root
-    for (let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < lastKeyIndex; i++) {
         const key = keys[i]
         const array = typeof (keys[i + 1] ?? lastKey) === "number"
 
@@ -261,21 +263,20 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
         return false
 
     const keys = typeof path === "string" ? splitPath(path, cache) : path
-    if (keys == null)
+    if (keys == null || keys.length === 0)
         return undefined
 
-    const lastKey = keys.pop()
-    if (lastKey == null)
-        return undefined
-
+    const lastKeyIndex = keys.length - 1
+    const lastKey = keys[lastKeyIndex]
     let parent: any = value
-    for (const key of keys) {
+    
+    for (let i = 0; i < lastKeyIndex; i++) {
+        parent = parent[keys[i]]
         if (parent == null)
             return false
-        parent = parent[key]
     }
 
-    if (parent == null || !(lastKey in parent))
+    if (!(lastKey in parent))
         return false
 
     try {

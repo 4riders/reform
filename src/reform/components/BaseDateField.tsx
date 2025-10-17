@@ -3,22 +3,23 @@ import { useFormField } from "../useFormField"
 import { BaseTextFieldHTMLAttributes } from "./BaseTextField"
 import { ReformEvents } from "./InputHTMLProps"
 
-const toTextValue = (date: Date | null | undefined) => {
+export const localDateToString = (date: Date | null | undefined) => {
     if (date && !isNaN(date.getTime())) {
-        const iso = date.toISOString()
-        const timeIndex = iso.indexOf("T")
-        return timeIndex >= 0 ? iso.substring(0, timeIndex) : iso
+        const year = date.getFullYear().toString().padStart(4, '0')
+        const month = (date.getMonth() + 1).toString().padStart(2, '0')
+        const day = date.getDate().toString().padStart(2, '0')
+        return `${ year }-${ month }-${ day }`
     }
-    return ""
+    return null
 }
 
-const toModelValue = (value: string) => {
-    if (!value)
+export const stringToLocalDate = (value: unknown) => {
+    if (value == null || typeof value !== "string")
         return null
-    const date = new Date(value)
+    const timeIndex = value.indexOf("T")
+    const date = new Date(timeIndex >= 0 ? value.substring(0, timeIndex) : value)
     return isNaN(date.getTime()) ? null : date
 }
-
 
 type BaseDateFieldProps = BaseTextFieldHTMLAttributes & ReformEvents<Date> & {
     render: () => void
@@ -33,7 +34,7 @@ export function BaseDateField(props: BaseDateFieldProps) {
 
     const getInputValue = (event: React.SyntheticEvent<HTMLInputElement>) => {
         const value = event.currentTarget.value
-        return toModelValue(value)
+        return stringToLocalDate(value)
     }
 
     const internalOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +58,7 @@ export function BaseDateField(props: BaseDateFieldProps) {
 
     // If this is the first render or if this input isn't currently edited
     if (inputRef.current == null || inputRef.current !== document.activeElement) {
-        const value = toTextValue(fieldValue)
+        const value = localDateToString(fieldValue) ?? ""
         if (inputRef.current)
             inputRef.current.value = value
         else

@@ -224,20 +224,20 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return Array.from(this._statuses.values()).filter(status => status.level === "error")
     }
 
-    validate(touchedOnly = true, ignore?: (path: Path) => boolean): Map<string, ValidationStatus> {
+    validate(touchedOnly = true, ignore?: (path: Path, form: FormManager<T>) => boolean): Map<string, ValidationStatus> {
         let ignoreFn = ignore
         if (this._config.ignore != null) {
             if (ignore != null)
-                ignoreFn = path => ignore(path) || this._config.ignore!(path)
+                ignoreFn = (path, form) => ignore(path, form) || this._config.ignore!(path, form)
             else
                 ignoreFn = this._config.ignore
         }
         if (!this._submitted && touchedOnly) {
             if (ignoreFn == null)
-                ignoreFn = path => !this.isTouched(path)
+                ignoreFn = (path, _form) => !this.isTouched(path)
             else {
                 const previousIgnore = ignoreFn
-                ignoreFn = path => !this.isTouched(path) || previousIgnore(path)
+                ignoreFn = (path, form) => !this.isTouched(path) || previousIgnore(path, form)
             }
         }
 
@@ -246,7 +246,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
             form: this,
             path: this._config.validationPath,
             groups: this._config.validationGroups,
-            ignore: ignoreFn
+            ignore: ignoreFn != null ? path => ignoreFn(path, this) : undefined
         }
         
         this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map()
@@ -272,7 +272,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
             path,
             skipAsync,
             groups: this._config.validationGroups,
-            ignore: this._config.ignore
+            ignore: this._config.ignore != null ? path => this._config.ignore!(path, this) : undefined
         }
         
         const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map<string, ValidationStatus>()

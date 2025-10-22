@@ -4,7 +4,7 @@ import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfCo
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isDate, isDateArray } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 
 export type DateValue = Date | null | undefined
 
@@ -24,6 +24,6 @@ function validateDate<Value extends DateValue, Parent>(context: InternalValidati
     )
 }
 
-export function date<Value extends DateValue, Parent>(constraints?: DateConstraints<Value, Parent>, groups?: Record<string, DateConstraints<Value, Parent>>) {
+export function date<Value extends DateValue, Parent>(constraints?: DateConstraints<Value, Parent>, groups?: Groups<DateConstraints<Value, Parent>>) {
     return fieldValidationDecorator("date", constraints ?? {}, groups, validateDate, isDate)
 }

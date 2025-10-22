@@ -3,7 +3,7 @@ import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/Min
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isFile, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 
 export type FileValue = File | null | undefined
 
@@ -21,6 +21,6 @@ function validateFile<Value extends FileValue, Parent>(context: InternalValidati
     )
 }
 
-export function file<Value extends FileValue, Parent>(constraints?: FileConstraints<Value, Parent>, groups?: Record<string, FileConstraints<Value, Parent>>) {
+export function file<Value extends FileValue, Parent>(constraints?: FileConstraints<Value, Parent>, groups?: Groups<FileConstraints<Value, Parent>>) {
     return fieldValidationDecorator("file", constraints ?? {}, groups, validateFile, isNumber)
 }

@@ -4,7 +4,7 @@ import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfCo
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isNumber, isNumberArray } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 
 export type NumberValue = number | null | undefined
 
@@ -24,6 +24,6 @@ function validateNumber<Value extends NumberValue, Parent>(context: InternalVali
     )
 }
 
-export function number<Value extends NumberValue, Parent>(constraints?: NumberConstraints<Value, Parent>, groups?: Record<string, NumberConstraints<Value, Parent>>) {
+export function number<Value extends NumberValue, Parent>(constraints?: NumberConstraints<Value, Parent>, groups?: Groups<NumberConstraints<Value, Parent>>) {
     return fieldValidationDecorator("number", constraints ?? {}, groups, validateNumber, isNumber)
 }

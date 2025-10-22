@@ -1,6 +1,7 @@
 import { Constraint, validateConstraint } from "./Constraint"
 import { isBoolean } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
+import { Groups } from "../Metadata"
 
 export interface CommonConstraints<Value, Parent = unknown> {
     /**
@@ -49,7 +50,7 @@ export interface InternalConstraints {
      */
     traverse?: Traverser<this>
 
-    groups?: Record<string, this>
+    groups?: Groups<this>
 }
     
 

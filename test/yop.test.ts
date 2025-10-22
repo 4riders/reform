@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone, equal } from "../src"
+import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone, equal, Groups } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -2811,7 +2811,7 @@ describe("Yop", () => {
                 return true
             }
             
-            function ibanFR<Value extends StringValue, Parent>(constraints?: IbanFRConstraints<Value, Parent>, groups?: Record<string, IbanFRConstraints<Value, Parent>>) {
+            function ibanFR<Value extends StringValue, Parent>(constraints?: IbanFRConstraints<Value, Parent>, groups?: Groups<IbanFRConstraints<Value, Parent>>) {
                 return fieldValidationDecorator("iban", constraints ?? {}, groups, validateIbanFR)
             }
             

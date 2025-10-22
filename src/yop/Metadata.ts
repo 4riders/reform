@@ -10,7 +10,7 @@ import { InstanceConstraints, instanceKind } from "./decorators/instance"
 
 export interface InternalClassConstraints<Class = any> extends InternalConstraints {
     test?: TestConstraintFunction<Class>
-    fields?: Record<string, InternalCommonConstraints>
+    fields?: { [name: string]: InternalCommonConstraints }
 }
 
 export function traverseClass(
@@ -21,10 +21,10 @@ export function traverseClass(
 ): readonly [InternalCommonConstraints | undefined, any] {
     if (traverseNullish ? context.value != null && (typeof context.value !== "object" || typeof key !== "string") : context.value == null)
         return [undefined, undefined]
-    return [constraints.fields?.[key], (context.value as Record<string, any>)?.[key]]
+    return [constraints.fields?.[key], (context.value as { [x: string]: any })?.[key]]
 }
 
-export function validateClass(context: InternalValidationContext<Record<string, any>>, constraints: InternalClassConstraints) {
+export function validateClass(context: InternalValidationContext<{ [x: string]: any }>, constraints: InternalClassConstraints) {
     if (context.value == null || !validateTypeConstraint(context, isObject, "object"))
         return false
     
@@ -71,7 +71,7 @@ export function getMetadata<T>(model: ClassConstructor<T>) {
 
 export function getMetadataFields<T>(model: ClassConstructor<T>) {
     const metadata = model?.[Symbol.metadata]?.[validationSymbol] as InternalClassConstraints | undefined
-    return metadata?.fields as Record<keyof T, CommonConstraints<any, T>> | undefined
+    return metadata?.fields as { [K in keyof T]: CommonConstraints<any, T> } | undefined
 }
 
 export function getClassConstructor<T>(metadata: any): ClassConstructor<T> | undefined {
@@ -112,6 +112,8 @@ export function fieldDecorator<Parent, Value>(properties: object | ((field: Inte
     }
 }
 
+export type Groups<Constraints> = { [group: string]: Constraints }
+
 export function fieldValidationDecorator<
     Constraints extends CommonConstraints<any, any>,
     Value = ContraintsValue<Constraints>,
@@ -119,7 +121,7 @@ export function fieldValidationDecorator<
 >(
     kind: string,
     constraints: Constraints,
-    groups: Record<string, Constraints> | undefined,
+    groups: Groups<Constraints> | undefined,
     validator: Validator<Constraints>,
     isMinMaxType?: (value: any) => boolean,
     traverse?: Traverser<Constraints>,

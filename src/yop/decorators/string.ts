@@ -5,7 +5,7 @@ import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfCo
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isNumber, isRegExp, isString, isStringArray } from "../TypesUtil"
 import { InternalValidationContext, ValuedContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 
 export type StringValue = string | null | undefined
 
@@ -33,6 +33,6 @@ export function validateString<Value extends StringValue, Parent>(
     )
 }
 
-export function string<Value extends StringValue, Parent>(constraints?: StringConstraints<Value, Parent>, groups?: Record<string, StringConstraints<Value, Parent>>) {
+export function string<Value extends StringValue, Parent>(constraints?: StringConstraints<Value, Parent>, groups?: Groups<StringConstraints<Value, Parent>>) {
     return fieldValidationDecorator("string", constraints ?? {}, groups, validateString, isNumber)
 }

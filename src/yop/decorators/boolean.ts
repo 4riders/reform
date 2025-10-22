@@ -3,7 +3,7 @@ import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfCo
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isBoolean, isBooleanArray } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 
 export type BooleanValue = boolean | null | undefined
 
@@ -21,6 +21,6 @@ function validateBoolean<Value extends BooleanValue, Parent>(context: InternalVa
     )
 }
 
-export function boolean<Value extends BooleanValue, Parent>(constraints?: BooleanConstraints<Value, Parent>, groups?: Record<string, BooleanConstraints<Value, Parent>>) {
+export function boolean<Value extends BooleanValue, Parent>(constraints?: BooleanConstraints<Value, Parent>, groups?: Groups<BooleanConstraints<Value, Parent>>) {
     return fieldValidationDecorator("boolean", constraints ?? {}, groups, validateBoolean)
 }

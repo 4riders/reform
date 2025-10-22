@@ -1,5 +1,5 @@
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 import { StringValue } from "./string"
 import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
 import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
@@ -47,6 +47,6 @@ export function validateTime<Value extends StringValue, Parent>(context: Interna
     )
 }
 
-export function time<Value extends StringValue, Parent>(constraints?: TimeConstraints<Value, Parent>, groups?: Record<string, TimeConstraints<Value, Parent>>) {
+export function time<Value extends StringValue, Parent>(constraints?: TimeConstraints<Value, Parent>, groups?: Groups<TimeConstraints<Value, Parent>>) {
     return fieldValidationDecorator("time", constraints ?? {}, groups, validateTime, isString)
 }

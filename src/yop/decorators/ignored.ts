@@ -1,8 +1,8 @@
 import { InternalCommonConstraints } from "../constraints/CommonConstraints"
 import { Constraint } from "../constraints/Constraint"
-import { fieldDecorator } from "../Metadata"
+import { fieldDecorator, Groups } from "../Metadata"
 
-export function ignored<Parent>(ignored: Constraint<any, boolean, Parent> = true, groups?: Record<string, Constraint<any, boolean, Parent>>) {
+export function ignored<Parent>(ignored: Constraint<any, boolean, Parent> = true, groups?: Groups<Constraint<any, boolean, Parent>>) {
     return fieldDecorator<Parent, any>(field => {
         field.ignored = ignored
 

@@ -1,7 +1,7 @@
 import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
 import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
-import { fieldValidationDecorator, getValidationDecoratorKind, InternalClassConstraints } from "../Metadata"
+import { fieldValidationDecorator, getValidationDecoratorKind, Groups, InternalClassConstraints } from "../Metadata"
 import { defineLazyProperty } from "../ObjectsUtil"
 import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
@@ -58,7 +58,7 @@ function validateArray<Value extends ArrayValue, Parent>(context: InternalValida
 
 export const arrayKind = "array"
 
-export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Record<string, ArrayConstraints<Value, Parent>>) {
+export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Groups<ArrayConstraints<Value, Parent>>) {
     if (typeof constraints?.of === "string") {
         const of = constraints.of
         defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of, true))

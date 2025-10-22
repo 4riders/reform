@@ -1,6 +1,6 @@
 import { Message } from "../constraints/Constraint"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator } from "../Metadata"
+import { fieldValidationDecorator, Groups } from "../Metadata"
 import { StringConstraints, StringValue, validateString } from "./string"
 import { isNumber } from "../TypesUtil"
 
@@ -15,6 +15,6 @@ export function validateEmail<Value extends StringValue, Parent>(context: Intern
     return validateString(context, constraints, emailRegex, constraints.formatError, "email")
 }
 
-export function email<Value extends StringValue, Parent>(constraints?: EmailConstraints<Value, Parent>, groups?: Record<string, EmailConstraints<Value, Parent>>) {
+export function email<Value extends StringValue, Parent>(constraints?: EmailConstraints<Value, Parent>, groups?: Groups<EmailConstraints<Value, Parent>>) {
     return fieldValidationDecorator("email", constraints ?? {}, groups, validateEmail, isNumber)
 }

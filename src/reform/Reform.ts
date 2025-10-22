@@ -1,4 +1,5 @@
 export class Reform {
 
-    public static debugFormErrors = false
+    public static displayFormErrors = false
+    public static logFormErrors = true
 }

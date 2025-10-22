@@ -6,6 +6,7 @@ import { joinPath, Path } from "../yop/ObjectsUtil"
 import { ValidationStatus } from "../yop/ValidationContext"
 import { ignored } from "../yop/decorators/ignored"
 import { ArrayHelper } from "./ArrayHelper"
+import { Reform } from "./Reform"
 
 export interface ReformValidationSettings extends ValidationSettings {
     method: "validate" | "validateAt" | "constraintsAt"
@@ -322,6 +323,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
             if (errors.length === 0 && canSubmit !== false)
                 (this._config.onSubmit ?? (form => form.setSubmitting(false)))(this)
             else {
+                if (Reform.logFormErrors && errors.length > 0)
+                    console.error("Validation errors", errors)
                 if (canSubmit !== false)
                     this.scrollToFirstError(errors)
                 this.setSubmitting(false)

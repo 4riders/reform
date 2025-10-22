@@ -25,7 +25,7 @@ export function Form(props: FormProps) {
             <form ref={ formRef } onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
                 <fieldset disabled={ disabled }>{ children }</fieldset>
                 
-                { errors.size > 0 && Reform.debugFormErrors &&
+                { errors.size > 0 && Reform.displayFormErrors &&
                 <div style={{
                     all: "initial",
                     display: "block",

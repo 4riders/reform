@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { splitPath, joinPath, Yop, ignored, string, email, emailRegex, timeRegex, number, boolean, date, file, array, id, instance, ValidationStatus, StringValue, CommonConstraints, Message, InternalValidationContext, validateTypeConstraint, fieldValidationDecorator, messageProvider_en_US, time, test, isPromise, isFunction, isString, validationSymbol, clone, equal, Groups } from "../src"
+import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -2775,6 +2775,23 @@ describe("Yop", () => {
             const clonedObj1: any = clone(obj1)
             expect(clonedObj1).toEqual(obj1)
             expect(clonedObj1).not.toBe(obj1)
+        })
+        
+        it("subclassOf", () => {
+            class A { foo() {} }
+            class B extends A {}
+            class C extends B {}
+            class D {}
+            
+            expect(isSubclassOf(B, A)).toBe(true)
+            expect(isSubclassOf(C, A)).toBe(true)
+            expect(isSubclassOf(C, B)).toBe(true)
+            expect(isSubclassOf(A, B)).toBe(false)
+            expect(isSubclassOf(A, C)).toBe(false)
+            expect(isSubclassOf(B, C)).toBe(false)
+            expect(isSubclassOf(D, A)).toBe(false)
+            expect(isSubclassOf(D, B)).toBe(false)
+            expect(isSubclassOf(D, C)).toBe(false)
         })
     })
 

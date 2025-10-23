@@ -1,6 +1,9 @@
 
 export type ClassConstructor<Type> = new (...args: any) => NonNullable<Type>
 
+export const isSubclassOf = <T>(value: ClassConstructor<any>, parent: ClassConstructor<T>): value is ClassConstructor<T> =>
+    value.prototype instanceof parent
+
 export type Constructor<Type = unknown> =
     Type extends unknown ? ClassConstructor<Type> | StringConstructor | BooleanConstructor | NumberConstructor :
     [Type] extends [string | null | undefined] ? StringConstructor :

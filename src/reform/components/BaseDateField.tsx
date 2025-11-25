@@ -17,7 +17,9 @@ export const stringToLocalDate = (value: unknown) => {
     if (value == null || typeof value !== "string")
         return null
     const timeIndex = value.indexOf("T")
-    const date = new Date(timeIndex >= 0 ? value.substring(0, timeIndex) : value)
+    if (timeIndex >= 0)
+        value = value.substring(0, timeIndex)
+    const date = new Date(value + "T00:00:00")
     return isNaN(date.getTime()) ? null : date
 }
 

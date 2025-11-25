@@ -54,7 +54,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                 break
 
             case '.':
-                if (escape || state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
+                if (state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
                 else if (state === CLOSE_BRACKET) {
                     if (segment)
@@ -73,7 +73,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                 break
 
             case '[':
-                if (escape || state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
+                if (state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
                 else if (state === DOT) {
                     if (!isValidIdentifier(segment))
@@ -101,7 +101,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
                 break
 
             case ']':
-                if (escape || state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
+                if (state === SINGLE_QUOTE || state === DOUBLE_QUOTE)
                     segment += c
                 else if (state === OPEN_BRACKET) {
                     if (!segment)
@@ -185,7 +185,7 @@ export function joinPath(segments: Path): string {
     let path = ""
     for (let segment of segments) {
         if (typeof segment === "number")
-            path += "[" + segment + "]"
+            path += "[" + (Number.isNaN(segment) ? "?" : segment) + "]"
         else if (isValidIdentifier(segment))
             path += (path ? "." : "") + segment
         else

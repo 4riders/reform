@@ -659,6 +659,9 @@ describe('Reform', () => {
                 name: string | null = null
 
                 name2: string | null = null
+
+                @observer("name", context => context.setValue((context.observedValue as string)?.substring(0, 2) ?? null))
+                nickname: string | null = null
             }
 
             class Person {
@@ -675,6 +678,15 @@ describe('Reform', () => {
                 
                 @array({ of: Friend })
                 friends: Friend[] = [new Friend(), new Friend()]
+
+                @observer("friends[0]", context => context.setValue(10))
+                bla: number | null = null
+
+                @observer("friends[*]", context => context.setValue(6))
+                bli: number | null = null
+
+                @observer("/**/nickname", context => context.setValue(8))
+                blo: number | null = null
             }
 
             const form = renderHook(() => useForm({
@@ -711,8 +723,10 @@ describe('Reform', () => {
             expect(form.values!.friend!.name2).toBeNull()
             expect(form.values!.friends[0].name).toBe("Jim")
             expect(form.values!.friends[0].name2).toBeNull()
+            expect(form.values!.friends[0].nickname).toBe("Ji")
             expect(form.values!.friends[1].name).toBeNull()
             expect(form.values!.friends[1].name2).toBeNull()
+            expect(form.values!.friends[1].nickname).toBeNull()
 
             form.setValue("friends[0].name2", "John", true)
             await sleep()
@@ -740,6 +754,31 @@ describe('Reform', () => {
             expect(form.values!.friends[0].name2).toBe("John")
             expect(form.values!.friends[1].name).toBeNull()
             expect(form.values!.friends[1].name2).toBe("Ike")
+
+            expect(form.values!.bla).toBeNull()
+            expect(form.values!.bli).toBeNull()
+            form.setValue("friends[1]", new Friend(), true)
+            await sleep()
+            expect(form.values!.bla).toBeNull()
+            expect(form.values!.bli).toBe(6)
+
+            form.setValue("bli", null, true)
+            expect(form.values!.bla).toBeNull()
+            expect(form.values!.bli).toBeNull()
+            form.setValue("friends[0]", new Friend(), true)
+            await sleep()
+            expect(form.values!.bla).toBe(10)
+            expect(form.values!.bli).toBe(6)
+
+            expect(form.values!.blo).toBeNull()
+            form.setValue("friends[1].nickname", 10, true)
+            await sleep()
+            expect(form.values!.blo).toBe(8)
+
+            form.setValue("blo", null, true)
+            form.setValue("friend.nickname", 10, true)
+            await sleep()
+            expect(form.values!.blo).toBe(8)
         })
     })
 })

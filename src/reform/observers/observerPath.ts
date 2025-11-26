@@ -257,7 +257,7 @@ export function observerPathToRegexp(observerPath: PathElement[] | undefined, cu
             case "key":
                 return `\\['${ escapeRegExp(segment.value as string) }'\\]`
             case "index":
-                return `\\[${ (segment.value as number).toFixed(0) }\\]`
+                return Number.isNaN(segment.value) ? "\\[[0-9]+\\]" : `\\[${ (segment.value as number).toFixed(0) }\\]`
             default: // case "property":
                 return (index === 0 ? "" : "\\.") + escapeRegExp(segment.value as string)
         }

@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { getClassConstructor, getMetadataFields } from "../../yop/Metadata"
-import { Path } from "../../yop/ObjectsUtil"
+import { Path, splitPath } from "../../yop/ObjectsUtil"
 import { ClassConstructor } from "../../yop/TypesUtil"
 import { FormManager, ReformSetValueEvent, SetValueOptions } from "../FormManager"
 import { ObserverCallbackContext, ObserverCallbackOptions, ObserverMetadata, ObserversField } from "./observer"
@@ -68,7 +68,7 @@ function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueE
     }
 }
 
-function callObservers(observerData: ObserverData<any>, value: any, startPath: Path, path: Path, event: ReformSetValueEvent, setValueCalled: SetValueCalled) {
+function callObservers(observerData: ObserverData<any>, value: any, startPath: Path, path: Path, event: ReformSetValueEvent, eventPath: Path, setValueCalled: SetValueCalled) {
     if (path.length === 0 || value == null)
         return
 
@@ -79,20 +79,33 @@ function callObservers(observerData: ObserverData<any>, value: any, startPath: P
             if (path.length === 1)
                 observerData.observer.callback(createCallbackContext(startPath.concat(pathElement), value, event, setValueCalled))
             else if (value != null)
-                callObservers(observerData, value, startPath.concat(pathElement), path.slice(1), event, setValueCalled)
+                callObservers(observerData, value, startPath.concat(pathElement), path.slice(1), event, eventPath, setValueCalled)
         }
     }
     else if (Array.isArray(value)) {
         const itemPath = path.slice(1)
-        value.forEach((item, itemIndex) => {
+
+        if (Number.isNaN(pathElement)) {
+            value.forEach((item, itemIndex) => {
+                if (item != null) {
+                    const newStartPath = startPath.concat(itemIndex)
+                    if (itemPath.length === 0)
+                        observerData.observer.callback(createCallbackContext(newStartPath, item, event, setValueCalled))
+                    else
+                        callObservers(observerData, item, newStartPath, itemPath, event, eventPath, setValueCalled)
+                }
+            })
+        }
+        else {
+            const item = value[pathElement]
             if (item != null) {
-                const newStartPath = startPath.concat(itemIndex)
+                const newStartPath = startPath.concat(pathElement)
                 if (itemPath.length === 0)
                     observerData.observer.callback(createCallbackContext(newStartPath, item, event, setValueCalled))
                 else
-                    callObservers(observerData, item, newStartPath, itemPath, event, setValueCalled)
+                    callObservers(observerData, item, newStartPath, itemPath, event, eventPath, setValueCalled)
             }
-        })
+        }
     }
 }
 
@@ -102,12 +115,34 @@ function createReformEventListener(model: ClassConstructor<any>) {
     const observers = Array.from(observersMap.entries()).map(([path, observerData]) => [new RegExp(path, "u"), observerData]) as [RegExp, ObserverData<any>[]][]
 
     return ((event: ReformSetValueEvent) => {
-        const setValueCalled = { value: false }
         const values = event.detail.form.values
+        if (values == null)
+            return
+
+        const eventPath = splitPath(event.detail.path) ?? []
+        const setValueCalled = { value: false }
         
         observers.forEach(([pathRegExp, observersData]) => {
-            if (pathRegExp.test(event.detail.path))
-                observersData.forEach(observerData => callObservers(observerData, values, [], observerData.path, event, setValueCalled))
+            if (pathRegExp.test(event.detail.path)) {
+                observersData.forEach(observerData => {
+                    let value: any = values
+                    const startPath: Path = []
+                    if (observerData.observer.path[0] !== '/') {
+                        for (let i = 0; i < observerData.path.length && i < eventPath.length; i++) {
+                            const pathSegment = observerData.path[i]
+                            const eventSegment = eventPath[i]
+                            if (pathSegment !== eventSegment && !(Number.isNaN(pathSegment) && (typeof eventSegment === "number")))
+                                break
+                            startPath.push(eventSegment)
+                            value = value[eventSegment]
+                            if (value == null)
+                                break
+                        }
+                    }
+                    const path = (startPath.length > 0 ? observerData.path.slice(startPath.length) : observerData.path)
+                    callObservers(observerData, value, startPath, path, event, eventPath, setValueCalled)
+                })
+            }
         })
         
         if (setValueCalled.value) {

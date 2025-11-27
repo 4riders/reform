@@ -34,7 +34,7 @@ export type InstanceValue = object | null | undefined
 export interface InstanceConstraints<Value extends InstanceValue, Parent> extends
     CommonConstraints<Value, Parent>,
     TestConstraint<Value, Parent> {
-    of: ClassConstructor<CheckClass<Value>> | string
+    of: ClassConstructor<NoInfer<CheckClass<Value>>> | string
 }
 
 function traverseInstance<Value extends InstanceValue, Parent>(
@@ -63,7 +63,7 @@ function validateInstance<Value extends InstanceValue, Parent>(context: Internal
 
 export const instanceKind = "instance"
 
-export function instance<Value extends CheckClass<Value>, Parent>(constraints?: InstanceConstraints<Value, Parent>, groups?: Groups<InstanceConstraints<Value, Parent>>) {
+export function instance<Value extends InstanceValue, Parent>(constraints?: InstanceConstraints<Value, Parent>, groups?: Groups<InstanceConstraints<Value, Parent>>) {
     if (typeof constraints?.of === "string") {
         const of = constraints.of
         defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of, true))

@@ -33,8 +33,8 @@ export type ObserverMetadata<T> = {
 export type Observers = Map<string, ObserverMetadata<any>>
 export type ObserversField = InternalCommonConstraints & { observers?: Observers }
 
-export function observer<_Parent, T>(path: string, callback: ObserverCallback<T> | undefined) {
-    return fieldDecorator(field => {
+export function observer<Value, Parent>(path: string, callback: ObserverCallback<Value> | undefined) {
+    return fieldDecorator<Parent, Value>(field => {
         const metadata = field as ObserversField
         metadata.observers ??= new Map()
         if (callback != null)

@@ -666,7 +666,7 @@ describe('Reform', () => {
 
             class Person {
 
-                @observer("friend/name", context => context.setValue(context.observedValue))
+                @observer("friend/name", context => context.setValue(context.observedValue as string | null))
                 firstname: string | null = null
 
                 @observer("friends[0]/name", context => context.setValue((context.observedValue as string).length))

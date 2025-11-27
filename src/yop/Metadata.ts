@@ -95,7 +95,7 @@ export function getValidationDecoratorKind(value: any): string | undefined {
 }
 
 export function fieldDecorator<Parent, Value>(properties: object | ((field: InternalCommonConstraints) => void), reset = false) {
-    return (_: unknown, context: ClassFieldDecoratorContext<Parent, Value | null | undefined>) => {
+    return (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => {
         const classConstraints = initClassConstraints(context.metadata)
         if (!Object.hasOwnProperty.bind(classConstraints)("fields"))
             classConstraints.fields = clone(classConstraints.fields ?? {})

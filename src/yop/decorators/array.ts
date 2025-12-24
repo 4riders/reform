@@ -15,7 +15,7 @@ export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     TestConstraint<Value, Parent> {
     of: (
         Constructor<ArrayElementType<Value>> |
-        string |
+        (() => Constructor<ArrayElementType<Value>>) |
         ((_: any, context: ClassFieldDecoratorContext<Value, ArrayElementType<Value>>) => void)
     )
 }
@@ -59,17 +59,17 @@ function validateArray<Value extends ArrayValue, Parent>(context: InternalValida
 export const arrayKind = "array"
 
 export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Groups<ArrayConstraints<Value, Parent>>) {
-    if (typeof constraints?.of === "string") {
-        const of = constraints.of
-        defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of, true))
-    }
-    else if (getValidationDecoratorKind(constraints?.of) != null) {
+    if (getValidationDecoratorKind(constraints?.of) != null) {
         const of = constraints!.of as ((_: any, context: Partial<ClassFieldDecoratorContext<Value, ArrayElementType<Value>>>) => void)
         defineLazyProperty(constraints, "of", (_this) => {
             const metadata = { [validationSymbol]: {} as InternalClassConstraints }
             of(null, { metadata, name: "of" })
             return { [Symbol.metadata]: { [validationSymbol]: metadata[validationSymbol]!.fields!.of }}
         })
+    }
+    else if (typeof constraints?.of === "string" || (typeof constraints?.of === "function" && constraints.of.prototype == null)) {
+        const of = constraints!.of
+        defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of))
     }
     return fieldValidationDecorator(arrayKind, constraints ?? ({} as ArrayConstraints<Value, Parent>), groups, validateArray, isNumber, traverseArray)
 }

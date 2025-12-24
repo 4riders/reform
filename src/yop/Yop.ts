@@ -79,9 +79,11 @@ export class Yop {
         if (typeof id === "string") {
             const resolved = Yop.classIds.get(id)
             if (resolved == null && silent === false)
-                console.error(`Class "${ id }" unregistered in Yop. Did you forget to add a @constraints({ id: "${ id }" }) decorator to the class?`)
+                console.error(`Class "${ id }" unregistered in Yop. Did you forget to add a @id("${ id }") decorator to the class?`)
             return resolved as Constructor<T>
         }
+        if (typeof id === "function" && id.prototype == null)
+            return id() as Constructor<T>
         return id as Constructor<T> | undefined
     }
 

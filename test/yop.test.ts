@@ -1507,7 +1507,6 @@ describe("Yop", () => {
             }])
         })
 
-        @id("Test")
         class Test {
 
             @string({ required: true })
@@ -1516,7 +1515,7 @@ describe("Yop", () => {
 
         it("array.Test", () => {
             expect(Yop.validate([], array({ of: Test }))).toEqual([])
-            expect(Yop.validate([], array({ of: "Test" }))).toEqual([])
+            expect(Yop.validate([], array({ of: () => Test }))).toEqual([])
             expect(Yop.validate([{ name: "" }], array({ of: Test }))).toEqual([])
             expect(Yop.validate([{}], array({ of: Test }))).toEqual([{
                 level: "error",
@@ -1583,7 +1582,7 @@ describe("Yop", () => {
                 constraint: "object",
                 message: "Wrong value type (expected object)",
             }])
-            expect(Yop.validate([1], array({ of: "Test" }))).toEqual([{
+            expect(Yop.validate([1], array({ of: () => Test }))).toEqual([{
                 level: "error",
                 path: "[0]",
                 value: 1,
@@ -1647,7 +1646,6 @@ describe("Yop", () => {
             expect(Yop.validate(null, instance({ of: Test, test: _ => false }))).toEqual([])
         })
         
-        @id("Test2")
         class Test2 {
             
             @string({ required: true, min: 1 })
@@ -1659,7 +1657,7 @@ describe("Yop", () => {
             expect(Yop.validate({}, instance({ of: Test }))).toEqual([])
             expect(Yop.validate({ name: "" }, instance({ of: Test }))).toEqual([])
             expect(Yop.validate({ name: "a" }, instance({ of: Test2 }))).toEqual([])
-            expect(Yop.validate({ name: "a" }, instance({ of: "Test2" }))).toEqual([])
+            expect(Yop.validate({ name: "a" }, instance({ of: () => Test2 }))).toEqual([])
             expect(Yop.validate({ name: "" }, instance({ of: Test2 }))).toEqual([{
                 level: "error",
                 path: "name",
@@ -1892,6 +1890,21 @@ describe("Yop", () => {
         })
     })
 
+    describe("id", () => {
+
+        @id("Circle")
+        class Circle {
+            @instance({ of: "Circle" })
+            circle: Circle | null = null
+        }
+
+        it("id.Circle", () => {
+            expect(Yop.validate({}, instance({ of: Circle }))).toEqual([])
+            expect(Yop.validate({ circle: {} }, instance({ of: Circle }))).toEqual([])
+            expect(Yop.validate({ circle: { circle: {} } }, instance({ of: Circle }))).toEqual([])
+        })
+    })
+
     describe("all", () => {
 
         const today = new Date
@@ -1906,7 +1919,6 @@ describe("Yop", () => {
             food: string | null = null
         }
 
-        @id("Person")
         @test(context => context.value.pets.length === 0 && context.value.nicknames.length === 2 ? "Nobody should have two nicknames and no pets!" : true)
         class Person {
 
@@ -1949,11 +1961,11 @@ describe("Yop", () => {
             @boolean({ oneOf: [[true], "Should be true"] })
             friendly: boolean | null = null
 
-            @instance({ of: "Person", required: context => context.parent.friendly === true })
+            @instance({ of: () => Person, required: context => context.parent.friendly === true })
             bestFriend: Person | null = null
 
             @array({
-                of: instance({ of: "Person", required: true }),
+                of: instance({ of: () => Person, required: true }),
                 required: context => context.parent.friendly === true,
                 min: context => context.parent.friendly === true ? 2 : 0,
             })

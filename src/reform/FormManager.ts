@@ -137,8 +137,6 @@ export class InternalFormManager<T extends object | null | undefined> implements
     }
 
     onRender(config: FormConfig<T>) {
-        if (config.validationSchema == null)
-            config = { ...config, validationSchema: ignored() }
         this._config = config
     }
 
@@ -250,7 +248,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
             ignore: ignoreFn != null ? path => ignoreFn(path, this) : undefined
         }
         
-        this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map()
+        this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema ?? ignored(), options)?.statuses ?? new Map()
         return this._statuses
     }
 
@@ -276,14 +274,14 @@ export class InternalFormManager<T extends object | null | undefined> implements
             ignore: this._config.ignore != null ? path => this._config.ignore!(path, this) : undefined
         }
         
-        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema!, options)?.statuses ?? new Map<string, ValidationStatus>()
+        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema ?? ignored(), options)?.statuses ?? new Map<string, ValidationStatus>()
         statuses.forEach((status, path) => this._statuses.set(path, status))
         return { changed: changed || statuses.size > 0, statuses }
     }
 
     constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined {
         const settings: ReformValidationSettings = { method: "constraintsAt", form: this, path }
-        return this.yop.constraintsAt(this._config.validationSchema!, this.values, settings)
+        return this.yop.constraintsAt(this._config.validationSchema ?? ignored(), this.values, settings)
     }
 
     updateAsyncStatus(path: string | Path) {

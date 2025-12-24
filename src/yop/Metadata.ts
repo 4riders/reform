@@ -114,6 +114,13 @@ export function fieldDecorator<Parent, Value>(properties: object | ((field: Inte
 
 export type Groups<Constraints> = { [group: string]: Constraints }
 
+export function mergeMetadata<Constraints>(props?: Constraints, groups?: Groups<Constraints>, merger: (params: Constraints) => void = () => {}) {
+    Object.values(groups ?? {}).concat(props != null ? [props] : []).forEach(params => {
+        merger(params)
+    })
+}
+
+
 export function fieldValidationDecorator<
     Constraints extends CommonConstraints<any, any>,
     Value = ContraintsValue<Constraints>,

@@ -121,6 +121,31 @@ export function mergeMetadata<Constraints>(props?: Constraints, groups?: Groups<
 }
 
 
+export function mergeDefaultMetadata<Constraints extends {}, Parent, Value>(
+    decorator: (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void,
+    defaultProps: Constraints
+) {
+    return (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => {
+        decorator(_, context)
+        const fields = (context.metadata?.[validationSymbol] as InternalClassConstraints)?.fields
+        if (fields?.[context.name as string] != null) {
+            const metadata = fields[context.name as string]
+            Object.entries(defaultProps).forEach(([key, value]) => {
+                const constraintName = key as keyof InternalCommonConstraints
+                if (metadata[constraintName] === undefined)
+                    metadata[constraintName] = value as any
+                if (metadata.groups != null) {
+                    Object.keys(metadata.groups).forEach(groupKey => {
+                        const groupName = groupKey as keyof Groups<Constraints>
+                        if (metadata.groups![groupName][constraintName] === undefined)
+                            metadata.groups![groupName][constraintName] = value as any
+                    })
+                }
+            })
+        }
+    }
+}
+
 export function fieldValidationDecorator<
     Constraints extends CommonConstraints<any, any>,
     Value = ContraintsValue<Constraints>,

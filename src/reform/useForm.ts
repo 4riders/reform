@@ -10,7 +10,7 @@ export type FormConfig<T extends object | null | undefined> = {
     readonly initialValues?: T | (() => T) | (() => Promise<T>) | null
     readonly initialValuesConverter?: (values: T) => T
     readonly validationSchema?: ReturnType<typeof instance> // TODO: fix me (allow arrays)
-    readonly validationPath?: string
+    readonly validationPath?: string | string[]
     readonly validationGroups?: Group
     readonly ignore?: (path: Path, form: FormManager<T>) => boolean
     readonly submitGuard?: (form: FormManager<T>) => boolean

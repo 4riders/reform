@@ -240,15 +240,24 @@ export class InternalFormManager<T extends object | null | undefined> implements
             }
         }
 
+        const schema = this._config.validationSchema ?? ignored()
         const options: ReformValidationSettings = {
             method: "validate",
             form: this,
-            path: this._config.validationPath,
             groups: this._config.validationGroups,
             ignore: ignoreFn != null ? path => ignoreFn(path, this) : undefined
         }
-        
-        this._statuses = this.yop.rawValidate(this.values, this._config.validationSchema ?? ignored(), options)?.statuses ?? new Map()
+        if (Array.isArray(this._config.validationPath)) {
+            this._statuses = new Map()
+            for (const path of this._config.validationPath) {
+                options.path = path
+                this.yop.rawValidate(this.values, schema, options)?.statuses?.forEach((status, path) => this._statuses.set(path, status))
+            }
+        }
+        else {
+            options.path = this._config.validationPath
+            this._statuses = this.yop.rawValidate(this.values, schema, options)?.statuses ?? new Map()
+        }
         return this._statuses
     }
 

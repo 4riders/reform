@@ -4,7 +4,7 @@ import { JSX } from "react"
 
 export type ConstraintMessage = string | JSX.Element
 export type ConstraintValue<ConstraintType> = ConstraintType | readonly [ConstraintType, ConstraintMessage, Level?]
-export type ConstraintFunction<Value, ConstraintType, Parent = unknown> = ((context: ValidationContext<Value, Parent>) => ConstraintValue<ConstraintType>)
+export type ConstraintFunction<Value, ConstraintType, Parent = unknown> = ((context: ValidationContext<Value, Parent>) => ConstraintValue<ConstraintType> | undefined)
 
 export type Constraint<Value, ConstraintType, Parent = unknown> =
     ConstraintValue<ConstraintType> |

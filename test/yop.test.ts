@@ -966,8 +966,19 @@ describe("Yop", () => {
         it("boolean.true", () => {
             expect(Yop.validate(true, boolean())).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [true] }))).toEqual([])
+            expect(Yop.validate(true, boolean({ oneOf: _ctx => [true] }))).toEqual([])
+            expect(Yop.validate(true, boolean({ oneOf: _ctx => undefined }))).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [true, false] }))).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [false] }))).toEqual([{
+                level: "error",
+                path: "",
+                value: true,
+                kind: "boolean",
+                code: "oneOf",
+                constraint: [false],
+                message: "Must be one of: false"
+            }])
+            expect(Yop.validate(true, boolean({ oneOf: _ctx => [false] }))).toEqual([{
                 level: "error",
                 path: "",
                 value: true,

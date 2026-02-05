@@ -1,7 +1,7 @@
 import { validateConstraint } from "./constraints/Constraint"
 import { MinMaxConstraints, validateMinMaxConstraints } from "./constraints/MinMaxConstraints"
 import { MessageProvider, messageProvider_en_US, messageProvider_fr_FR } from "./MessageProvider"
-import { ClassFieldDecorator, InternalClassConstraints } from "./Metadata"
+import { ClassFieldDecorator, getMetadataFromDecorator } from "./Metadata"
 import { joinPath, Path, splitPath } from "./ObjectsUtil"
 import { Constructor, isBoolean } from "./TypesUtil"
 import { Group, InternalValidationContext, ValidationStatus } from "./ValidationContext"
@@ -88,10 +88,7 @@ export class Yop {
     }
 
     private contextAt(decorator: ClassFieldDecorator<any>, value: any, settings: ValidationSettings, traverseNullish = false) {
-        const metadata = { [validationSymbol]: {} as InternalClassConstraints }
-        decorator(null, { metadata, name: "placeholder" } as any)        
-        let constraints = metadata[validationSymbol]?.fields?.placeholder
-        
+        let constraints = getMetadataFromDecorator(decorator)
         if (constraints == null)
             return undefined
 

@@ -1,10 +1,13 @@
-import { useFormContext } from "./useFormContext";
-import { useRender } from "./useRender";
 import { useRef } from "react";
-import { FormManager } from "./FormManager";
+import { getClassConstructor, getFieldMetadata, getMetadataFromDecorator } from "../yop/Metadata";
+import { isPromise } from "../yop/TypesUtil";
 import { ValidationStatus } from "../yop/ValidationContext";
 import { ResolvedConstraints } from "../yop/Yop";
-import { isPromise } from "../yop/TypesUtil";
+import { CommonConstraints } from "../yop/constraints/CommonConstraints";
+import { ignored } from "../yop/decorators/ignored";
+import { FormManager, InternalFormManager } from "./FormManager";
+import { useFormContext } from "./useFormContext";
+import { useRender } from "./useRender";
 
 export type FieldState<Value, MinMax, Root = any> = {
     value: Value | undefined
@@ -13,9 +16,10 @@ export type FieldState<Value, MinMax, Root = any> = {
     form: FormManager<Root>
     render: () => void
     constraints?: ResolvedConstraints<MinMax>
+    fieldMetadata?: CommonConstraints<Value>
 }
 
-export function useFormField<Value, MinMax, Root = any>(name: string): FieldState<Value, MinMax, Root> {
+export function useFormField<Value, MinMax, Root = any>(name: string, withFieldMetadata = false): FieldState<Value, MinMax, Root> {
     const render = useRender()
     const form = useFormContext<Root>()
     const promiseRef = useRef<Promise<unknown>>(undefined)
@@ -31,12 +35,21 @@ export function useFormField<Value, MinMax, Root = any>(name: string): FieldStat
         })
     }
 
+    let fieldMetadata: CommonConstraints<Value> | undefined = undefined
+    if (withFieldMetadata) {
+        const metadata = getMetadataFromDecorator((form as InternalFormManager<any>).config?.validationSchema ?? ignored())
+        const of = getClassConstructor(metadata)
+        if (of != null)
+            fieldMetadata = getFieldMetadata(of, name)
+    }
+
     return {
         value: form.getValue<Value>(name),
         touched: form.isTouched(name),
         status,
         form,
         render,
-        constraints: form.constraintsAt(name)
+        constraints: form.constraintsAt(name),
+        fieldMetadata,
     }
 }

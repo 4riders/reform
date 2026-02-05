@@ -1,4 +1,4 @@
-import { assign, clone } from "./ObjectsUtil"
+import { assign, clone, Path, splitPath } from "./ObjectsUtil"
 import { ClassConstructor, isBoolean, isObject } from "./TypesUtil"
 import { InternalValidationContext } from "./ValidationContext"
 import { validationSymbol } from "./Yop"
@@ -65,6 +65,12 @@ export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
 
 export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void
 
+export function getMetadataFromDecorator<Value, Parent>(decorator: ClassFieldDecorator<Value, Parent>) {
+    const metadata = { [validationSymbol]: {} as InternalClassConstraints }
+    decorator(null, { metadata, name: "placeholder" } as any)        
+    return metadata[validationSymbol]?.fields?.placeholder
+}
+
 export function getMetadata<T>(model: ClassConstructor<T>) {
     return model?.[Symbol.metadata]?.[validationSymbol] as CommonConstraints<any, T> | undefined
 }
@@ -72,6 +78,25 @@ export function getMetadata<T>(model: ClassConstructor<T>) {
 export function getMetadataFields<T>(model: ClassConstructor<T>) {
     const metadata = model?.[Symbol.metadata]?.[validationSymbol] as InternalClassConstraints | undefined
     return metadata?.fields as { [K in keyof T]: CommonConstraints<any, T> } | undefined
+}
+
+export function getFieldMetadata(model: ClassConstructor<any>, path: string | Path) {
+        const segments = typeof path === "string" ? splitPath(path) : path
+        if (segments == null)
+            return undefined
+        let metadata = getMetadata(model) as InternalClassConstraints | undefined
+        for (const segment of segments) {
+            if (metadata?.fields == null) {
+                const of = getClassConstructor(metadata)
+                if (of == null)
+                    return undefined
+                metadata = getMetadata(of) as InternalClassConstraints | undefined
+            }
+            metadata = metadata?.fields?.[segment] as InternalClassConstraints | undefined
+            if (metadata == null)
+                return undefined
+        }
+        return metadata as CommonConstraints<any, any> | undefined
 }
 
 export function getClassConstructor<T>(metadata: any): ClassConstructor<T> | undefined {

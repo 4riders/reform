@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
+import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, getFieldMetadata, getMetadataFromDecorator, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringConstraints, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -1993,6 +1993,21 @@ describe("Yop", () => {
             @instance({ of: Pet })
             favoritePet: Pet | null = null
         }
+
+        it("getFieldMetadata", () => {
+            const metadata = getMetadataFromDecorator(instance({ of: Person }))
+            expect(metadata).not.toBeUndefined()
+            const of = (metadata as any)?.of
+            expect(typeof of === "function").toBe(true)
+            let fieldMetadata = getFieldMetadata(of, "lastName")
+            expect(fieldMetadata).not.toBeUndefined()
+            fieldMetadata = getFieldMetadata(of, "favoritePet")
+            expect(fieldMetadata).not.toBeUndefined()
+            fieldMetadata = getFieldMetadata(of, "favoritePet.name")
+            expect(fieldMetadata).not.toBeUndefined()
+            expect(fieldMetadata!.required).toBe(true)
+            expect((fieldMetadata! as StringConstraints<string, unknown>).min).toBe(1)
+        })
 
         it("all.Person", () => {
             expect(Yop.constraintsAt(instance({ of: Person }), null)).toEqual({ required: false })

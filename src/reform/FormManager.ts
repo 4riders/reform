@@ -1,7 +1,7 @@
 import { FormEvent } from "react"
 import { clone, equal, get, set, SetResult, unset } from "../yop/ObjectsUtil"
 import { FormConfig } from "./useForm"
-import { ValidationForm, ResolvedConstraints, ValidationSettings, Yop } from "../yop/Yop"
+import { ValidationForm, ResolvedConstraints, ValidationSettings, Yop, ConstraintsAtSettings } from "../yop/Yop"
 import { joinPath, Path } from "../yop/ObjectsUtil"
 import { ValidationStatus } from "../yop/ValidationContext"
 import { ignored } from "../yop/decorators/ignored"
@@ -10,6 +10,8 @@ import { Reform } from "./Reform"
 
 export interface ReformValidationSettings extends ValidationSettings {
     method: "validate" | "validateAt" | "constraintsAt"
+}
+export interface ReformConstraintsAtSettings extends ReformValidationSettings, ConstraintsAtSettings {
 }
 
 export type SetValueOptionsObject = {
@@ -39,7 +41,7 @@ export interface FormManager<T> extends ValidationForm {
     updateAsyncStatus(path: string | Path): void
     scrollToFirstError(): void
 
-    constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined
+    constraintsAt<MinMax = unknown>(path: string | Path, unsafeMetadata?: boolean): ResolvedConstraints<MinMax> | undefined
 
     submit(e: FormEvent<HTMLFormElement>): void
 
@@ -288,8 +290,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return { changed: changed || statuses.size > 0, statuses }
     }
 
-    constraintsAt<MinMax = unknown>(path: string | Path): ResolvedConstraints<MinMax> | undefined {
-        const settings: ReformValidationSettings = { method: "constraintsAt", form: this, path }
+    constraintsAt<MinMax = unknown>(path: string | Path, unsafeMetadata?: boolean): ResolvedConstraints<MinMax> | undefined {
+        const settings: ReformConstraintsAtSettings = { method: "constraintsAt", form: this, path, unsafeMetadata }
         return this.yop.constraintsAt(this._config.validationSchema ?? ignored(), this.values, settings)
     }
 

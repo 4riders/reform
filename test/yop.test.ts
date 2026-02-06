@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, getFieldMetadata, getMetadataFromDecorator, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringConstraints, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
+import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -1994,19 +1994,44 @@ describe("Yop", () => {
             favoritePet: Pet | null = null
         }
 
-        it("getFieldMetadata", () => {
-            const metadata = getMetadataFromDecorator(instance({ of: Person }))
-            expect(metadata).not.toBeUndefined()
-            const of = (metadata as any)?.of
-            expect(typeof of === "function").toBe(true)
-            let fieldMetadata = getFieldMetadata(of, "lastName")
-            expect(fieldMetadata).not.toBeUndefined()
-            fieldMetadata = getFieldMetadata(of, "favoritePet")
-            expect(fieldMetadata).not.toBeUndefined()
-            fieldMetadata = getFieldMetadata(of, "favoritePet.name")
-            expect(fieldMetadata).not.toBeUndefined()
-            expect(fieldMetadata!.required).toBe(true)
-            expect((fieldMetadata! as StringConstraints<string, unknown>).min).toBe(1)
+        it("unsafeMetadata", () => {
+            expect(Yop.constraintsAt(instance({ of: Person }), null, { path: "lastName", unsafeMetadata: true })).toEqual({
+                required: false,
+                min: 2,
+                fieldMetadata: {
+                    "groups": undefined,
+                    "isMinMaxType": expect.anything(),
+                    "kind": "string",
+                    "min": [2, "Last name must be at least 2 characters long"],
+                    "required": expect.anything(),
+                    "traverse": undefined,
+                    "validate": expect.anything(),
+                }
+            })
+            expect(Yop.constraintsAt(instance({ of: Person }), null, { path: "favoritePet", unsafeMetadata: true })).toEqual({
+                required: false,
+                fieldMetadata: {
+                    "groups": undefined,
+                    "isMinMaxType": undefined,
+                    "kind": "instance",
+                    "of": Pet,
+                    "traverse": expect.anything(),
+                    "validate": expect.anything(),
+                }
+            })
+            expect(Yop.constraintsAt(instance({ of: Person }), null, { path: "favoritePet.name", unsafeMetadata: true })).toEqual({
+                required: true,
+                min: 1,
+                fieldMetadata: {
+                    "groups": undefined,
+                    "isMinMaxType": expect.anything(),
+                    "kind": "string",
+                    "min": 1,
+                    "required": true,
+                    "traverse": undefined,
+                    "validate": expect.anything(),
+                }
+            })
         })
 
         it("all.Person", () => {

@@ -1,3 +1,4 @@
+import { CommonConstraints } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
 import { MinMaxConstraints, validateMinMaxConstraints } from "./constraints/MinMaxConstraints"
 import { MessageProvider, messageProvider_en_US, messageProvider_fr_FR } from "./MessageProvider"
@@ -19,6 +20,10 @@ export type ResolvedConstraints<MinMax = unknown> = {
     required: boolean
     min?: MinMax
     max?: MinMax
+}
+
+export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<MinMax> &{
+    fieldMetadata?: CommonConstraints<any, any> | undefined
 }
 
 export interface ValidationForm {
@@ -45,6 +50,10 @@ export interface ValidationSettings {
     ignore?: (path: Path) => boolean
     skipAsync?: boolean
     form?: ValidationForm
+}
+
+export interface ConstraintsAtSettings extends ValidationSettings {
+    unsafeMetadata?: boolean
 }
 
 export class Yop {
@@ -113,11 +122,11 @@ export class Yop {
         return [context, constraints] as const
     }
 
-    constraintsAt<MinMax = unknown>(decorator: ClassFieldDecorator<any>, value: any, settings?: ValidationSettings) {
+    constraintsAt<MinMax = unknown>(decorator: ClassFieldDecorator<any>, value: any, settings?: ConstraintsAtSettings): ResolvedConstraints<MinMax> | undefined {
         const [context, constraints] = this.contextAt(decorator, value, settings ?? {}, true) ?? []
 
         if (context != null && constraints != null) {
-            const resolvedContraints: ResolvedConstraints<MinMax> = { required: false }
+            const resolvedContraints: UnsafeResolvedConstraints<MinMax> = { required: false }
             validateConstraint(context, constraints, "required", isBoolean, (_, constraint) => { resolvedContraints.required = constraint; return true })
             const isMinMaxType = (constraints as MinMaxConstraints<any, any>).isMinMaxType
             if (isMinMaxType != null) {
@@ -129,12 +138,14 @@ export class Yop {
                     (_, max) => { resolvedContraints.max = max; return true }
                 )
             }
+            if (settings?.unsafeMetadata)
+                resolvedContraints.fieldMetadata = constraints
             return resolvedContraints
         }
 
         return undefined
     }
-    static constraintsAt<Value>(decorator: ClassFieldDecorator<Value>, value: any, settings?: ValidationSettings) {
+    static constraintsAt<Value>(decorator: ClassFieldDecorator<Value>, value: any, settings?: ConstraintsAtSettings) {
         return Yop.init().constraintsAt(decorator, value, settings)
     }
 

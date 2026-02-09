@@ -26,11 +26,8 @@ export function validateTestConstraint<Value, Parent>(
     context: InternalValidationContext<Value, Parent>,
     testConstraint: TestConstraint<Value, Parent>
 ) {
-    if (testConstraint.test == null)
-        return true
-    
     if (context.groups == null)
-        return _validateTestConstraint(context, testConstraint)
+        return testConstraint.test == null || _validateTestConstraint(context, testConstraint)
 
     const groups = Array.isArray(context.groups) ? context.groups : [context.groups]
     for (const group of groups) {

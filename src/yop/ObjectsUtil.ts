@@ -288,6 +288,161 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
+export type Diff<A = any, B  = any> = {
+    a: A
+    b: B
+    tree: { [key: string | number]: any }
+    equal: boolean
+}
+
+export function differs(diff: Diff, path: Path): boolean {
+    let tree = diff.tree
+    for (let key of path) {
+        if (tree[key] == null)
+            return false
+        tree = tree[key]
+    }
+    return true
+}
+
+export function diff<A = any, B = any>(a: A, b: B): Diff<A, B> {
+    const paths: Path[] = []
+    _diff(a, b, new Map(), [], paths)
+
+    const result = {
+        a,
+        b,
+        tree: {} as { [key: string | number]: any },
+        equal: paths.length === 0
+    }
+
+    paths.forEach(path => {
+        let tree = result.tree
+        path.forEach(key => {
+            if (tree[key] == null)
+                tree[key] = {}
+            tree = tree[key]
+        })
+    })
+
+    return result
+}
+
+function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path[]): void {
+    if (a === b)
+        return
+
+    if (a == null || b == null) {
+        diffPaths.push(path)
+        return
+    }
+
+    if ((typeof a == 'object') && (typeof b == 'object')) {
+        if (a.constructor !== b.constructor) {
+            diffPaths.push(path)
+            return
+        }
+
+        if (a instanceof Date) {
+            if (a.getTime() !== (b as Date).getTime())
+                diffPaths.push(path)
+            return
+        }
+        
+        if (a instanceof RegExp) {
+            if (a.source !== (b as RegExp).source || a.flags !== (b as RegExp).flags)
+                diffPaths.push(path)
+            return
+        }
+
+        if (a instanceof File) {
+            if (a.name !== (b as File).name || a.size !== (b as File).size || a.type !== (b as File).type || a.lastModified !== (b as File).lastModified)
+                diffPaths.push(path)
+            return
+        }
+
+        if (a instanceof Set) {
+            if (a.size !== (b as Set<any>).size) {
+                diffPaths.push(path)
+                return
+            }
+            for (const value of a.values()) {
+                if (!(b as Set<any>).has(value)) {
+                    diffPaths.push(path)
+                    return
+                }
+            }
+            return
+        }
+
+        if (a instanceof ArrayBuffer || ArrayBuffer.isView(a)) {
+            if (ArrayBuffer.isView(a)) {
+                if (a.byteLength !== (b as ArrayBufferView).byteLength || a.byteOffset !== (b as ArrayBufferView).byteOffset) {
+                    diffPaths.push(path)
+                    return
+                }
+                a = new Uint8Array(a.buffer, a.byteOffset, a.byteLength)
+                b = new Uint8Array((b as ArrayBufferView).buffer, (b as ArrayBufferView).byteOffset, (b as ArrayBufferView).byteLength)
+            }
+            else {
+                if (a.byteLength !== (b as ArrayBuffer).byteLength) {
+                    diffPaths.push(path)
+                    return
+                }
+                a = new Uint8Array(a)
+                b = new Uint8Array(b)
+            }
+            for (let i = (a as Uint8Array).length; i-- !== 0; ) {
+                if ((a as Uint8Array)[i] !== (b as Uint8Array)[i]) {
+                    diffPaths.push(path)
+                    return
+                }
+            }
+            return
+        }
+
+        if (known.get(a) === b)
+            return
+        known.set(a, b).set(b, a)
+
+        if (Array.isArray(a)) {
+            const length = Math.max(a.length, (b as any[]).length)
+            for (let i = 0; i < length; i++)
+                _diff(a[i], (b as any[])[i], known, [...path, i], diffPaths)
+            return
+        }
+
+        if (a instanceof Map) {
+            const keys = new Set<any>()
+            for (const entry of a.entries()) {
+                const key = entry[0]
+                keys.add(key)
+                _diff(entry[1], (b as Map<any, any>).get(key), known, [...path, key], diffPaths)
+            }
+            for (const entry of (b as Map<any, any>).entries()) {
+                const key = entry[0]
+                if (!keys.has(key))
+                    _diff(a.get(key), entry[1], known, [...path, key], diffPaths)
+            }
+            return
+        }
+
+        const keys = new Set<any>()
+        for (let key of Object.keys(a)) {
+            keys.add(key)
+            _diff(a[key], b[key], known, [...path, key], diffPaths)
+        }
+        for (let key of Object.keys(b)) {
+            if (!keys.has(key))
+                _diff(a[key], b[key], known, [...path, key], diffPaths)
+        }
+        return
+    }
+
+    if (!(a !== a && b !== b))
+        diffPaths.push(path)
+}
+
 export function equal(a: any, b: any, ignoredPath?: string | Path) {
     return _equal(a, b, new Map(), ignoredPath ? typeof ignoredPath === "string" ? splitPath(ignoredPath) : ignoredPath : undefined)
 }

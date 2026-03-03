@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { array, boolean, clone, CommonConstraints, date, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
+import { array, boolean, clone, CommonConstraints, date, diff, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
@@ -2803,6 +2803,63 @@ describe("Yop", () => {
             expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "b")).toBe(true)
             expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "a")).toBe(false)
             expect(equal({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } }, "[1]")).toBe(false)
+        })
+
+        it("diff", () => {
+            expect(diff(1, 1)).toEqual({ a: 1, b: 1, tree: {}, equal: true })
+            expect(diff(1, 2)).toEqual({ a: 1, b: 2, tree: {}, equal: false })
+            expect(diff("abc", "abc")).toEqual({ a: "abc", b: "abc", tree: {}, equal: true })
+            expect(diff("abc", "def")).toEqual({ a: "abc", b: "def", tree: {}, equal: false })
+            expect(diff(true, true)).toEqual({ a: true, b: true, tree: {}, equal: true })
+            expect(diff(true, false)).toEqual({ a: true, b: false, tree: {}, equal: false })
+            expect(diff(null, null)).toEqual({ a: null, b: null, tree: {}, equal: true })
+            expect(diff(null, undefined)).toEqual({ a: null, b: undefined, tree: {}, equal: false })
+            expect(diff(undefined, undefined)).toEqual({ a: undefined, b: undefined, tree: {}, equal: true })
+            expect(diff(new Date(2024, 11, 21), new Date(2024, 11, 21))).toEqual({ a: new Date(2024, 11, 21), b: new Date(2024, 11, 21), tree: {}, equal: true })
+            expect(diff(new Date(2024, 11, 21), new Date(2024, 11, 22))).toEqual({ a: new Date(2024, 11, 21), b: new Date(2024, 11, 22), tree: {}, equal: false })
+            expect(diff([1, 2, 3], [1, 2, 3])).toEqual({ a: [1, 2, 3], b: [1, 2, 3], tree: {}, equal: true })
+            expect(diff([1, 2, 3], [1, 2, 4])).toEqual({ a: [1, 2, 3], b: [1, 2, 4], tree: { 2: {} }, equal: false })
+            expect(diff([1, [2, 3]], [1, [2, 3]])).toEqual({ a: [1, [2, 3]], b: [1, [2, 3]], tree: {}, equal: true })
+            expect(diff([1, [2, 3]], [1, [2, 4]])).toEqual({ a: [1, [2, 3]], b: [1, [2, 4]], tree: { 1: { 1: {} } }, equal: false })
+            expect(diff({ a: 1, b: 2 }, { a: 1, b: 2 })).toEqual({ a: { a: 1, b: 2 }, b: { a: 1, b: 2 }, tree: {}, equal: true })
+            expect(diff({ a: 1, b: 2 }, { a: 1, b: 3 })).toEqual({ a: { a: 1, b: 2 }, b: { a: 1, b: 3 }, tree: { b: {} }, equal: false })
+            expect(diff({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 2 } })).toEqual({ a: { a: 1, b: { c: 2 } }, b: { a: 1, b: { c: 2 } }, tree: {}, equal: true })
+            expect(diff({ a: 1, b: { c: 2 } }, { a: 1, b: { c: 3 } })).toEqual({ a: { a: 1, b: { c: 2 } }, b: { a: 1, b: { c: 3 } }, tree: { b: { c: {} } }, equal: false })
+            expect(diff({ a: 1, b: 2 }, { a: 1 })).toEqual({ a: { a: 1, b: 2 }, b: { a: 1 }, tree: { b: {} }, equal: false })
+            expect(diff({ a: 1 }, { a: 1, b: 2 })).toEqual({ a: { a: 1 }, b: { a: 1, b: 2 }, tree: { b: {} }, equal: false })
+            expect(diff(new File([], "a.txt"), new File([], "a.txt"))).toEqual({ a: new File([], "a.txt"), b: new File([], "a.txt"), tree: {}, equal: true })
+            expect(diff(new File([], "a.txt"), new File([], "b.txt"))).toEqual({ a: new File([], "a.txt"), b: new File([], "b.txt"), tree: {}, equal: false })
+            const arrayBuffer = new ArrayBuffer(2)
+            const arrayBuffer2 = arrayBuffer.slice(0, 1)
+            expect(diff(new File([arrayBuffer], "a.txt"), new File([arrayBuffer], "a.txt"))).toEqual({ a: new File([arrayBuffer], "a.txt"), b: new File([arrayBuffer], "a.txt"), tree: {}, equal: true })
+            expect(diff(new File([arrayBuffer], "a.txt"), new File([arrayBuffer2], "a.txt"))).toEqual({ a: new File([arrayBuffer], "a.txt"), b: new File([arrayBuffer2], "a.txt"), tree: {}, equal: false })
+            expect(diff(/abc/, /abc/)).toEqual({ a: /abc/, b: /abc/, tree: {}, equal: true })
+            expect(diff(/abc/, /def/)).toEqual({ a: /abc/, b: /def/, tree: {}, equal: false })
+            expect(diff(/abc/i, /abc/)).toEqual({ a: /abc/i, b: /abc/, tree: {}, equal: false })
+            expect(diff(/abc/g, /abc/g)).toEqual({ a: /abc/g, b: /abc/g, tree: {}, equal: true })
+            expect(diff(/abc/gm, /abc/g)).toEqual({ a: /abc/gm, b: /abc/g, tree: {}, equal: false })
+            
+            const obj1: any = {}
+            obj1.self = obj1
+            const obj2: any = {}
+            obj2.self = obj2
+            expect(diff(obj1, obj2)).toEqual({ a: obj1, b: obj2, tree: {}, equal: true })
+            obj2.self = obj1
+            expect(diff(obj1, obj2)).toEqual({ a: obj1, b: obj2, tree: {}, equal: true })
+            obj2.self = {}
+            expect(diff(obj1, obj2)).toEqual({ a: obj1, b: obj2, tree: { self: { self: {} } }, equal: false })
+            obj2.self = { a: 1 }
+            expect(diff(obj1, obj2)).toEqual({ a: obj1, b: obj2, tree: { self: { self: {}, a: {} } }, equal: false })
+            
+            const obj4: any = {}
+            const obj5: any = {}
+            obj4.self = obj5
+            obj5.self = obj4
+            expect(diff(obj4, obj5)).toEqual({ a: obj4, b: obj5, tree: {}, equal: true })
+
+            class Test {}
+            expect(diff(new Test(), new Test())).toEqual({ a: new Test(), b: new Test(), tree: {}, equal: true })
+            expect(diff(new Test(), {})).toEqual({ a: new Test(), b: {}, tree: {}, equal: false })
         })
 
         it("clone", () => {

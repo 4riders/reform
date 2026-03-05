@@ -296,12 +296,19 @@ export type Diff<A = any, B  = any> = {
 }
 
 export function differs(diff: Diff, path: Path): boolean {
-    let tree = diff.tree
+    if (diff.equal)
+        return false
+    
+    let { a, b, tree } = diff
     for (let key of path) {
-        if (tree[key] == null)
-            return false
+        if (tree[key] == null) {
+            a = get(a, path)
+            b = get(b, path)
+            return !equal(a, b) && (a != null || b != null)
+        }
         tree = tree[key]
     }
+    
     return true
 }
 

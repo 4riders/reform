@@ -6,6 +6,16 @@ import { joinPath } from "../ObjectsUtil"
 export type TestConstraintMessage = ConstraintMessage | readonly [ConstraintMessage, Level] | boolean | undefined
 export type TestConstraintFunction<Value, Parent = unknown> = ConstraintFunction<NonNullable<Value>, TestConstraintMessage, Parent>
 
+/**
+ * Interface for an asynchronous test constraint.
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object.
+ * @property promise - Function returning a promise for the constraint message.
+ * @property pendingMessage - Message to show while pending.
+ * @property unavailableMessage - Message to show if async service is unavailable.
+ * @property dependencies - Function to get dependencies for revalidation.
+ * @property revalidate - Function to determine if revalidation is needed.
+ */
 export interface AsyncTestConstraint<Value, Parent = unknown> {
     promise: (context: ValidationContext<NonNullable<Value>, Parent>) => Promise<TestConstraintMessage>
     pendingMessage?: ConstraintMessage
@@ -14,6 +24,12 @@ export interface AsyncTestConstraint<Value, Parent = unknown> {
     revalidate?: (context: InternalValidationContext<Value, Parent>, previous: any[], current: any[], status: ValidationStatus | undefined) => boolean
 }
 
+/**
+ * Interface for a test constraint, which can be sync, async, or both.
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object.
+ * @property test - The test constraint function or async constraint.
+ */
 export interface TestConstraint<Value, Parent = unknown> {
     test?: TestConstraintFunction<Value, Parent> | AsyncTestConstraint<Value, Parent> | readonly [TestConstraintFunction<Value, Parent>, AsyncTestConstraint<Value, Parent>]
 }
@@ -22,6 +38,14 @@ const defaultGetDependencies = (_context: InternalValidationContext<unknown>) =>
 const defaultShouldRevalidate = (_context: InternalValidationContext<unknown>, previous: any[], current: any[], status: ValidationStatus | undefined) =>
     status?.level !== "unavailable" && current.some((v, i) => v !== previous[i])
 
+/**
+ * Validates a test constraint for a value, handling sync and async cases.
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object.
+ * @param context - The validation context.
+ * @param testConstraint - The test constraint to validate.
+ * @returns True if the constraint passes, false otherwise.
+ */
 export function validateTestConstraint<Value, Parent>(
     context: InternalValidationContext<Value, Parent>,
     testConstraint: TestConstraint<Value, Parent>
@@ -38,6 +62,10 @@ export function validateTestConstraint<Value, Parent>(
     return true
 }
 
+/**
+ * Internal helper to validate a test constraint (sync and async).
+ * @private
+ */
 function _validateTestConstraint<Value, Parent>(
     context: InternalValidationContext<Value, Parent>,
     testConstraint: TestConstraint<Value, Parent>
@@ -52,6 +80,10 @@ function _validateTestConstraint<Value, Parent>(
     return asyncTest == null || _validateAsyncTestConstraint(context as InternalValidationContext<NonNullable<Value>, Parent>, asyncTest)
 }
 
+/**
+ * Internal helper to validate a synchronous test constraint function.
+ * @private
+ */
 function _validateTestConstraintFunction<Value, Parent>(
     context: InternalValidationContext<NonNullable<Value>, Parent>,
     test: TestConstraintFunction<Value, Parent>
@@ -74,6 +106,10 @@ function _validateTestConstraintFunction<Value, Parent>(
     return context.setStatus("test", false, typeof constraint === "string" ? constraint : message, level ?? "error") == null
 }
 
+/**
+ * Internal helper to validate an asynchronous test constraint.
+ * @private
+ */
 function _validateAsyncTestConstraint<Value, Parent>(
     context: InternalValidationContext<NonNullable<Value>, Parent>,
     test: AsyncTestConstraint<Value, Parent>

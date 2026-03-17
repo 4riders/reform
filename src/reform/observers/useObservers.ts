@@ -6,11 +6,22 @@ import { FormManager, ReformSetValueEvent, SetValueOptions } from "../FormManage
 import { ObserverCallbackContext, ObserverCallbackOptions, ObserverMetadata, ObserversField } from "./observer"
 import { observerPathToRegexp, splitObserverPath } from "./observerPath"
 
+/**
+ * Holds observer metadata and its associated path.
+ * @template T - The type of the observed value.
+ */
 type ObserverData<T> = {
     observer: ObserverMetadata<T>
     path: Path
 }
 
+/**
+ * Recursively collects all observers from a model and its fields, populating the observers map.
+ * @template T
+ * @param path - The current path in the model.
+ * @param model - The class constructor to inspect.
+ * @param observersMap - The map to populate with observer data.
+ */
 function collectObservers<T>(path: Path, model: ClassConstructor<any>, observersMap: Map<string, ObserverData<T>[]>) {
     const metadata = getMetadataFields(model) as Record<string, ObserversField>
 
@@ -46,8 +57,21 @@ function collectObservers<T>(path: Path, model: ClassConstructor<any>, observers
     })
 }
 
+
+/**
+ * Tracks whether setValue was called during observer execution.
+ */
 type SetValueCalled = { value: boolean }
 
+/**
+ * Creates the context object passed to observer callbacks.
+ * @template T
+ * @param path - The path to the field being observed.
+ * @param value - The current value at the path.
+ * @param event - The event that triggered the observer.
+ * @param setValueCalled - Tracks if setValue was called.
+ * @returns The observer callback context.
+ */
 function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueEvent, setValueCalled: SetValueCalled): ObserverCallbackContext<T> {
     return {
         path: path,
@@ -68,7 +92,16 @@ function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueE
     }
 }
 
-function callObservers(observerData: ObserverData<any>, value: any, startPath: Path, path: Path, event: ReformSetValueEvent, eventPath: Path, setValueCalled: SetValueCalled) {
+/**
+ * Recursively calls observer callbacks for matching paths and values.
+ * @param observerData - The observer metadata and path.
+ * @param value - The current value at the path.
+ * @param startPath - The starting path for recursion.
+ * @param path - The remaining path to traverse.
+ * @param event - The event that triggered the observer.
+ * @param setValueCalled - Tracks if setValue was called.
+ */
+function callObservers(observerData: ObserverData<any>, value: any, startPath: Path, path: Path, event: ReformSetValueEvent, setValueCalled: SetValueCalled) {
     if (path.length === 0 || value == null)
         return
 
@@ -79,7 +112,7 @@ function callObservers(observerData: ObserverData<any>, value: any, startPath: P
             if (path.length === 1)
                 observerData.observer.callback(createCallbackContext(startPath.concat(pathElement), value, event, setValueCalled))
             else if (value != null)
-                callObservers(observerData, value, startPath.concat(pathElement), path.slice(1), event, eventPath, setValueCalled)
+                callObservers(observerData, value, startPath.concat(pathElement), path.slice(1), event, setValueCalled)
         }
     }
     else if (Array.isArray(value)) {
@@ -92,7 +125,7 @@ function callObservers(observerData: ObserverData<any>, value: any, startPath: P
                     if (itemPath.length === 0)
                         observerData.observer.callback(createCallbackContext(newStartPath, item, event, setValueCalled))
                     else
-                        callObservers(observerData, item, newStartPath, itemPath, event, eventPath, setValueCalled)
+                        callObservers(observerData, item, newStartPath, itemPath, event, setValueCalled)
                 }
             })
         }
@@ -103,12 +136,17 @@ function callObservers(observerData: ObserverData<any>, value: any, startPath: P
                 if (itemPath.length === 0)
                     observerData.observer.callback(createCallbackContext(newStartPath, item, event, setValueCalled))
                 else
-                    callObservers(observerData, item, newStartPath, itemPath, event, eventPath, setValueCalled)
+                    callObservers(observerData, item, newStartPath, itemPath, event, setValueCalled)
             }
         }
     }
 }
 
+/**
+ * Creates an event listener that triggers observers for a given model.
+ * @param model - The class constructor to observe.
+ * @returns An event listener for reform events.
+ */
 function createReformEventListener(model: ClassConstructor<any>) {
     const observersMap = new Map<string, ObserverData<any>[]>()
     collectObservers([], model, observersMap)
@@ -140,7 +178,7 @@ function createReformEventListener(model: ClassConstructor<any>) {
                         }
                     }
                     const path = (startPath.length > 0 ? observerData.path.slice(startPath.length) : observerData.path)
-                    callObservers(observerData, value, startPath, path, event, eventPath, setValueCalled)
+                    callObservers(observerData, value, startPath, path, event, setValueCalled)
                 })
             }
         })
@@ -152,6 +190,12 @@ function createReformEventListener(model: ClassConstructor<any>) {
     }) as EventListener
 }
 
+/**
+ * React hook to register and unregister reform event listeners for observers on a model.
+ * @template T
+ * @param model - The class constructor to observe.
+ * @param form - The form manager instance.
+ */
 export function useObservers<T extends object>(model: ClassConstructor<T>, form: FormManager<unknown>) {
     useEffect(() => {
         const reformEventListener = createReformEventListener(model)

@@ -11,21 +11,35 @@ import { Group, InternalValidationContext, ValidationStatus } from "./Validation
 
 export const validationSymbol = Symbol('YopValidation')
 
+/**
+ * Type for async validation status, including dependencies.
+ */
 export type AsyncValidationStatus = {
     status?: ValidationStatus | undefined
     dependencies: any[]
 }
 
+/**
+ * Type for resolved constraints, including required, min, and max.
+ * @template MinMax - The type for min/max values.
+ */
 export type ResolvedConstraints<MinMax = unknown> = {
     required: boolean
     min?: MinMax
     max?: MinMax
 }
 
+/**
+ * Type for resolved constraints with optional field metadata.
+ * @template MinMax - The type for min/max values.
+ */
 export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<MinMax> &{
     fieldMetadata?: CommonConstraints<any, any> | undefined
 }
 
+/**
+ * Interface for a validation form, representing form state and operations.
+ */
 export interface ValidationForm {
 
     readonly submitted: boolean
@@ -44,6 +58,9 @@ export interface ValidationForm {
     isDirty(path?: string | Path, ignoredPath?: string | Path): boolean
 }
 
+/**
+ * Interface for validation settings, including path, groups, and options.
+ */
 export interface ValidationSettings {
     path?: string | Path
     groups?: Group
@@ -52,12 +69,17 @@ export interface ValidationSettings {
     form?: ValidationForm
 }
 
+/**
+ * Interface for settings used when resolving constraints at a specific path.
+ */
 export interface ConstraintsAtSettings extends ValidationSettings {
     unsafeMetadata?: boolean
 }
 
+/**
+ * Main class for validation logic, constraint resolution, and message provider management.
+ */
 export class Yop {
-
     private static defaultInstance?: Yop
     private static classIds = new Map<string, Constructor<unknown>>()
     

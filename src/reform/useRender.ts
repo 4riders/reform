@@ -1,5 +1,11 @@
 import { useReducer } from "react"
 
+/**
+ * React hook that returns a function to force a component re-render.
+ * Useful for triggering updates in custom hooks or non-stateful logic.
+ *
+ * @returns A function that, when called, forces the component to re-render.
+ */
 export function useRender(): () => void {
     return useReducer(() => ({}), {})[1] as () => void
 }

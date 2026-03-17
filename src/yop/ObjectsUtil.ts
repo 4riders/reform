@@ -1,3 +1,6 @@
+/**
+ * State constants for path parsing.
+ */
 const DOT = 1
 const OPEN_BRACKET = 2
 const SINGLE_QUOTE = 3
@@ -5,15 +8,32 @@ const DOUBLE_QUOTE = 4
 const CLOSE_QUOTE = 5
 const CLOSE_BRACKET = 6
 
+/**
+ * Type for path parser state.
+ */
 type State = typeof DOT | typeof OPEN_BRACKET | typeof SINGLE_QUOTE | typeof DOUBLE_QUOTE | typeof CLOSE_QUOTE | typeof CLOSE_BRACKET | undefined
 
+/**
+ * Type for a parsed path, as an array of string or number segments.
+ */
 export type Path = (string | number)[]
 
 const identifier = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u
+/**
+ * Checks if a string is a valid JavaScript identifier.
+ * @param segment - The string segment to check.
+ * @returns True if valid identifier, false otherwise.
+ */
 function isValidIdentifier(segment: string): boolean {
     return identifier.test(segment)
 }
 
+/**
+ * Splits a string path into segments, handling dot/bracket/quote notation.
+ * @param path - The path string to split.
+ * @param cache - Optional cache for parsed paths.
+ * @returns The parsed path as an array, or undefined if invalid.
+ */
 export function splitPath(path: string, cache?: Map<string, Path>): Path | undefined {
 
     if (cache != null) {
@@ -181,6 +201,11 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
     return segments
 }
 
+/**
+ * Joins path segments into a string, using dot/bracket notation as needed.
+ * @param segments - The path segments to join.
+ * @returns The joined path string.
+ */
 export function joinPath(segments: Path): string {
     let path = ""
     for (let segment of segments) {
@@ -194,11 +219,21 @@ export function joinPath(segments: Path): string {
     return path
 }
 
+/**
+ * Result type for set operation, including root and previous value.
+ */
 export type SetResult = undefined | {
     root: unknown
     previousValue?: unknown
 }
 
+/**
+ * Retrieves a value from an object or array using a string or parsed path.
+ * @param value - The root object or array.
+ * @param path - The path string or array.
+ * @param cache - Optional cache for parsed paths.
+ * @returns The value at the path, or undefined if not found.
+ */
 export function get<T = any>(value: unknown, path: string | Path, cache?: Map<string, Path>): T | undefined {
     const keys = typeof path === "string" ? splitPath(path, cache) : path
     if (keys == null)
@@ -212,6 +247,15 @@ export function get<T = any>(value: unknown, path: string | Path, cache?: Map<st
     return parent
 }
 
+/**
+ * Sets a value in an object or array at a given path, optionally cloning and using a condition.
+ * @param value - The root object or array.
+ * @param path - The path string or array.
+ * @param newValue - The value to set.
+ * @param cache - Optional cache for parsed paths.
+ * @param options - Optional settings for cloning and condition.
+ * @returns The set result, including root and previous value.
+ */
 export function set(value: unknown, path: string | Path, newValue: unknown, cache?: Map<string, Path>, options: {
     clone?: boolean
     condition?: (currentValue: unknown) => boolean
@@ -258,6 +302,13 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
     return { root, previousValue }
 }
 
+/**
+ * Removes a value from an object or array at a given path.
+ * @param value - The root object or array.
+ * @param path - The path string or array.
+ * @param cache - Optional cache for parsed paths.
+ * @returns True if unset, false otherwise.
+ */
 export function unset(value: unknown, path: string | Path, cache?: Map<string, Path>): boolean | undefined {
     if (value == null)
         return false
@@ -288,6 +339,11 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
     return true
 }
 
+/**
+ * Type for a diff result between two values.
+ * @template A - The first value type.
+ * @template B - The second value type.
+ */
 export type Diff<A = any, B  = any> = {
     a: A
     b: B
@@ -295,6 +351,12 @@ export type Diff<A = any, B  = any> = {
     equal: boolean
 }
 
+/**
+ * Checks if two values differ at a given path, using a diff tree.
+ * @param diff - The diff result.
+ * @param path - The path to check.
+ * @returns True if values differ at the path, false otherwise.
+ */
 export function differs(diff: Diff, path: Path): boolean {
     if (diff.equal)
         return false
@@ -312,6 +374,14 @@ export function differs(diff: Diff, path: Path): boolean {
     return true
 }
 
+/**
+ * Computes the diff between two values, returning a diff tree and equality flag.
+ * @template A - The first value type.
+ * @template B - The second value type.
+ * @param a - The first value.
+ * @param b - The second value.
+ * @returns The diff result.
+ */
 export function diff<A = any, B = any>(a: A, b: B): Diff<A, B> {
     const paths: Path[] = []
     _diff(a, b, new Map(), [], paths)
@@ -335,6 +405,14 @@ export function diff<A = any, B = any>(a: A, b: B): Diff<A, B> {
     return result
 }
 
+/**
+ * Internal recursive diff function for comparing two values.
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param known - Map of known comparisons.
+ * @param path - Current path.
+ * @param diffPaths - Array of differing paths.
+ */
 function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path[]): void {
     if (a === b)
         return
@@ -450,10 +528,25 @@ function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path
         diffPaths.push(path)
 }
 
+/**
+ * Checks deep equality between two values, optionally ignoring a path.
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param ignoredPath - Optional path to ignore.
+ * @returns True if equal, false otherwise.
+ */
 export function equal(a: any, b: any, ignoredPath?: string | Path) {
     return _equal(a, b, new Map(), ignoredPath ? typeof ignoredPath === "string" ? splitPath(ignoredPath) : ignoredPath : undefined)
 }
 
+/**
+ * Internal recursive equality function for comparing two values.
+ * @param a - The first value.
+ * @param b - The second value.
+ * @param known - Map of known comparisons.
+ * @param ignoredPath - Optional path to ignore.
+ * @returns True if equal, false otherwise.
+ */
 function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boolean {
     if (a === b)
         return true
@@ -572,6 +665,13 @@ function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boole
     return a !== a && b !== b
 }
 
+/**
+ * Deep clones a value, handling arrays, objects, dates, maps, sets, and files.
+ * @template T - The value type.
+ * @param value - The value to clone.
+ * @param cloned - Optional map of already cloned values.
+ * @returns The cloned value.
+ */
 export function clone<T>(value: T, cloned?: Map<any, any>): T {
     if (value == null || typeof value !== 'object')
         return value
@@ -629,6 +729,13 @@ export function clone<T>(value: T, cloned?: Map<any, any>): T {
     return copy as T
 }
 
+/**
+ * Defines a lazily-evaluated property on an object.
+ * @template T - The object type.
+ * @param o - The object.
+ * @param name - The property name.
+ * @param get - The getter function.
+ */
 export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) => unknown)) {
     Object.defineProperty(o, name, { configurable: true, enumerable: true, get: function() {
         const value = get(this)
@@ -637,6 +744,15 @@ export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) 
     }})
 }
 
+/**
+ * Assigns properties from source to target, with options for skipping undefined, including, or excluding keys.
+ * @template T - The target type.
+ * @template U - The source type.
+ * @param target - The target object.
+ * @param source - The source object.
+ * @param options - Optional settings for assignment.
+ * @returns The merged object.
+ */
 export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean, includes?: (keyof U)[], excludes?: (keyof U)[] }): T & U {
     const descriptors = Object.getOwnPropertyDescriptors(source)
     if (options && (options.skipUndefined || options.includes || options.excludes)) {

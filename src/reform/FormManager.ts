@@ -8,50 +8,158 @@ import { ignored } from "../yop/decorators/ignored"
 import { ArrayHelper } from "./ArrayHelper"
 import { Reform } from "./Reform"
 
+/**
+ * Validation settings for reform forms, extending base validation settings.
+ * @property method - The validation method to use.
+ */
 export interface ReformValidationSettings extends ValidationSettings {
     method: "validate" | "validateAt" | "constraintsAt"
 }
+
+/**
+ * Settings for constraintsAt validation, combining reform and Yop constraint settings.
+ */
 export interface ReformConstraintsAtSettings extends ReformValidationSettings, ConstraintsAtSettings {
 }
 
+/**
+ * Options object for setValue operations.
+ * @property touch - Whether to mark the field as touched.
+ * @property validate - Whether to validate after setting the value.
+ * @property propagate - Whether to propagate the change to observers.
+ */
 export type SetValueOptionsObject = {
+    /** Whether to mark the field as touched. */
     touch?: boolean
+    /** Whether to validate after setting the value. */
     validate?: boolean
+    /** Whether to propagate the change to observers. */
     propagate?: boolean
 }
 
+/**
+ * Options for setValue: either a boolean (validate) or an options object.
+ */
 export type SetValueOptions = boolean | SetValueOptionsObject
 
+/**
+ * Interface for a form manager, providing value management, validation, and event APIs.
+ */
 export interface FormManager<T> extends ValidationForm {
 
+    /**
+     * Renders the form, causing any changes to be reflected in the UI.
+     */
     render(): void
 
+    /**
+     * Sets the submitting state of the form. Submitting state is automatically set to true when the form is submitted, and
+     * should be set to false when submission is complete.
+     * @param submitting - Whether the form is submitting.
+     */
     setSubmitting(submitting: boolean): void
     
+    /**
+     * The initial values of the form, as provided in the form config. These values are not modified by the form manager, and
+     * represent the original state of the form.
+     */
     readonly initialValues: T | null | undefined
+
+    /**
+     * Used when initialValues is provided as a promise. Indicates whether the promise is still pending.
+     */
     readonly initialValuesPending: boolean
+
+    /**
+     * The current values of the form. These values are managed by the form manager and should be considered the source of truth
+     * for the form state.
+     */
     readonly values: T
+
+    /**
+     * Sets the value of a form field.
+     * @param path - The path to the field.
+     * @param value - The value to set.
+     * @param options - Options for setting the value. See {@link SetValueOptions}.
+     * @returns The result of the set operation, or undefined if the path was invalid. See {@link SetResult}.
+     */
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult
 
+    /**
+     * Validates the entire form.
+     * @param touchedOnly - Whether to validate only touched fields.
+     * @param ignore - A function to determine if a path should be ignored during validation.
+     */
     validate(touchedOnly?: boolean, ignore?: (path: Path) => boolean): Map<string, ValidationStatus>
+
+    /**
+     * Validates a specific field located at a given path in the form.
+     * @param path - The path to the field.
+     * @param touchedOnly - Whether to validate only touched fields.
+     * @param skipAsync - Whether to skip asynchronous validation.
+     */
     validateAt(path: string | Path, touchedOnly?: boolean, skipAsync?: boolean): {
         changed: boolean,
         statuses: Map<string, ValidationStatus>
     }
+
+    /**
+     * Updates the asynchronous validation status of a specific field.
+     * @param path - The path to the field.
+     */
     updateAsyncStatus(path: string | Path): void
+
+    /**
+     * Scrolls to the first field with a validation error, if any. This is typically called after form submission if there
+     * are validation errors, to bring the user's attention to the first error. The implementation will scroll to an HTML with
+     * an id set to the path of the field with the error, so form fields should have their id set accordingly for this to work.
+     */
     scrollToFirstError(): void
 
+    /**
+     * Retrieves the constraints for a specific field.
+     * @param path - The path to the field.
+     * @param unsafeMetadata - Whether to include unsafe metadata. See {@link ResolvedConstraints}.
+     */
     constraintsAt<MinMax = unknown>(path: string | Path, unsafeMetadata?: boolean): ResolvedConstraints<MinMax> | undefined
 
+    /**
+     * Handler for form submission. This should be called in the onSubmit handler of the form element. It will prevent the default
+     * form submission behavior,
+     * @param e - The form submission event.
+     */
     submit(e: FormEvent<HTMLFormElement>): void
 
+    /**
+     * Retrieves an array helper for a specific field. The array helper provides methods for manipulating array fields, such
+     * as appending, inserting, and removing elements, with automatic touch, validation, and rendering.
+     * @param path - The path to the array field.
+     * @return An ArrayHelper instance for the specified path, or undefined if the field is not an array.
+     */
     array<T = any>(path: string): ArrayHelper<T> | undefined
 
+    /**
+     * Adds an event listener for reform events of type {@link ReformSetValueEvent}.
+     * @param listener - The event listener to add.
+     */
     addReformEventListener(listener: EventListener): void
+
+    /**
+     * Removes an event listener for reform events of type {@link ReformSetValueEvent}.
+     * @param listener - The event listener to remove.
+     */
     removeReformEventListener(listener: EventListener): void
 }
 
+/**
+ * The event type string for reform set value events.
+ */
 const ReformSetValueEventType = 'reform:set-value'
+
+/**
+ * Event fired when a value is set in the form, used for observer propagation.
+ * @template T - The type of the value being set.
+ */
 export interface ReformSetValueEvent<T = any> extends CustomEvent<{
     readonly form: FormManager<unknown>,
     readonly path: string,
@@ -61,6 +169,16 @@ export interface ReformSetValueEvent<T = any> extends CustomEvent<{
 }> {
 }
 
+/**
+ * Creates a ReformSetValueEvent for observer propagation.
+ * @template T - The type of the value being set.
+ * @param form - The form manager instance.
+ * @param path - The path to the value being set.
+ * @param previousValue - The previous value at the path.
+ * @param value - The new value being set.
+ * @param options - The set value options.
+ * @returns The created ReformSetValueEvent.
+ */
 function createReformSetValueEvent<T = any>(
     form: FormManager<unknown>,
     path: string,
@@ -71,6 +189,10 @@ function createReformSetValueEvent<T = any>(
     return new CustomEvent(ReformSetValueEventType, { detail: { form, path, previousValue, value, options }})
 }
 
+/**
+ * Implementation of the FormManager interface, providing value management, validation, eventing, and array helpers.
+ * @template T - The type of the form values.
+ */
 export class InternalFormManager<T extends object | null | undefined> implements FormManager<T> {
 
     private _config: FormConfig<T> = { validationSchema: ignored() }

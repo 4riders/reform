@@ -1,13 +1,35 @@
 import { ConstraintMessage } from "./constraints/Constraint";
 import { InternalValidationContext, Level } from "./ValidationContext";
 
+/**
+ * Interface for providing localized validation messages.
+ */
 export interface MessageProvider {
-
+    /**
+     * The locale identifier (e.g., 'en-US', 'fr-FR').
+     */
     readonly locale: string
 
+    /**
+     * Returns a localized message for a given validation context and code.
+     * @param context - The validation context.
+     * @param code - The message code.
+     * @param constraint - The constraint value.
+     * @param message - An optional custom message.
+     * @param level - The validation level (e.g., 'error', 'pending').
+     * @returns The resolved message.
+     */
     getMessage(context: InternalValidationContext<unknown>, code: string, constraint: any, message: ConstraintMessage | undefined, level: Level): ConstraintMessage
 }
 
+/**
+ * Formats a value for display in a localized message, handling numbers, dates, and arrays.
+ * @param value - The value to format.
+ * @param numberFormat - The number formatter.
+ * @param dateFormat - The date formatter.
+ * @param listFormat - The list formatter.
+ * @returns The formatted string.
+ */
 function format(value: any, numberFormat: Intl.NumberFormat, dateFormat: Intl.DateTimeFormat, listFormat: Intl.ListFormat): string {
     return (
         typeof value === "number" ? numberFormat.format(value) :
@@ -17,6 +39,9 @@ function format(value: any, numberFormat: Intl.NumberFormat, dateFormat: Intl.Da
     )
 }
 
+/**
+ * Properties passed to a message function for formatting.
+ */
 type MessageProps = {
     context: InternalValidationContext<unknown>
     code: string
@@ -28,17 +53,30 @@ type MessageProps = {
     level: Level
 }
 
+/**
+ * Function type for generating a message from message properties.
+ */
 type MessageFunction = (props: MessageProps) => string
 
+/**
+ * Basic implementation of MessageProvider for localized validation messages.
+ */
 export class BasicMessageProvider implements MessageProvider {
+    private readonly numberFormat: Intl.NumberFormat
+    private readonly dateFormat: Intl.DateTimeFormat
+    private readonly listFormat: Intl.ListFormat
+    private readonly pluralRules: Intl.PluralRules
 
-    private readonly numberFormat
-    private readonly dateFormat
-    private readonly listFormat
-    private readonly pluralRules
+    /**
+     * Map of message codes to message functions.
+     */
+    readonly messages: Map<string, MessageFunction>
 
-    readonly messages
-
+    /**
+     * Creates a new BasicMessageProvider for a given locale and message entries.
+     * @param locale - The locale identifier.
+     * @param entries - Optional array of [code, message function] pairs.
+     */
     constructor(readonly locale: string, entries?: (readonly [string, MessageFunction])[]) {
         this.numberFormat = new Intl.NumberFormat(this.locale)
         this.dateFormat = new Intl.DateTimeFormat(this.locale)
@@ -47,7 +85,11 @@ export class BasicMessageProvider implements MessageProvider {
 
         this.messages = new Map<string, MessageFunction>(entries)
     }
-    
+
+    /**
+     * Returns a localized message for a given validation context and code.
+     * @inheritdoc
+     */
     getMessage(context: InternalValidationContext<unknown>, code: string, constraint: any, message: ConstraintMessage | undefined, level: Level): ConstraintMessage {
         if (message != null)
             return message
@@ -69,10 +111,18 @@ export class BasicMessageProvider implements MessageProvider {
     }
 }
 
+/**
+ * Returns the plural suffix 's' if the plural rule is not 'one'.
+ * @param plural - The plural rule.
+ * @returns 's' if plural, otherwise an empty string.
+ */
 function s(plural?: Intl.LDMLPluralRule): string {
     return plural == null || plural === "one" ? "" : "s"
 }
 
+/**
+ * English (US) message provider for validation messages.
+ */
 export const messageProvider_en_US = new BasicMessageProvider("en-US", [
     ["string.min", ({ constraint }) => `Minimum ${ constraint.formatted } character${ s(constraint.plural) }`],
     ["string.max", ({ constraint }) => `Maximum ${ constraint.formatted } character${ s(constraint.plural) }`],
@@ -107,6 +157,9 @@ export const messageProvider_en_US = new BasicMessageProvider("en-US", [
     ["required", () => "Required field"]
 ])
 
+/**
+ * French (FR) message provider for validation messages.
+ */
 export const messageProvider_fr_FR = new BasicMessageProvider("fr-FR", [
     ["string.min", ({ constraint }) => `Minimum ${ constraint.formatted } caractère${ s(constraint.plural) }`],
     ["string.max", ({ constraint }) => `Maximum ${ constraint.formatted } caractère${ s(constraint.plural) }`],

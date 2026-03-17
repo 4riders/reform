@@ -6,12 +6,37 @@ export type ConstraintMessage = string | JSX.Element
 export type ConstraintValue<ConstraintType> = ConstraintType | readonly [ConstraintType, ConstraintMessage, Level?]
 export type ConstraintFunction<Value, ConstraintType, Parent = unknown> = ((context: ValidationContext<Value, Parent>) => ConstraintValue<ConstraintType> | undefined)
 
+/**
+ * A constraint can be defined as a direct value, a tuple with value, message and level, or a function returning 
+ * either of those.
+ */
 export type Constraint<Value, ConstraintType, Parent = unknown> =
     ConstraintValue<ConstraintType> |
     ConstraintFunction<Value, ConstraintType, Parent>
 
+/**
+ * A validation message can be defined as a direct string/JSX element or a function returning a message.
+ */
 export type Message<Value, Parent> = ConstraintMessage | ((context: ValidationContext<Value, Parent>) => ConstraintMessage)
 
+/**
+ * Validates a constraint for a given context and constraint definition.
+ * Handles group-based constraints and default values/messages.
+ *
+ * @template Value - The type of the value being validated.
+ * @template ConstraintType - The type of the constraint value.
+ * @template Parent - The type of the parent object.
+ * @template Constraints - The type of the constraints object.
+ * @param context - The validation context.
+ * @param constraints - The constraints object.
+ * @param name - The name of the constraint to validate.
+ * @param isConstraintType - Type guard for the constraint value.
+ * @param validate - Function to validate the value against the constraint.
+ * @param defaultConstraint - Optional default constraint value.
+ * @param defaultMessage - Optional default error message.
+ * @param setStatus - Whether to set the status on failure (default: true).
+ * @returns True if the constraint passes, false otherwise.
+ */
 export function validateConstraint<Value, ConstraintType, Parent, Constraints = { [name: string]: Constraint<Value, ConstraintType, Parent> }>(
     context: InternalValidationContext<Value, Parent>,
     constraints: Constraints,
@@ -36,6 +61,10 @@ export function validateConstraint<Value, ConstraintType, Parent, Constraints = 
     return true
 }
 
+/**
+ * Internal helper to validate a single constraint value, handling tuple and function forms.
+ * @private
+ */
 function _validateConstraint<Value, ConstraintType, Parent>(
     context: InternalValidationContext<Value, Parent>,
     constraint: Constraint<Value, ConstraintType, Parent> | undefined,

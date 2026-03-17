@@ -7,8 +7,17 @@ import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 
+/**
+ * Type for an array value, which can be an array, null, or undefined.
+ */
 export type ArrayValue = any[] | null | undefined
 
+/**
+ * Interface for array field constraints, combining common, min/max, test, and element type constraints.
+ * @template Value - The type of the array value.
+ * @template Parent - The type of the parent object.
+ * @property of - The constructor or factory for the array element type or a decorator function.
+ */
 export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     CommonConstraints<Value, Parent>,
     MinMaxConstraints<Value, number, Parent>,
@@ -20,6 +29,16 @@ export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     )
 }
 
+/**
+ * Traverses an array field to retrieve element constraints and value at a given index or property.
+ * @template Value - The type of the array value.
+ * @template Parent - The type of the parent object.
+ * @param context - The validation context for the array.
+ * @param constraints - The array constraints.
+ * @param propertyOrIndex - The property name or array index to traverse.
+ * @param traverseNullish - If true, traverses only if value is not nullish; otherwise, returns undefined for nullish values.
+ * @returns A tuple of the element constraints (if any) and the value at the given index/property.
+ */
 function traverseArray<Value extends ArrayValue, Parent>(
     context: InternalValidationContext<Value, Parent>,
     constraints: ArrayConstraints<Value, Parent>,
@@ -33,6 +52,14 @@ function traverseArray<Value extends ArrayValue, Parent>(
     return [elementConstraints, context.value?.[propertyOrIndex as number]]
 }
 
+/**
+ * Validates an array field against its constraints, including type, min/max length, and element validation.
+ * @template Value - The type of the array value.
+ * @template Parent - The type of the parent object.
+ * @param context - The validation context for the array.
+ * @param constraints - The array constraints to validate.
+ * @returns True if all constraints pass, false otherwise.
+ */
 function validateArray<Value extends ArrayValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: ArrayConstraints<Value, Parent>) {
     if (!validateTypeConstraint(context, Array.isArray, "array") ||
         !validateMinMaxConstraints(context, constraints, isNumber, (value, min) => value.length >= min, (value, max) => value.length <= max) ||
@@ -56,8 +83,19 @@ function validateArray<Value extends ArrayValue, Parent>(context: InternalValida
     return valid && validateTestConstraint(context, constraints)
 }
 
+/**
+ * Constant representing the kind of array validation decorator.
+ */
 export const arrayKind = "array"
 
+/**
+ * Decorator for array fields, applying validation constraints and groups.
+ * @template Value - The type of the array value.
+ * @template Parent - The type of the parent object.
+ * @param constraints - The array constraints to apply.
+ * @param groups - Optional validation groups.
+ * @returns A field decorator function with validation.
+ */
 export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Groups<ArrayConstraints<Value, Parent>>) {
     if (getValidationDecoratorKind(constraints?.of) != null) {
         const of = constraints!.of as ((_: any, context: Partial<ClassFieldDecoratorContext<Value, ArrayElementType<Value>>>) => void)

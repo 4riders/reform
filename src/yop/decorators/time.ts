@@ -8,6 +8,12 @@ import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfCo
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { Message } from "../constraints/Constraint"
 
+/**
+ * Interface for time field constraints, combining common, min/max, oneOf, and test constraints.
+ * @template Value - The type of the string value.
+ * @template Parent - The type of the parent object.
+ * @property formatError - Optional custom error message for invalid time format.
+ */
 export interface TimeConstraints<Value extends StringValue, Parent> extends
     CommonConstraints<Value, Parent>,
     MinMaxConstraints<Value, string, Parent>,
@@ -16,9 +22,17 @@ export interface TimeConstraints<Value extends StringValue, Parent> extends
     formatError?: Message<Value, Parent>
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#time_strings
+/**
+ * Regular expression for validating time strings in the format HH:mm[:ss[.sss]].
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#time_strings
+ */
 export const timeRegex = /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/
 
+/**
+ * Converts a time string (HH:mm[:ss[.sss]]) to milliseconds since midnight.
+ * @param time - The time string to convert.
+ * @returns The number of milliseconds since midnight, or undefined if invalid.
+ */
 export function timeToMillis(time: string) {
     const matches = timeRegex.exec(time)
     return (
@@ -28,8 +42,19 @@ export function timeToMillis(time: string) {
     )
 }
 
+/**
+ * Maximum number of milliseconds in a day (23:59:59.999).
+ */
 const MAX_MILLIS = (24 * 3600 * 1000) - 1
 
+/**
+ * Validates a time field against its constraints.
+ * @template Value - The type of the string value.
+ * @template Parent - The type of the parent object.
+ * @param context - The validation context.
+ * @param constraints - The time constraints to validate.
+ * @returns True if all constraints pass, false otherwise.
+ */
 export function validateTime<Value extends StringValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: TimeConstraints<Value, Parent>) {
     if (!validateTypeConstraint(context, isString, "time"))
         return false
@@ -47,6 +72,14 @@ export function validateTime<Value extends StringValue, Parent>(context: Interna
     )
 }
 
+/**
+ * Decorator for time fields, applying validation constraints and groups.
+ * @template Value - The type of the string value.
+ * @template Parent - The type of the parent object.
+ * @param constraints - The time constraints to apply.
+ * @param groups - Optional validation groups.
+ * @returns A field decorator function with validation.
+ */
 export function time<Value extends StringValue, Parent>(constraints?: TimeConstraints<Value, Parent>, groups?: Groups<TimeConstraints<Value, Parent>>) {
     return fieldValidationDecorator("time", constraints ?? {}, groups, validateTime, isString)
 }

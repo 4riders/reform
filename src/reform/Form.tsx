@@ -6,11 +6,26 @@ import { FormManager, InternalFormManager } from "./FormManager"
 import { ValidationStatus } from "../yop/ValidationContext"
 import { Reform } from "./Reform"
 
+/**
+ * Props for the Form component.
+ * @property form - The form manager instance.
+ * @property disabled - Whether the form is disabled.
+ */
 interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
+
+    /** The form manager instance. */
     form: FormManager<unknown>
+    /** Whether the form is disabled. */
     disabled?: boolean
 }
 
+/**
+ * React component for rendering an HTML form with context (see {@link FormContext}), error display, and automatic fieldset
+ * disabling.
+ *
+ * @param props - The form props.
+ * @returns The rendered form component.
+ */
 export function Form(props: FormProps) {
     const { form, children, disabled, ...formAttrs } = props
     

@@ -2,9 +2,20 @@ import { ConstraintMessage } from "./constraints/Constraint"
 import { joinPath, Path } from "./ObjectsUtil"
 import { ValidationForm, ValidationSettings, Yop } from "./Yop"
 
+/**
+ * Type representing the validation group or groups being currently validated. `undefined` means the default group.
+ */
 export type Group = string | ((string | undefined)[])
+
+/**
+ * The types of validation status levels. "pending" and "unavailable" are only used for asynchronous validations.
+ */
 export type Level = "info" | "warning" | "error" | "pending" | "unavailable"
 
+/**
+ * Interface representing the status of a validation, including its level, path, value, kind, code, constraint, and message.
+ * This is used to track the results of validation operations and provide feedback to the user.
+ */
 export type ValidationStatus = {
     level: Level
     path: string
@@ -15,6 +26,13 @@ export type ValidationStatus = {
     message: ConstraintMessage
 }
 
+/**
+ * Interface representing the context of a validation operation, providing access to the value being validated, its path,
+ * parent context, root context, settings, form, and a store for sharing data across validations.
+ * 
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object containing the value.
+ */
 export interface ValidationContext<Value, Parent = unknown> {
     
     readonly kind: string

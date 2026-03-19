@@ -56,7 +56,7 @@ function validateDate<Value extends DateValue, Parent>(context: InternalValidati
  * const form = useForm(Person, ...)
  * 
  * // the date decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, date({ required: true })) // error `dateOfBirth` is required
+ * Yop.validate(null, date({ required: true })) // error: "Required field"
  * ```
  * @template Value - The type of the date value.
  * @template Parent - The type of the parent object.

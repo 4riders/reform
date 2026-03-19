@@ -52,7 +52,7 @@ function validateFile<Value extends FileValue, Parent>(context: InternalValidati
  * const form = useForm(Person, ...)
  * 
  * // the file decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, file({ required: true })) // error `profilePicture` is required
+ * Yop.validate(null, file({ required: true })) // error: "Required field"
  * ```
  * @template Value - The type of the file value.
  * @template Parent - The type of the parent object.

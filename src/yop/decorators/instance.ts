@@ -1,8 +1,3 @@
-/**
- * Provides instance validation decorators and types for the Yop validation framework.
- * Includes constraints for validating object/class instances and their structure.
- * @module yop/decorators/instance
- */
 import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
 import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { fieldValidationDecorator, Groups, InternalClassConstraints, validateClass } from "../Metadata"
@@ -92,7 +87,7 @@ export const instanceKind = "instance"
  * const form = useForm(Person, ...)
  * 
  * // the instance decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, instance({ of: Person })) // error `dog` is required
+ * Yop.validate(new Person(), instance({ of: Person })) // error: dog is a "Required field"
  * ```
  * @template Value - The type of the instance value.
  * @template Parent - The type of the parent object.

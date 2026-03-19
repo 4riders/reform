@@ -81,12 +81,25 @@ export function validateTime<Value extends StringValue, Parent>(context: Interna
 }
 
 /**
- * Decorator for time fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to a time field. A valid time value must be a string in the format HH:mm[:ss[.sss]] (24-hour clock).
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠time({ required: true, formatError: "Invalid wake up time format", max: "18:00" })
+ *     wakeUpTime: string | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the time decorator can also be used as a function to allow standalone validation:
+ * Yop.validate("00:00", time({ min: "01:00" })) // error: "Must be after or equal to 01:00"
+ * ```
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @param constraints - The time constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#time_strings
  */
 export function time<Value extends StringValue, Parent>(constraints?: TimeConstraints<Value, Parent>, groups?: Groups<TimeConstraints<Value, Parent>>) {
     return fieldValidationDecorator("time", constraints ?? {}, groups, validateTime, isString)

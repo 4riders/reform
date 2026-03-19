@@ -61,18 +61,19 @@ export function validateString<Value extends StringValue, Parent>(
 }
 
 /**
- * Decorator for applying validation rules to a string field.
+ * Decorator for applying validation rules to a string field. A required string field can be an empty string, but neither `null` nor `undefined`.
+ * To enforce non-empty strings, use the `min` constraint with a value of 1.
  * 
  * Example usage:
  * ```tsx
  * class Person {
- *     ＠string({ required: true, min: 0 })
+ *     ＠string({ required: true, min: 1 })
  *     name: string | null = null
  * }
  * const form = useForm(Person, ...)
  * 
  * // the string decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, string({ required: true, min: 0 })) // error `name` is required
+ * Yop.validate("", string({ required: true, min: 1 })) // error: "Minimum 1 character"
  * ```
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.

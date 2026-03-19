@@ -52,7 +52,7 @@ function validateBoolean<Value extends BooleanValue, Parent>(context: InternalVa
  * const form = useForm(Person, ...)
  * 
  * // the boolean decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, boolean({ required: true })) // error `adult` is required
+ * Yop.validate(false, boolean({ oneOf: [true] })) // error: "Must be one of: true"
  * ```
  * @template Value - The type of the boolean value.
  * @template Parent - The type of the parent object.

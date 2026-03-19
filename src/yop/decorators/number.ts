@@ -56,7 +56,7 @@ function validateNumber<Value extends NumberValue, Parent>(context: InternalVali
  * const form = useForm(Person, ...)
  * 
  * // the number decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, number({ required: true, min: 0 })) // error `age` is required
+ * Yop.validate(-1, number({ required: true, min: 0 })) // error: "Must be greater or equal to 0"
  * ```
  * @template Value - The type of the number value.
  * @template Parent - The type of the parent object.

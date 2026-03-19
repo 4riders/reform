@@ -49,7 +49,7 @@ export function validateEmail<Value extends StringValue, Parent>(context: Intern
  * const form = useForm(Person, ...)
  * 
  * // the email decorator can also be used as a function to allow standalone validation:
- * const statuses = Yop.validate({}, email({ required: true })) // error `email` is required
+ * Yop.validate(null, email({ required: true })) // error: "Required field"
  * ```
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.

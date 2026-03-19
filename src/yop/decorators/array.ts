@@ -7,6 +7,8 @@ import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 import { id } from "./id"
+import { string } from "./string"
+import { number } from "./number"
 
 /**
  * Type for an array value, which can be an array, null, or undefined.
@@ -97,7 +99,32 @@ function validateArray<Value extends ArrayValue, Parent>(context: InternalValida
 export const arrayKind = "array"
 
 /**
- * Decorator for array fields, applying validation constraints and groups.
+ * Decorator for validating a field value as an array of a specified element type. The `of` property can be set to a custom
+ * class constructor, or a validation decorator such as {@link string}, {@link number}, etc. Using a validation decorator allows
+ * applying constraints to each array element.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ * 
+ *     // the array itself must not be null, but its elements may be null
+ *     ＠array({ of: Dog, required: true })
+ *     dogs: Dog[] | null = null
+ * 
+ *     // the array must not be null, and all its elements must also be non-null
+ *     ＠array({ of: instance({ of: Cat, required: true }), required: true })
+ *     cats: Cat[] | null = null
+ * 
+ *     // a non-empty array of strings with at least 5 characters each
+ *     ＠array({ of: string({ required: true, min: 5 }), required: true, min: 1 })
+ *     names: string[] | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the array decorator can also be used as a function to allow standalone validation:
+ * Yop.validate([], array({ of: Dog, min: 1 })) // error: "At least 1 element"
+ * ```
+ * 
  * @template Value - The type of the array value.
  * @template Parent - The type of the parent object.
  * @param constraints - The array constraints to apply.

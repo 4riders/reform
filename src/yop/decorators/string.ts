@@ -9,6 +9,7 @@ import { fieldValidationDecorator, Groups } from "../Metadata"
 
 /**
  * Type for a string value, which can be a string, null, or undefined.
+ * @ignore
  */
 export type StringValue = string | null | undefined
 
@@ -43,6 +44,7 @@ export interface StringConstraints<Value extends StringValue, Parent> extends
  * @param defaultMatchMessage - Optional default error message for match failures.
  * @param type - Optional type name for error reporting.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 export function validateString<Value extends StringValue, Parent>(
     context: InternalValidationContext<Value, Parent>,

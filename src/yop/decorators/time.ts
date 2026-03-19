@@ -33,6 +33,7 @@ export interface TimeConstraints<Value extends StringValue, Parent> extends
 /**
  * Regular expression for validating time strings in the format HH:mm[:ss[.sss]].
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#time_strings
+ * @ignore
  */
 export const timeRegex = /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.([0-9]{1,3}))?)?$/
 
@@ -40,6 +41,7 @@ export const timeRegex = /^([01][0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9])(?:\.(
  * Converts a time string (HH:mm[:ss[.sss]]) to milliseconds since midnight.
  * @param time - The time string to convert.
  * @returns The number of milliseconds since midnight, or undefined if invalid.
+ * @ignore
  */
 export function timeToMillis(time: string) {
     const matches = timeRegex.exec(time)
@@ -52,6 +54,7 @@ export function timeToMillis(time: string) {
 
 /**
  * Maximum number of milliseconds in a day (23:59:59.999).
+ * @ignore
  */
 const MAX_MILLIS = (24 * 3600 * 1000) - 1
 
@@ -62,6 +65,7 @@ const MAX_MILLIS = (24 * 3600 * 1000) - 1
  * @param context - The validation context.
  * @param constraints - The time constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 export function validateTime<Value extends StringValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: TimeConstraints<Value, Parent>) {
     if (!validateTypeConstraint(context, isString, "time"))

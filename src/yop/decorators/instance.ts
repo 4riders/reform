@@ -9,6 +9,7 @@ import { id } from "./id"
 
 /**
  * Type for values that can be validated as instances (objects, null, or undefined).
+ * @ignore
  */
 export type InstanceValue = object | null | undefined
 
@@ -38,6 +39,7 @@ export interface InstanceConstraints<Value extends InstanceValue, Parent> extend
  * @param key - The property key to traverse.
  * @param traverseNullish - Whether to traverse nullish values.
  * @returns A tuple of the internal constraints and the value.
+ * @ignore
  */
 function traverseInstance<Value extends InstanceValue, Parent>(
     context: InternalValidationContext<Value, Parent>,
@@ -58,6 +60,7 @@ function traverseInstance<Value extends InstanceValue, Parent>(
  * @param context - The validation context.
  * @param constraints - The instance constraints.
  * @returns True if valid, false otherwise.
+ * @ignore
  */
 function validateInstance<Value extends InstanceValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: InstanceConstraints<Value, Parent>) {
     if (!validateTypeConstraint(context, isObject, "object") ||
@@ -71,6 +74,7 @@ function validateInstance<Value extends InstanceValue, Parent>(context: Internal
 
 /**
  * The kind string used to identify instance constraints.
+ * @ignore
  */
 export const instanceKind = "instance"
 

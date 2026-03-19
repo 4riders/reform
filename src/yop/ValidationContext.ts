@@ -9,6 +9,9 @@ export type Group = string | ((string | undefined)[])
 
 /**
  * The types of validation status levels. "pending" and "unavailable" are only used for asynchronous validations.
+ * "pending" indicates that the asynchronous validation is in progress, while "unavailable" indicates that the validation
+ * couldn't be performed (e.g., due to an unreachable server).
+ * @see {@link ValidationStatus}
  */
 export type Level = "info" | "warning" | "error" | "pending" | "unavailable"
 
@@ -17,12 +20,41 @@ export type Level = "info" | "warning" | "error" | "pending" | "unavailable"
  * This is used to track the results of validation operations and provide feedback to the user.
  */
 export type ValidationStatus = {
+
+    /**
+     * The severity level of the validation status, or the status of asynchronous validation.
+     * @see {@link Level}
+     */
     level: Level
+
+    /**
+     * The path to the validated value, represented as a string (e.g., "users[0].address.street").
+     */
     path: string
+
+    /**
+     * The value that was validated.
+     */
     value: any
+
+    /**
+     * The kind of validation (e.g., "string", "number", "array"), used for message resolution.
+     */
     kind: string
+
+    /**
+     * A code representing the specific validation type (e.g., "required", "min"), used for message resolution.
+     */
     code: string
+
+    /**
+     * The constraint value that caused the validation error (e.g., `true` for a "required" constraint, `1` for a "min" constraint).
+     */
     constraint: any
+
+    /**
+     * The resolved message for this validation status, which can be displayed to the user.
+     */
     message: ConstraintMessage
 }
 
@@ -53,8 +85,16 @@ export interface ValidationContext<Value, Parent = unknown> {
     readonly store: Map<string, any>
 }
 
+/**
+ * @ignore
+ */
 export const UndefinedParent = Object.freeze(Object.create(null))
 
+/**
+ * Internal implementation of the ValidationContext interface, used for managing validation state and providing utility methods
+ * for creating child contexts and statuses.
+ * @ignore
+ */
 export class InternalValidationContext<Value, Parent = unknown> implements ValidationContext<Value, Parent> {
 
     readonly yop: Yop
@@ -156,5 +196,8 @@ export class InternalValidationContext<Value, Parent = unknown> implements Valid
     }
 }
 
+/**
+ * @ignore
+ */
 export type ValuedContext<Value, Parent> = InternalValidationContext<NonNullable<Value>, Parent>
 

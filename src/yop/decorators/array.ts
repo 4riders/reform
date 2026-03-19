@@ -12,6 +12,7 @@ import { number } from "./number"
 
 /**
  * Type for an array value, which can be an array, null, or undefined.
+ * @ignore
  */
 export type ArrayValue = any[] | null | undefined
 
@@ -19,7 +20,6 @@ export type ArrayValue = any[] | null | undefined
  * Interface for array field constraints, combining common, min/max, test, and element type constraints.
  * @template Value - The type of the array value.
  * @template Parent - The type of the parent object.
- * @property of - A class constructor, a function returning a constructor, or a class id to validate each array element against.
  * @see {@link id}
  * @see {@link CommonConstraints}
  * @see {@link MinMaxConstraints}
@@ -30,12 +30,15 @@ export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     MinMaxConstraints<Value, number, Parent>,
     TestConstraint<Value, Parent> {
     /**
-     * A class constructor, a function returning a constructor, or a class id (see {@link id}) to validate each array element against.
+     * A class constructor, a function returning a constructor, a validation decorator, or a class id (see {@link id}) to
+     * validate each array element against.
+     * @see {@link array}
      */
     of: (
         Constructor<ArrayElementType<Value>> |
         (() => Constructor<ArrayElementType<Value>>) |
-        ((_: any, context: ClassFieldDecoratorContext<Value, ArrayElementType<Value>>) => void)
+        ((_: any, context: ClassFieldDecoratorContext<Value, ArrayElementType<Value>>) => void) |
+        string
     )
 }
 
@@ -48,6 +51,7 @@ export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
  * @param propertyOrIndex - The property name or array index to traverse.
  * @param traverseNullish - If true, traverses only if value is not nullish; otherwise, returns undefined for nullish values.
  * @returns A tuple of the element constraints (if any) and the value at the given index/property.
+ * @ignore
  */
 function traverseArray<Value extends ArrayValue, Parent>(
     context: InternalValidationContext<Value, Parent>,
@@ -69,6 +73,7 @@ function traverseArray<Value extends ArrayValue, Parent>(
  * @param context - The validation context for the array.
  * @param constraints - The array constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 function validateArray<Value extends ArrayValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: ArrayConstraints<Value, Parent>) {
     if (!validateTypeConstraint(context, Array.isArray, "array") ||
@@ -95,6 +100,7 @@ function validateArray<Value extends ArrayValue, Parent>(context: InternalValida
 
 /**
  * Constant representing the kind of array validation decorator.
+ * @ignore
  */
 export const arrayKind = "array"
 

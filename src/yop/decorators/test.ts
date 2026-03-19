@@ -5,6 +5,7 @@ import { Constructor } from "../TypesUtil"
 /**
  * Utility type to extract the instance type from a constructor.
  * @template Class - The constructor type.
+ * @ignore
  */
 type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
 

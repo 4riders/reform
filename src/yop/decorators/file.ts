@@ -7,6 +7,7 @@ import { fieldValidationDecorator, Groups } from "../Metadata"
 
 /**
  * Type for a file value, which can be a File object, null, or undefined.
+ * @ignore
  */
 export type FileValue = File | null | undefined
 
@@ -31,6 +32,7 @@ export interface FileConstraints<Value extends FileValue, Parent> extends
  * @param context - The validation context.
  * @param constraints - The file constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 function validateFile<Value extends FileValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: FileConstraints<Value, Parent>) {
     return (

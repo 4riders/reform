@@ -8,6 +8,7 @@ import { fieldValidationDecorator, Groups } from "../Metadata"
 
 /**
  * Type for a date value, which can be a Date object, null, or undefined.
+ * @ignore
  */
 export type DateValue = Date | null | undefined
 
@@ -34,6 +35,7 @@ export interface DateConstraints<Value extends DateValue, Parent> extends
  * @param context - The validation context.
  * @param constraints - The date constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 function validateDate<Value extends DateValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: DateConstraints<Value, Parent>) {
     return (

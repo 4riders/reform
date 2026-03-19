@@ -7,6 +7,7 @@ import { fieldValidationDecorator, Groups } from "../Metadata"
 
 /**
  * Type for a boolean value, which can be true, false, null, or undefined.
+ * @ignore
  */
 export type BooleanValue = boolean | null | undefined
 
@@ -31,6 +32,7 @@ export interface BooleanConstraints<Value extends BooleanValue, Parent> extends
  * @param context - The validation context.
  * @param constraints - The boolean constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 function validateBoolean<Value extends BooleanValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: BooleanConstraints<Value, Parent>) {
     return (

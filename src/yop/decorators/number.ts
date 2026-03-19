@@ -8,6 +8,7 @@ import { fieldValidationDecorator, Groups } from "../Metadata"
 
 /**
  * Type for a number value, which can be a number, null, or undefined.
+ * @ignore
  */
 export type NumberValue = number | null | undefined
 
@@ -34,6 +35,7 @@ export interface NumberConstraints<Value extends NumberValue, Parent> extends
  * @param context - The validation context.
  * @param constraints - The number constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 function validateNumber<Value extends NumberValue, Parent>(context: InternalValidationContext<Value, Parent>, constraints: NumberConstraints<Value, Parent>) {
     return (

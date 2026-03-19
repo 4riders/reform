@@ -194,7 +194,7 @@ function createReformSetValueEvent<T = any>(
 
 /**
  * Implementation of the FormManager interface, providing value management, validation, eventing, and array helpers.
- * @template T - The type of the form values.
+ * @ignore
  */
 export class InternalFormManager<T extends object | null | undefined> implements FormManager<T> {
 

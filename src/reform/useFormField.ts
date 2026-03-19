@@ -21,22 +21,30 @@ export type FieldState<Value, MinMax, Root = any> = {
     status?: ValidationStatus
     /** The form manager instance. See {@link FormManager} for details. */
     form: FormManager<Root>
-    /** Function to trigger a re-render. */
+    /** Function to trigger a re-render of the component that called {@link useFormField} to get this field state. */
     render: () => void
     /** The resolved constraints for the field, if any. See {@link ResolvedConstraints} for details. */
     constraints?: ResolvedConstraints<MinMax>
 }
 
 /**
- * React hook to access and manage the state of a form field, including value, validation, and constraints.
+ * React hook to access and manage the state of a form field, including value, validation status, and constraints.
  * Handles async validation and triggers re-renders as needed.
+ * 
+ * Example usage:
+ * ```tsx
+ * function MyTextField(props: { path: string }) {
+ *     const { constraints, status, value, form } = useFormField<string, number>(props.path)
+ *     // render input with value, display validation status, etc.
+ * }
+ * ```
  *
  * @template Value - The type of the field value.
  * @template MinMax - The type for min/max constraints.
  * @template Root - The type of the root form values.
  * @param name - The field name or path.
  * @param unsafeMetadata - Whether to use unsafe metadata for constraints.
- * @returns The current state of the field.
+ * @returns The current state of the field. See {@link FieldState} for details.
  */
 export function useFormField<Value, MinMax, Root = any>(name: string, unsafeMetadata = false): FieldState<Value, MinMax, Root> {
     const render = useRender()

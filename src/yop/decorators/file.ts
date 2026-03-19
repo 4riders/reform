@@ -14,6 +14,9 @@ export type FileValue = File | null | undefined
  * Interface for file field constraints, combining common, min/max, and test constraints.
  * @template Value - The type of the file value.
  * @template Parent - The type of the parent object.
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link TestConstraint}
  */
 export interface FileConstraints<Value extends FileValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -38,7 +41,19 @@ function validateFile<Value extends FileValue, Parent>(context: InternalValidati
 }
 
 /**
- * Decorator for file fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to a File field.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠file({ required: true, min: [1024, "Picture size must be at least 1KB"] })
+ *     profilePicture: File | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the file decorator can also be used as a function to allow standalone validation:
+ * const statuses = Yop.validate({}, file({ required: true })) // error `profilePicture` is required
+ * ```
  * @template Value - The type of the file value.
  * @template Parent - The type of the parent object.
  * @param constraints - The file constraints to apply.

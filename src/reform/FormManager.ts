@@ -1,7 +1,7 @@
 import { FormEvent } from "react"
 import { clone, equal, get, set, SetResult, unset } from "../yop/ObjectsUtil"
 import { FormConfig } from "./useForm"
-import { ValidationForm, ResolvedConstraints, ValidationSettings, Yop, ConstraintsAtSettings } from "../yop/Yop"
+import { ValidationForm, ResolvedConstraints, UnsafeResolvedConstraints, ValidationSettings, Yop, ConstraintsAtSettings } from "../yop/Yop"
 import { joinPath, Path } from "../yop/ObjectsUtil"
 import { ValidationStatus } from "../yop/ValidationContext"
 import { ignored } from "../yop/decorators/ignored"
@@ -53,8 +53,8 @@ export interface FormManager<T> extends ValidationForm {
     render(): void
 
     /**
-     * Sets the submitting state of the form. Submitting state is automatically set to true when the form is submitted, and
-     * should be set to false when submission is complete.
+     * Sets the submitting state of the form. Submitting state is automatically set to `true` when the form is submitted, and
+     * should be reset to `false` when submission is complete.
      * @param submitting - Whether the form is submitting.
      */
     setSubmitting(submitting: boolean): void
@@ -119,7 +119,10 @@ export interface FormManager<T> extends ValidationForm {
     /**
      * Retrieves the constraints for a specific field.
      * @param path - The path to the field.
-     * @param unsafeMetadata - Whether to include unsafe metadata. See {@link ResolvedConstraints}.
+     * @param unsafeMetadata - Whether to include unsafe field metadata. If `true`, the resolved constraints will be of type
+     *      {@link UnsafeResolvedConstraints}, which enables modification of the field constraints stored in the class metadata.
+     *      This can be useful for advanced use cases, but should be used with caution.
+     * @return The resolved constraints for the field, or undefined if there are no constraints. See {@link ResolvedConstraints}.
      */
     constraintsAt<MinMax = unknown>(path: string | Path, unsafeMetadata?: boolean): ResolvedConstraints<MinMax> | undefined
 

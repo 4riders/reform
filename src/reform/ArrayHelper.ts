@@ -1,8 +1,8 @@
 import { Path } from "../yop/ObjectsUtil"
-import { InternalFormManager } from "./FormManager"
+import { FormManager, InternalFormManager } from "./FormManager"
 
 /**
- * Utility class for manipulating array fields in a form model, with automatic touch, validation, and rendering.
+ * Utility class for manipulating array fields in a form model, with automatic touch, validation, and rendering. See {@link FormManager.array} for details.
  * @template T - The type of array elements.
  */
 export class ArrayHelper<T = any> {

@@ -6,6 +6,7 @@ import { defineLazyProperty } from "../ObjectsUtil"
 import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
+import { id } from "./id"
 
 /**
  * Type for an array value, which can be an array, null, or undefined.
@@ -16,12 +17,19 @@ export type ArrayValue = any[] | null | undefined
  * Interface for array field constraints, combining common, min/max, test, and element type constraints.
  * @template Value - The type of the array value.
  * @template Parent - The type of the parent object.
- * @property of - The constructor or factory for the array element type or a decorator function.
+ * @property of - A class constructor, a function returning a constructor, or a class id to validate each array element against.
+ * @see {@link id}
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link TestConstraint}
  */
 export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     CommonConstraints<Value, Parent>,
     MinMaxConstraints<Value, number, Parent>,
     TestConstraint<Value, Parent> {
+    /**
+     * A class constructor, a function returning a constructor, or a class id (see {@link id}) to validate each array element against.
+     */
     of: (
         Constructor<ArrayElementType<Value>> |
         (() => Constructor<ArrayElementType<Value>>) |

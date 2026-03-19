@@ -17,12 +17,19 @@ export type StringValue = string | null | undefined
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @property match - Constraint for matching a regular expression.
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link OneOfConstraint}
+ * @see {@link TestConstraint}
  */
 export interface StringConstraints<Value extends StringValue, Parent> extends
     CommonConstraints<Value, Parent>,
     MinMaxConstraints<Value, number, Parent>,
     OneOfConstraint<Value, Parent>,
     TestConstraint<Value, Parent> {
+    /**
+     * Constraint for matching a regular expression. The constraint value can be a RegExp, a function that returns a RegExp.
+     */
     match?: Constraint<NonNullable<Value>, RegExp, Parent>
 }
 
@@ -54,7 +61,19 @@ export function validateString<Value extends StringValue, Parent>(
 }
 
 /**
- * Decorator for string fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to a string field.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠string({ required: true, min: 0 })
+ *     name: string | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the string decorator can also be used as a function to allow standalone validation:
+ * const statuses = Yop.validate({}, string({ required: true, min: 0 })) // error `name` is required
+ * ```
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @param constraints - The string constraints to apply.

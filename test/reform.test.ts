@@ -132,6 +132,24 @@ describe('Reform', () => {
         expect(form.statuses.get("person.friends[1].age")).not.toBeUndefined()
     })
 
+    it('array', async () => {
+        const form = renderHook(() => useForm({
+            initialValues: null,
+            validationSchema: array({ of: String, required: true, min: 1 })
+        })).result.current
+
+        form.setValue("", null, true)
+        expect(form.statuses.size).toEqual(1)
+        expect(form.statuses.get("")?.code).toEqual("required")
+
+        form.setValue("", [], true)
+        expect(form.statuses.size).toEqual(1)
+        expect(form.statuses.get("")?.code).toEqual("min")
+
+        form.setValue("", ["bla"], true)
+        expect(form.statuses.size).toEqual(0)
+    })
+
     it('ArrayHelper', async () => {
 
         class Friend {
@@ -166,7 +184,7 @@ describe('Reform', () => {
                     age: 30,
                     friends: []
                 },
-            },
+            } as Test,
             validationSchema: instance({ of: Test })
         })).result.current
 

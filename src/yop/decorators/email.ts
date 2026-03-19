@@ -9,9 +9,14 @@ import { isNumber } from "../TypesUtil"
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @property formatError - Custom error message for invalid email format.
+ * @see {@link StringConstraints}
  */
 export interface EmailConstraints<Value extends StringValue, Parent> extends
     Omit<StringConstraints<Value, Parent>, "match"> {
+    /**
+     * Custom error message for invalid email format. `formatError` can be a {@link Message} or a function that returns a {@link Message}.
+     * @see {@link emailRegex}
+     */
     formatError?: Message<Value, Parent>
 }
 
@@ -33,7 +38,19 @@ export function validateEmail<Value extends StringValue, Parent>(context: Intern
 }
 
 /**
- * Decorator for email fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to an email field.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠email({ required: true, formatError: "Invalid email address" })
+ *     email: string | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the email decorator can also be used as a function to allow standalone validation:
+ * const statuses = Yop.validate({}, email({ required: true })) // error `email` is required
+ * ```
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @param constraints - The email constraints to apply.

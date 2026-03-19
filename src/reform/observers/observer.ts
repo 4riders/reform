@@ -4,10 +4,12 @@
  * the change. The observer paths support a flexible syntax for targeting specific fields, including wildcards and
  * relative paths.
  */
+import { useObservers } from "./useObservers"
 import { InternalCommonConstraints } from "../../yop/constraints/CommonConstraints"
 import { fieldDecorator } from "../../yop/Metadata"
 import { Path } from "../../yop/ObjectsUtil"
 import { ReformSetValueEvent } from "../FormManager"
+import { FormConfig } from "../useForm"
 
 /**
  * Options for observer callback behavior.
@@ -84,7 +86,11 @@ export type ObserversField = InternalCommonConstraints & { observers?: Observers
 /**
  * Decorator to register or remove an observer callback for a field. Observer paths use a syntax similar to Unix file paths,
  * supporting wildcards and array indices, and are relative to the parent object of the field where the observer is attached.
- * Paths can also be absolute (starting with a slash `/`) to observe fields from the root, or use `..` to observe fields from higher up in the object tree.
+ * Paths can also be absolute (starting with a slash `/`) to observe fields from the root, or use `..` to observe fields from
+ * higher up in the object tree.
+ * 
+ * Observers are only triggered if {@link FormConfig.dispatchEvent} isn't set to `false` and if the class holding `observers`
+ * decorators is bound to the current form using {@link useObservers}.
  *
  * Examples:
  * - `name` observes the `name` field of the parent object.
@@ -95,7 +101,7 @@ export type ObserversField = InternalCommonConstraints & { observers?: Observers
  * - `../name` observes the `name` field in the parent of the parent object.
  *
  * Example usage:
- * ```typescript
+ * ```tsx
  * class MyFormModel {
  * 
  *    age: number | null = null
@@ -106,6 +112,10 @@ export type ObserversField = InternalCommonConstraints & { observers?: Observers
  *    ))
  *    adult: boolean | null = null
  * }
+ * 
+ * const form = useForm(MyFormModel, ...)
+ * useObservers(MyFormModel, form)
+ * 
  * ```
  *
  * @template Value - The type of the field value where the observer is attached.

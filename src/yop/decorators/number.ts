@@ -15,6 +15,10 @@ export type NumberValue = number | null | undefined
  * Interface for number field constraints, combining common, min/max, oneOf, and test constraints.
  * @template Value - The type of the number value.
  * @template Parent - The type of the parent object.
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link OneOfConstraint}
+ * @see {@link TestConstraint}
  */
 export interface NumberConstraints<Value extends NumberValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -41,7 +45,19 @@ function validateNumber<Value extends NumberValue, Parent>(context: InternalVali
 }
 
 /**
- * Decorator for number fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to a number field.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠number({ required: true, min: 0 })
+ *     age: number | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the number decorator can also be used as a function to allow standalone validation:
+ * const statuses = Yop.validate({}, number({ required: true, min: 0 })) // error `age` is required
+ * ```
  * @template Value - The type of the number value.
  * @template Parent - The type of the parent object.
  * @param constraints - The number constraints to apply.

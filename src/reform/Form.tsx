@@ -20,11 +20,24 @@ interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"
 }
 
 /**
- * React component for rendering an HTML form with context (see {@link FormContext}), error display, and automatic fieldset
- * disabling.
- *
- * @param props - The form props.
- * @returns The rendered form component.
+ * React component for rendering an HTML form with context (see {@link FormContext}), error display, and automatic form disabling. All children of
+ * this component will have access to the form manager via context, and they will be enclosed in an HTML `fieldset` that is disabled according to the
+ * `disabled` prop. If there are any validation errors, and if the debug option `displayFormErrors` is enabled (see {@link Reform.displayFormErrors}),
+ * they will be displayed in a formatted block below the form.
+ * 
+ * Example usage:
+ * ```tsx
+ * const form = useForm(MyFormModel, onSubmit)
+ * return (
+ *     <Form form={form} autoComplete="off" noValidate disabled={form.submitting}>
+ *        // form fields here, using form context
+ *        <button type="submit">Submit</button>
+ *     </Form>
+ * )
+ * ```
+ * 
+ * @param props - The Form props.
+ * @returns The rendered Form component.
  */
 export function Form(props: FormProps) {
     const { form, children, disabled, ...formAttrs } = props

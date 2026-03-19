@@ -13,12 +13,20 @@ import { Message } from "../constraints/Constraint"
  * @template Value - The type of the string value.
  * @template Parent - The type of the parent object.
  * @property formatError - Optional custom error message for invalid time format.
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link OneOfConstraint}
+ * @see {@link TestConstraint}
  */
 export interface TimeConstraints<Value extends StringValue, Parent> extends
     CommonConstraints<Value, Parent>,
     MinMaxConstraints<Value, string, Parent>,
     OneOfConstraint<Value, Parent>,
     TestConstraint<Value, Parent> {
+    /**
+     * Optional custom error message for invalid time format. `formatError` can be a {@link Message} or a function that returns a {@link Message}.
+     * @see {@link timeRegex}
+     */
     formatError?: Message<Value, Parent>
 }
 

@@ -15,6 +15,10 @@ export type DateValue = Date | null | undefined
  * Interface for date field constraints, combining common, min/max, oneOf, and test constraints.
  * @template Value - The type of the date value.
  * @template Parent - The type of the parent object.
+ * @see {@link CommonConstraints}
+ * @see {@link MinMaxConstraints}
+ * @see {@link OneOfConstraint}
+ * @see {@link TestConstraint}
  */
 export interface DateConstraints<Value extends DateValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -41,7 +45,19 @@ function validateDate<Value extends DateValue, Parent>(context: InternalValidati
 }
 
 /**
- * Decorator for date fields, applying validation constraints and groups.
+ * Decorator for applying validation rules to a Date field.
+ * 
+ * Example usage:
+ * ```tsx
+ * class Person {
+ *     ＠date({ required: true, min: new Date("1900-01-01") })
+ *     dateOfBirth: Date | null = null
+ * }
+ * const form = useForm(Person, ...)
+ * 
+ * // the date decorator can also be used as a function to allow standalone validation:
+ * const statuses = Yop.validate({}, date({ required: true })) // error `dateOfBirth` is required
+ * ```
  * @template Value - The type of the date value.
  * @template Parent - The type of the parent object.
  * @param constraints - The date constraints to apply.

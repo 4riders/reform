@@ -191,10 +191,17 @@ function createReformEventListener(model: ClassConstructor<any>) {
 }
 
 /**
- * React hook to register and unregister reform event listeners for observers on a model.
+ * React hook to register reform event listeners for observers on a model.
+ *
+ * Example usage:
+ * ```tsx
+ * const form = useForm(MyFormModel, ...)
+ * useObservers(MyFormModel, form) // scan MyFormModel for observers and register listeners
+ * ```
+ *
  * @template T
- * @param model - The class constructor to observe.
- * @param form - The form manager instance.
+ * @param model - The class constructor to scan for observers.
+ * @param form - The form manager instance holding the values to observe.
  */
 export function useObservers<T extends object>(model: ClassConstructor<T>, form: FormManager<unknown>) {
     useEffect(() => {

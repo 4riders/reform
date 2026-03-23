@@ -129,6 +129,7 @@ export interface ValidationForm {
 
 /**
  * Interface for validation settings, including path, groups, and options.
+ * @ignore
  */
 export interface ValidationSettings {
     path?: string | Path
@@ -140,6 +141,7 @@ export interface ValidationSettings {
 
 /**
  * Interface for settings used when resolving constraints at a specific path.
+ * @ignore
  */
 export interface ConstraintsAtSettings extends ValidationSettings {
     unsafeMetadata?: boolean
@@ -147,8 +149,10 @@ export interface ConstraintsAtSettings extends ValidationSettings {
 
 /**
  * Main class for validation logic, constraint resolution, and message provider management.
+ * @category Validation Management
  */
 export class Yop {
+
     private static defaultInstance?: Yop
     private static classIds = new Map<string, Constructor<unknown>>()
     
@@ -163,18 +167,40 @@ export class Yop {
     private _store = new Map<string, any>()
     private _asyncStatuses = new Map<string, AsyncValidationStatus>()
 
+    /**
+     * Gets the store map, which can be used to store arbitrary data related to validation operations. This allows sharing data across different
+     * validation contexts and operations.
+     */
     get store() {
         return this._store
     }
 
+    /**
+     * Gets the map of asynchronous validation statuses, where each key is a path and the value is the corresponding asynchronous validation status.
+     */
     get asyncStatuses() {
         return this._asyncStatuses
     }
 
+    /**
+     * Registers a class constructor with a given ID.
+     * @param id The ID to associate with the class constructor.
+     * @param constructor The class constructor to register.
+     * @ignore
+     */
     static registerClass(id: string, constructor: Constructor<unknown>) {
         Yop.classIds.set(id, constructor)
     }
 
+    /**
+     * Resolves a class constructor by its ID.
+     * @param id The ID of the class or a function reference.
+     * @param silent If true, suppresses error messages for unregistered classes.
+     * @returns The resolved class constructor, or undefined if not found.
+     * @see {@link Yop.registerClass}
+     * @see {@link id}
+     * @ignore
+     */
     static resolveClass<T>(id: unknown, silent = false): Constructor<T> | undefined {
         if (typeof id === "string") {
             const resolved = Yop.classIds.get(id)
@@ -213,6 +239,13 @@ export class Yop {
         return [context, constraints] as const
     }
 
+    /**
+     * Retrieves the constraints for a given class field decorator and value, using the provided settings.
+     * @param decorator The class field decorator defining the constraints.
+     * @param value The value to be validated against the constraints.
+     * @param settings Optional settings for constraint resolution, including path and unsafe metadata flag.
+     * @returns The resolved constraints, or undefined if no constraints are found.
+     */
     constraintsAt<MinMax = unknown>(decorator: ClassFieldDecorator<any>, value: any, settings?: ConstraintsAtSettings): ResolvedConstraints<MinMax> | undefined {
         const [context, constraints] = this.contextAt(decorator, value, settings ?? {}, true) ?? []
 
@@ -236,14 +269,36 @@ export class Yop {
 
         return undefined
     }
+    /**
+     * Static version of the constraintsAt method, which initializes the Yop instance and retrieves the constraints for a given class field decorator and value.
+     * @param decorator The class field decorator defining the constraints.
+     * @param value The value to be validated against the constraints.
+     * @param settings Optional settings for constraint resolution, including path and unsafe metadata flag.
+     * @returns The resolved constraints, or undefined if no constraints are found.
+     */
     static constraintsAt<Value>(decorator: ClassFieldDecorator<Value>, value: any, settings?: ConstraintsAtSettings) {
         return Yop.init().constraintsAt(decorator, value, settings)
     }
 
+    /**
+     * Retrieves the asynchronous validation status for a given path. The path can be a string or an array of path segments.
+     * @param path The path for which to retrieve the asynchronous validation status.
+     * @returns The asynchronous validation status, or undefined if not found.
+     */
     getAsyncStatus(path: string | Path) {
         return this.asyncStatuses.get(typeof path === "string" ? path : joinPath(path))?.status
     }
 
+    /**
+     * Validates a value against the constraints defined by a class field decorator, using the provided validation settings. This method performs
+     * the validation logic and returns the validation context, which includes the results of the validation operation. The context contains
+     * information about the value, its path, any validation statuses.
+     * @param value The value to be validated.
+     * @param decorator The decorator defining the validation constraints.
+     * @param settings The validation settings, including the path and other options.
+     * @returns The validation context after performing the validation.
+     * @ignore
+     */
     rawValidate<Value>(value: any, decorator: ClassFieldDecorator<Value>, settings: ValidationSettings = { path: [] }) {
         const [context, constraints] = this.contextAt(decorator, value, settings) ?? []
         if (context != null && constraints != null)
@@ -251,14 +306,36 @@ export class Yop {
         return context
     }
 
+    /**
+     * Validates a value against the constraints defined by a class field decorator, using the provided validation settings. This method performs
+     * the validation logic and returns the validation statuses array.
+     * @param value The value to be validated.
+     * @param decorator The decorator defining the validation constraints.
+     * @param settings The validation settings, including the path and other options.
+     * @returns An array of validation statuses after performing the validation.
+     */
     validate<Value>(value: any, decorator: ClassFieldDecorator<Value>, settings: ValidationSettings = { path: [] }) {
         const context = this.rawValidate(value, decorator, settings)
         return context != null ? Array.from(context.statuses.values()) : []
     }
+    /**
+     * Static version of the validate method, which initializes the Yop instance and performs validation on the provided value using the specified
+     * decorator and settings.
+     * @param value The value to be validated.
+     * @param decorator The decorator defining the validation constraints.
+     * @param settings The validation settings, including the path and other options.
+     * @returns An array of validation statuses after performing the validation.
+     * @see {@link Yop#validate}
+     */
     static validate<Value>(value: any, decorator: ClassFieldDecorator<Value>, settings?: ValidationSettings) {
         return Yop.init().validate(value, decorator, settings)
     }
 
+    /**
+     * Registers a message provider for a specific locale. The message provider is used to retrieve localized validation messages
+     * based on the current locale setting.
+     * @param provider The message provider to register.
+     */
     static registerMessageProvider(provider: MessageProvider) {
         try {
             const locale = Intl.getCanonicalLocales(provider.locale)[0]
@@ -269,13 +346,26 @@ export class Yop {
         }
     }
 
+    /**
+     * Gets the current locale used for message resolution. This locale determines which message provider is used to retrieve validation messages.
+     * @returns The current locale as a string.
+     */
     getLocale() {
         return this.locale
     }
+    /**
+     * Static version of the getLocale method, which initializes the Yop instance and retrieves the current locale.
+     * @returns The current locale as a string.
+     * @see {@link Yop#getLocale}
+     */
     static getLocale() {
         return Yop.init().locale
     }
     
+    /**
+     * Sets the current locale used for message resolution. This locale determines which message provider is used to retrieve validation messages.
+     * @param locale The locale to set. This should be a valid BCP 47 language tag (e.g., "en-US", "fr-FR").
+     */
     setLocale(locale: string) {
         try {
             locale = Intl.getCanonicalLocales(locale)[0]
@@ -288,14 +378,26 @@ export class Yop {
             console.error(`Invalid locale "${ locale }". Ignoring.`, e)
         }
     }
+    /**
+     * Static version of the setLocale method, which initializes the Yop instance and sets the current locale.
+     * @param locale The locale to set. This should be a valid BCP 47 language tag (e.g., "en-US", "fr-FR").
+     * @see {@link Yop#setLocale}
+     */
     static setLocale(locale: string) {
         Yop.init().setLocale(locale)
     }
 
+    /**
+     * Gets the message provider for the current locale. This message provider is used to retrieve localized validation messages based on the current locale setting.
+     */
     get messageProvider() {
         return Yop.messageProviders.get(this.locale)!
     }
 
+    /**
+     * Initializes the Yop instance if it hasn't been initialized yet and returns the default instance.
+     * @returns The default Yop instance.
+     */
     static init(): Yop {
         if (Yop.defaultInstance == null)
             Yop.defaultInstance = new Yop()

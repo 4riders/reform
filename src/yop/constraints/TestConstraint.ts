@@ -3,7 +3,18 @@ import { ConstraintFunction, ConstraintMessage } from "./Constraint"
 import { isFunction, isObject } from "../TypesUtil"
 import { joinPath } from "../ObjectsUtil"
 
+/**
+ * Type for test constraint messages, which can be a simple message, a tuple of message and level, a boolean, or undefined.
+ * @category Shared Constraints
+ */
 export type TestConstraintMessage = ConstraintMessage | readonly [ConstraintMessage, Level] | boolean | undefined
+
+/**
+ * Type for a test constraint function, which can return a test constraint message or be undefined.
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object.
+ * @category Shared Constraints
+ */
 export type TestConstraintFunction<Value, Parent = unknown> = ConstraintFunction<NonNullable<Value>, TestConstraintMessage, Parent>
 
 /**

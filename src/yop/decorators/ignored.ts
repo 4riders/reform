@@ -12,9 +12,10 @@ import { fieldDecorator, Groups } from "../Metadata"
  *     name: string | null = null
  * }
  * class Anonymous extends Person {
- *    ＠ignored() // ignore all validation constraints on `name`
- *    override name: string | null = null
+ *     ＠ignored() // ignore all validation constraints on `name`
+ *     override name: string | null = null
  * }
+ * ```
  * 
  * @template Parent - The type of the parent object.
  * @param ignored - The constraint or boolean indicating if the field should be ignored (default: true).

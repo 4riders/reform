@@ -19,6 +19,7 @@ type State = typeof DOT | typeof OPEN_BRACKET | typeof SINGLE_QUOTE | typeof DOU
  * Type for a parsed path, as an array of string or number segments. Numbers represent array indices, while strings represent object keys. This type
  * is used for efficient access to nested properties in objects or arrays.
  * @see {@link splitPath}
+ * @category Object Navigation & Manipulation
  */
 export type Path = (string | number)[]
 

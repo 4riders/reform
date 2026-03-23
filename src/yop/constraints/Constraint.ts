@@ -2,8 +2,27 @@ import { isFunction } from "../TypesUtil"
 import { InternalValidationContext, Level, ValidationContext } from "../ValidationContext"
 import { JSX } from "react"
 
+/**
+ * Type representing a constraint message, which can be a direct string or JSX element.
+ * @category Shared Constraints
+ */
 export type ConstraintMessage = string | JSX.Element
+
+/**
+ * Type representing a constraint value, which can be a direct value or a tuple containing the value, an optional message, and an optional level.
+ * This allows for flexible constraint definitions that can include custom error messages and severity levels.
+ * @template ConstraintType - The type of the constraint value.
+ * @category Shared Constraints
+ */
 export type ConstraintValue<ConstraintType> = ConstraintType | readonly [ConstraintType, ConstraintMessage, Level?]
+
+/**
+ * Type representing a constraint function that returns a constraint value.
+ * @template Value - The type of the value being validated.
+ * @template ConstraintType - The type of the constraint value.
+ * @template Parent - The type of the parent object.
+ * @category Shared Constraints
+ */
 export type ConstraintFunction<Value, ConstraintType, Parent = unknown> = ((context: ValidationContext<Value, Parent>) => ConstraintValue<ConstraintType> | undefined)
 
 /**

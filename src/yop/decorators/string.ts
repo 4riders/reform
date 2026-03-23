@@ -22,6 +22,7 @@ export type StringValue = string | null | undefined
  * @see {@link MinMaxConstraints}
  * @see {@link OneOfConstraint}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface StringConstraints<Value extends StringValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -82,6 +83,7 @@ export function validateString<Value extends StringValue, Parent>(
  * @param constraints - The string constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function string<Value extends StringValue, Parent>(constraints?: StringConstraints<Value, Parent>, groups?: Groups<StringConstraints<Value, Parent>>) {
     return fieldValidationDecorator("string", constraints ?? {}, groups, validateString, isNumber)

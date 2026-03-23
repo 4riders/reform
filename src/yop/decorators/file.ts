@@ -18,6 +18,7 @@ export type FileValue = File | null | undefined
  * @see {@link CommonConstraints}
  * @see {@link MinMaxConstraints}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface FileConstraints<Value extends FileValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -61,6 +62,7 @@ function validateFile<Value extends FileValue, Parent>(context: InternalValidati
  * @param constraints - The file constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function file<Value extends FileValue, Parent>(constraints?: FileConstraints<Value, Parent>, groups?: Groups<FileConstraints<Value, Parent>>) {
     return fieldValidationDecorator("file", constraints ?? {}, groups, validateFile, isNumber)

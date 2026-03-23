@@ -1,5 +1,6 @@
 /**
  * State constants for path parsing.
+ * @ignore
  */
 const DOT = 1
 const OPEN_BRACKET = 2
@@ -10,11 +11,14 @@ const CLOSE_BRACKET = 6
 
 /**
  * Type for path parser state.
+ * @ignore
  */
 type State = typeof DOT | typeof OPEN_BRACKET | typeof SINGLE_QUOTE | typeof DOUBLE_QUOTE | typeof CLOSE_QUOTE | typeof CLOSE_BRACKET | undefined
 
 /**
- * Type for a parsed path, as an array of string or number segments.
+ * Type for a parsed path, as an array of string or number segments. Numbers represent array indices, while strings represent object keys. This type
+ * is used for efficient access to nested properties in objects or arrays.
+ * @see {@link splitPath}
  */
 export type Path = (string | number)[]
 
@@ -23,6 +27,7 @@ const identifier = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u
  * Checks if a string is a valid JavaScript identifier.
  * @param segment - The string segment to check.
  * @returns True if valid identifier, false otherwise.
+ * @ignore
  */
 function isValidIdentifier(segment: string): boolean {
     return identifier.test(segment)
@@ -33,6 +38,7 @@ function isValidIdentifier(segment: string): boolean {
  * @param path - The path string to split.
  * @param cache - Optional cache for parsed paths.
  * @returns The parsed path as an array, or undefined if invalid.
+ * @category Object Navigation & Manipulation
  */
 export function splitPath(path: string, cache?: Map<string, Path>): Path | undefined {
 
@@ -205,6 +211,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
  * Joins path segments into a string, using dot/bracket notation as needed.
  * @param segments - The path segments to join.
  * @returns The joined path string.
+ * @category Object Navigation & Manipulation
  */
 export function joinPath(segments: Path): string {
     let path = ""
@@ -221,6 +228,7 @@ export function joinPath(segments: Path): string {
 
 /**
  * Result type for set operation, including root and previous value.
+ * @category Object Navigation & Manipulation
  */
 export type SetResult = undefined | {
     root: unknown
@@ -233,6 +241,7 @@ export type SetResult = undefined | {
  * @param path - The path string or array.
  * @param cache - Optional cache for parsed paths.
  * @returns The value at the path, or undefined if not found.
+ * @category Object Navigation & Manipulation
  */
 export function get<T = any>(value: unknown, path: string | Path, cache?: Map<string, Path>): T | undefined {
     const keys = typeof path === "string" ? splitPath(path, cache) : path
@@ -255,6 +264,7 @@ export function get<T = any>(value: unknown, path: string | Path, cache?: Map<st
  * @param cache - Optional cache for parsed paths.
  * @param options - Optional settings for cloning and condition.
  * @returns The set result, including root and previous value.
+ * @category Object Navigation & Manipulation
  */
 export function set(value: unknown, path: string | Path, newValue: unknown, cache?: Map<string, Path>, options: {
     clone?: boolean
@@ -308,6 +318,7 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
  * @param path - The path string or array.
  * @param cache - Optional cache for parsed paths.
  * @returns True if unset, false otherwise.
+ * @category Object Navigation & Manipulation
  */
 export function unset(value: unknown, path: string | Path, cache?: Map<string, Path>): boolean | undefined {
     if (value == null)
@@ -343,6 +354,7 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
  * Type for a diff result between two values.
  * @template A - The first value type.
  * @template B - The second value type.
+ * @category Object Comparison
  */
 export type Diff<A = any, B  = any> = {
     a: A
@@ -356,6 +368,7 @@ export type Diff<A = any, B  = any> = {
  * @param diff - The diff result.
  * @param path - The path to check.
  * @returns True if values differ at the path, false otherwise.
+ * @category Object Comparison
  */
 export function differs(diff: Diff, path: Path): boolean {
     if (diff.equal)
@@ -381,6 +394,7 @@ export function differs(diff: Diff, path: Path): boolean {
  * @param a - The first value.
  * @param b - The second value.
  * @returns The diff result.
+ * @category Object Comparison
  */
 export function diff<A = any, B = any>(a: A, b: B): Diff<A, B> {
     const paths: Path[] = []
@@ -412,6 +426,7 @@ export function diff<A = any, B = any>(a: A, b: B): Diff<A, B> {
  * @param known - Map of known comparisons.
  * @param path - Current path.
  * @param diffPaths - Array of differing paths.
+ * @ignore
  */
 function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path[]): void {
     if (a === b)
@@ -534,6 +549,7 @@ function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path
  * @param b - The second value.
  * @param ignoredPath - Optional path to ignore.
  * @returns True if equal, false otherwise.
+ * @category Object Comparison
  */
 export function equal(a: any, b: any, ignoredPath?: string | Path) {
     return _equal(a, b, new Map(), ignoredPath ? typeof ignoredPath === "string" ? splitPath(ignoredPath) : ignoredPath : undefined)
@@ -546,6 +562,7 @@ export function equal(a: any, b: any, ignoredPath?: string | Path) {
  * @param known - Map of known comparisons.
  * @param ignoredPath - Optional path to ignore.
  * @returns True if equal, false otherwise.
+ * @ignore
  */
 function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boolean {
     if (a === b)
@@ -671,6 +688,7 @@ function _equal(a: any, b: any, known: Map<any, any>, ignoredPath?: Path): boole
  * @param value - The value to clone.
  * @param cloned - Optional map of already cloned values.
  * @returns The cloned value.
+ * @category Object Navigation & Manipulation
  */
 export function clone<T>(value: T, cloned?: Map<any, any>): T {
     if (value == null || typeof value !== 'object')
@@ -735,6 +753,7 @@ export function clone<T>(value: T, cloned?: Map<any, any>): T {
  * @param o - The object.
  * @param name - The property name.
  * @param get - The getter function.
+ * @ignore
  */
 export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) => unknown)) {
     Object.defineProperty(o, name, { configurable: true, enumerable: true, get: function() {
@@ -752,6 +771,7 @@ export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) 
  * @param source - The source object.
  * @param options - Optional settings for assignment.
  * @returns The merged object.
+ * @category Object Navigation & Manipulation
  */
 export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean, includes?: (keyof U)[], excludes?: (keyof U)[] }): T & U {
     const descriptors = Object.getOwnPropertyDescriptors(source)

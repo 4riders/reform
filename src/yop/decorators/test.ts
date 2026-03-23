@@ -5,7 +5,6 @@ import { Constructor } from "../TypesUtil"
 /**
  * Utility type to extract the instance type from a constructor.
  * @template Class - The constructor type.
- * @ignore
  */
 type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
 
@@ -20,7 +19,7 @@ type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
  * class Credentials {
  *     ＠string({ required: true, min: 8 })
  *     username: string | null = null
- *     ＠string({ required: true, min: 8 })
+ *     ＠string({ required: true, min: 8, test: checkPasswordStrength })
  *     password: string | null = null
  *     ＠string({ required: true, min: 8 })
  *     confirmPassword: string | null = null
@@ -31,6 +30,7 @@ type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
  * @param test - The test constraint function to apply to the class instance.
  * @returns A class decorator function that sets the test constraint.
  * @see {@link TestConstraintFunction}
+ * @category Class Decorators
  */
 export function test<Class extends Constructor>(test: TestConstraintFunction<InstanceType<Class>>) {
     return function decorateClass(_: Class, context: ClassDecoratorContext<Class>) {

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Reform Documentation",
+  "entryPoints": ["./src/index.ts"],
+  "categoryOrder": [
+    "Property Decorators",
+    "Class Decorators",
+    "Shared Constraints",
+    "Observers",
+    "*"
+  ],
+  "navigation": {
+    "includeCategories": true,
+  },
+}

@@ -18,6 +18,7 @@ export type BooleanValue = boolean | null | undefined
  * @see {@link CommonConstraints}
  * @see {@link OneOfConstraint}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface BooleanConstraints<Value extends BooleanValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -61,6 +62,7 @@ function validateBoolean<Value extends BooleanValue, Parent>(context: InternalVa
  * @param constraints - The boolean constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function boolean<Value extends BooleanValue, Parent>(constraints?: BooleanConstraints<Value, Parent>, groups?: Groups<BooleanConstraints<Value, Parent>>) {
     return fieldValidationDecorator("boolean", constraints ?? {}, groups, validateBoolean)

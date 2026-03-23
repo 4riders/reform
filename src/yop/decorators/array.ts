@@ -24,6 +24,7 @@ export type ArrayValue = any[] | null | undefined
  * @see {@link CommonConstraints}
  * @see {@link MinMaxConstraints}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface ArrayConstraints<Value extends ArrayValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -136,6 +137,7 @@ export const arrayKind = "array"
  * @param constraints - The array constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Groups<ArrayConstraints<Value, Parent>>) {
     if (getValidationDecoratorKind(constraints?.of) != null) {

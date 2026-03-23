@@ -3,6 +3,7 @@ import { Path } from "../../yop/ObjectsUtil"
 
 /**
  * State constants for the observer path parser state machine.
+ * @ignore
  */
 const SLASH = 1
 const OPEN_BRACKET = 2
@@ -14,6 +15,7 @@ const CLOSE_BRACKET = 6
 
 /**
  * Type representing the parser state.
+ * @ignore
  */
 type State = typeof SLASH | typeof OPEN_BRACKET | typeof SINGLE_QUOTE | typeof DOUBLE_QUOTE | typeof CLOSE_QUOTE | typeof CLOSE_BRACKET | undefined
 
@@ -22,6 +24,7 @@ type State = typeof SLASH | typeof OPEN_BRACKET | typeof SINGLE_QUOTE | typeof D
  * Represents a segment of an observer path.
  * @property kind - The type of path segment (e.g., property, index, wildcard).
  * @property value - The value of the segment, if applicable.
+ * @ignore
  */
 type PathElement = {
     kind: 'root' | 'parent' | 'property' | 'key' | 'index' | 'wildcard-index' | 'wildcard' | 'double-wildcard'
@@ -31,6 +34,7 @@ type PathElement = {
 
 /**
  * Regular expression to match valid JavaScript identifiers.
+ * @ignore
  */
 const identifier = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u
 
@@ -39,6 +43,7 @@ const identifier = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u
  * @param segment - The string segment to parse.
  * @param segments - The array to push the parsed PathElement into.
  * @returns True if the segment was valid and pushed, false otherwise.
+ * @ignore
  */
 function pushProperty(segment: string, segments: PathElement[]): boolean {
     if (identifier.test(segment))
@@ -57,6 +62,7 @@ function pushProperty(segment: string, segments: PathElement[]): boolean {
  * @param path - The observer path string.
  * @param cache - Optional cache to store and retrieve previously parsed paths.
  * @returns An array of PathElement objects representing the path segments, or undefined if the path is invalid.
+ * @ignore
  */
 export function splitObserverPath(path: string, cache?: Map<string, PathElement[]>): PathElement[] | undefined {
 
@@ -260,16 +266,19 @@ export function splitObserverPath(path: string, cache?: Map<string, PathElement[
 
 /**
  * Regular expression to match RegExp special characters.
+ * @ignore
  */
 const reRegExpChar = /[\\^$.*+?()[\]{}|]/g
 /**
  * Precompiled RegExp to test for RegExp special characters.
+ * @ignore
  */
 const reHasRegExpChar = RegExp(reRegExpChar.source)
 /**
  * Escapes RegExp special characters in a string.
  * @param s - The string to escape.
  * @returns The escaped string.
+ * @ignore
  */
 const escapeRegExp = (s: string) => s && reHasRegExpChar.test(s) ? s.replace(reRegExpChar, '\\$&') : s
 
@@ -279,6 +288,7 @@ const escapeRegExp = (s: string) => s && reHasRegExpChar.test(s) ? s.replace(reR
  * @param observerPath - The parsed observer path as an array of PathElement.
  * @param currentPath - The current path context for resolving relative paths.
  * @returns A regular expression string, or undefined if the path is invalid.
+ * @ignore
  */
 export function observerPathToRegexp(observerPath: PathElement[] | undefined, currentPath: Path): string | undefined {
     if (observerPath == null || observerPath.length === 0)

@@ -10,6 +10,7 @@ import { isNumber } from "../TypesUtil"
  * @template Parent - The type of the parent object.
  * @property formatError - Custom error message for invalid email format.
  * @see {@link StringConstraints}
+ * @category Property Decorators
  */
 export interface EmailConstraints<Value extends StringValue, Parent> extends
     Omit<StringConstraints<Value, Parent>, "match"> {
@@ -58,6 +59,7 @@ export function validateEmail<Value extends StringValue, Parent>(context: Intern
  * @param constraints - The email constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function email<Value extends StringValue, Parent>(constraints?: EmailConstraints<Value, Parent>, groups?: Groups<EmailConstraints<Value, Parent>>) {
     return fieldValidationDecorator("email", constraints ?? {}, groups, validateEmail, isNumber)

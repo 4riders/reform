@@ -9,6 +9,11 @@ import { Group, InternalValidationContext, ValidationStatus } from "./Validation
 
 (Symbol as any).metadata ??= Symbol.for("Symbol.metadata")
 
+/**
+ * Symbol used to store validation metadata on class fields. This symbol is used as a key to attach validation constraints and related
+ * information to class properties.
+ * @ignore
+ */
 export const validationSymbol = Symbol('YopValidation')
 
 /**
@@ -42,19 +47,62 @@ export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<Mi
  */
 export interface ValidationForm {
 
+    /**
+     * Whether the form has been submitted at least once, even if the submission was unsuccessful.
+     */
     readonly submitted: boolean
+    /**
+     * Whether the form is currently being submitted.
+     */
     readonly submitting: boolean
+    /**
+     * Map of validation statuses for each field.
+     */
     readonly statuses: Map<string, ValidationStatus>
+    /**
+     * List of all errors in the form: this includes all validation statuses with a severity level of "error".
+     */
     readonly errors: ValidationStatus[]
+    /**
+     * A map that can be used to store arbitrary data related to the form.
+     */
     readonly store: Map<string, any>
+    /**
+     * The HTML form element associated with this validation form.
+     */
     readonly htmlForm?: HTMLFormElement
 
+    /**
+     * Retrieves the value of a field by its path.
+     * @template T - The expected type of the field value.
+     * @param path - The path to the field.
+     * @returns The value of the field, or undefined if not found.
+     */
     getValue<T = any>(path: string | Path): T | undefined
 
+    /**
+     * Checks if a field has been touched.
+     * @param path - The path to the field.
+     * @returns True if the field has been touched, false otherwise.
+     */
     isTouched(path?: string | Path): boolean
+    /**
+     * Marks a field as touched.
+     * @param path - The path to the field.
+     */
     touch(path?: string | Path): void
+    /**
+     * Marks a field as untouched.
+     * @param path - The path to the field.
+     */
     untouch(path?: string | Path): void
 
+    /**
+     * Checks if a field is dirty (has been modified). If no path is provided, checks if any field in the entire form is dirty.
+     * @param path - The path to the field.
+     * @param ignoredPath - Optional path to ignore during the check.
+     * @returns True if the field is dirty, false otherwise.
+     */
     isDirty(path?: string | Path, ignoredPath?: string | Path): boolean
 }
 

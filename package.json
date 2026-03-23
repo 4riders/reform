@@ -38,7 +38,8 @@
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest --run",
-    "prepublishOnly": "NODE_ENV=release tsc && vite build"
+    "prepublishOnly": "NODE_ENV=release tsc && vite build",
+    "typedoc": "typedoc --options typedoc.json"
   },
   "peerDependencies": {
     "react": ">=18",

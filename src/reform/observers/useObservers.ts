@@ -9,6 +9,7 @@ import { observerPathToRegexp, splitObserverPath } from "./observerPath"
 /**
  * Holds observer metadata and its associated path.
  * @template T - The type of the observed value.
+ * @ignore
  */
 type ObserverData<T> = {
     observer: ObserverMetadata<T>
@@ -21,6 +22,7 @@ type ObserverData<T> = {
  * @param path - The current path in the model.
  * @param model - The class constructor to inspect.
  * @param observersMap - The map to populate with observer data.
+ * @ignore
  */
 function collectObservers<T>(path: Path, model: ClassConstructor<any>, observersMap: Map<string, ObserverData<T>[]>) {
     const metadata = getMetadataFields(model) as Record<string, ObserversField>
@@ -60,6 +62,7 @@ function collectObservers<T>(path: Path, model: ClassConstructor<any>, observers
 
 /**
  * Tracks whether setValue was called during observer execution.
+ * @ignore
  */
 type SetValueCalled = { value: boolean }
 
@@ -71,6 +74,7 @@ type SetValueCalled = { value: boolean }
  * @param event - The event that triggered the observer.
  * @param setValueCalled - Tracks if setValue was called.
  * @returns The observer callback context.
+ * @ignore
  */
 function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueEvent, setValueCalled: SetValueCalled): ObserverCallbackContext<T> {
     return {
@@ -100,6 +104,7 @@ function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueE
  * @param path - The remaining path to traverse.
  * @param event - The event that triggered the observer.
  * @param setValueCalled - Tracks if setValue was called.
+ * @ignore
  */
 function callObservers(observerData: ObserverData<any>, value: any, startPath: Path, path: Path, event: ReformSetValueEvent, setValueCalled: SetValueCalled) {
     if (path.length === 0 || value == null)
@@ -146,6 +151,7 @@ function callObservers(observerData: ObserverData<any>, value: any, startPath: P
  * Creates an event listener that triggers observers for a given model.
  * @param model - The class constructor to observe.
  * @returns An event listener for reform events.
+ * @ignore
  */
 function createReformEventListener(model: ClassConstructor<any>) {
     const observersMap = new Map<string, ObserverData<any>[]>()
@@ -202,13 +208,16 @@ function createReformEventListener(model: ClassConstructor<any>) {
  * @template T
  * @param model - The class constructor to scan for observers.
  * @param form - The form manager instance holding the values to observe.
+ * @category Observers
  */
-export function useObservers<T extends object>(model: ClassConstructor<T>, form: FormManager<unknown>) {
+export function useObservers<T extends object>(model: ClassConstructor<T> | null | undefined, form: FormManager<unknown>) {
     useEffect(() => {
-        const reformEventListener = createReformEventListener(model)
-        form.addReformEventListener(reformEventListener)
-        return () => {
-            form.removeReformEventListener(reformEventListener)
+        if (model != null) {
+            const reformEventListener = createReformEventListener(model)
+            form.addReformEventListener(reformEventListener)
+            return () => {
+                form.removeReformEventListener(reformEventListener)
+            }
         }
     }, [model])
 }

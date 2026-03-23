@@ -20,6 +20,7 @@ export type DateValue = Date | null | undefined
  * @see {@link MinMaxConstraints}
  * @see {@link OneOfConstraint}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface DateConstraints<Value extends DateValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -65,6 +66,7 @@ function validateDate<Value extends DateValue, Parent>(context: InternalValidati
  * @param constraints - The date constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function date<Value extends DateValue, Parent>(constraints?: DateConstraints<Value, Parent>, groups?: Groups<DateConstraints<Value, Parent>>) {
     return fieldValidationDecorator("date", constraints ?? {}, groups, validateDate, isDate)

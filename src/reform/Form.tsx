@@ -11,7 +11,7 @@ import { Reform } from "./Reform"
  * @property form - The form manager instance.
  * @property disabled - Whether the form is disabled.
  */
-interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
+export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
 
     /** The form manager instance. */
     form: FormManager<unknown>

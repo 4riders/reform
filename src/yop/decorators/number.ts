@@ -20,6 +20,7 @@ export type NumberValue = number | null | undefined
  * @see {@link MinMaxConstraints}
  * @see {@link OneOfConstraint}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface NumberConstraints<Value extends NumberValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -65,6 +66,7 @@ function validateNumber<Value extends NumberValue, Parent>(context: InternalVali
  * @param constraints - The number constraints to apply.
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
+ * @category Property Decorators
  */
 export function number<Value extends NumberValue, Parent>(constraints?: NumberConstraints<Value, Parent>, groups?: Groups<NumberConstraints<Value, Parent>>) {
     return fieldValidationDecorator("number", constraints ?? {}, groups, validateNumber, isNumber)

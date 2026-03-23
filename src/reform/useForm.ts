@@ -5,19 +5,11 @@ import { isPromise } from "../yop/TypesUtil"
 import { Group } from "../yop/ValidationContext"
 import { FormManager, InternalFormManager } from "./FormManager"
 import { useRender } from "./useRender"
+import { useObservers } from "./observers/useObservers"
 
 /**
  * Configuration options for the useForm hook.
  * @template T - The type of the form values.
- * @property initialValues - The initial values for the form, or a function returning them (sync or async).
- * @property initialValuesConverter - Optional converter for initial values.
- * @property validationSchema - The validation schema for the form.
- * @property validationPath - Path(s) to validate.
- * @property validationGroups - Validation groups to use.
- * @property ignore - Function to determine if a path should be ignored during validation.
- * @property submitGuard - Function to determine if the form can be submitted.
- * @property onSubmit - Callback for form submission.
- * @property dispatchEvent - Whether to dispatch events for observer propagation.
  */
 export type FormConfig<T extends object | any[] | null | undefined> = {
 
@@ -190,6 +182,7 @@ export function useForm<T extends object | null | undefined>(model: Model<T>, on
  */
 export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.DependencyList = []) {
 
+    const model = typeof configOrModel === "function" ? configOrModel : undefined
     const render = useRender()
 
     deps = Array.isArray(onSubmitOrDeps) ? onSubmitOrDeps : deps
@@ -225,11 +218,13 @@ export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.De
         return newManager
     }, deps)
 
+    // We need this code to normalize configOrModel when useMemo doesn't re-run.
     if (typeof configOrModel === "function")
         configOrModel = { ...manager.config, onSubmit: onSubmitOrDeps as ((form: FormManager<any>) => void) }
     else if (typeof configOrModel.initialValues === "function")
         configOrModel = { ...configOrModel, initialValues: manager.initialValues }
 
     manager.onRender(configOrModel)
+    useObservers(model, manager)
     return manager
 }

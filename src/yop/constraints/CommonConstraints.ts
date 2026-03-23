@@ -1,13 +1,14 @@
-/**
- * Common validation constraints for a value, used in decorators and validation logic.
- * @template Value - The type of the value being validated.
- * @template Parent - The type of the parent object.
- */
 import { Constraint, validateConstraint } from "./Constraint"
 import { isBoolean } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { Groups } from "../Metadata"
 
+/**
+ * Common validation constraints for a value, used in decorators and validation logic.
+ * @template Value - The type of the value being validated.
+ * @template Parent - The type of the parent object.
+ * @category Shared Constraints
+ */
 export interface CommonConstraints<Value, Parent = unknown> {
     /**
      * If `true`, the validation of the decorated element is skipped.
@@ -33,22 +34,26 @@ export interface CommonConstraints<Value, Parent = unknown> {
 
 /**
  * Extracts the value type from a CommonConstraints type.
+ * @ignore
  */
 export type ContraintsValue<Contraints> = Contraints extends CommonConstraints<infer Value, infer _Parent> ? Value : never
 
 /**
  * Extracts the parent type from a CommonConstraints type.
+ * @ignore
  */
 export type ContraintsParent<Contraints> = Contraints extends CommonConstraints<infer _Value, infer Parent> ? Parent : never
 
 /**
  * Type for a validation function for a set of constraints.
+ * @ignore
  */
 export type Validator<Constraints, Value = ContraintsValue<Constraints>, Parent = ContraintsParent<Constraints>> =
     (context: InternalValidationContext<Value, Parent>, constraints: Constraints) => boolean
 
 /**
  * Type for a function that traverses nested constraints and values.
+ * @ignore
  */
 export type Traverser<Constraints, Value = ContraintsValue<Constraints>, Parent = ContraintsParent<Constraints>> =
     ((context: InternalValidationContext<Value, Parent>, constraints: Constraints, propertyOrIndex: string | number, traverseNullish?: boolean) =>
@@ -56,6 +61,7 @@ export type Traverser<Constraints, Value = ContraintsValue<Constraints>, Parent 
 
 /**
  * Used internally.
+ * @ignore
  */
 export interface InternalConstraints {
     /**
@@ -83,6 +89,7 @@ export interface InternalConstraints {
 
 /**
  * Internal constraints that include both common and internal constraint logic.
+ * @ignore
  */
 export interface InternalCommonConstraints extends CommonConstraints<any, any>, InternalConstraints {
 }
@@ -94,6 +101,7 @@ export interface InternalCommonConstraints extends CommonConstraints<any, any>, 
  * @param context - The validation context.
  * @param constraints - The constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 export function validateCommonConstraints<Value, Parent>(context: InternalValidationContext<Value, Parent>, constraints: CommonConstraints<Value, Parent>) {
     return (
@@ -109,6 +117,7 @@ export function validateCommonConstraints<Value, Parent>(context: InternalValida
  * @param checkType - Function to check the value's type.
  * @param expectedType - The expected type as a string.
  * @returns True if the value matches the expected type, false otherwise.
+ * @ignore
  */
 export function validateTypeConstraint(context: InternalValidationContext<any>, checkType: (value: any) => boolean, expectedType: string) {
     return checkType(context.value) || context.setStatus("type", expectedType) == null

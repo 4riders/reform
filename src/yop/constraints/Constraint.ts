@@ -9,6 +9,7 @@ export type ConstraintFunction<Value, ConstraintType, Parent = unknown> = ((cont
 /**
  * A constraint can be defined as a direct value, a tuple with value, message and level, or a function returning 
  * either of those.
+ * @category Shared Constraints
  */
 export type Constraint<Value, ConstraintType, Parent = unknown> =
     ConstraintValue<ConstraintType> |
@@ -16,6 +17,7 @@ export type Constraint<Value, ConstraintType, Parent = unknown> =
 
 /**
  * A validation message can be defined as a direct string/JSX element or a function returning a message.
+ * @category Shared Constraints
  */
 export type Message<Value, Parent> = ConstraintMessage | ((context: ValidationContext<Value, Parent>) => ConstraintMessage)
 
@@ -36,6 +38,7 @@ export type Message<Value, Parent> = ConstraintMessage | ((context: ValidationCo
  * @param defaultMessage - Optional default error message.
  * @param setStatus - Whether to set the status on failure (default: true).
  * @returns True if the constraint passes, false otherwise.
+ * @ignore
  */
 export function validateConstraint<Value, ConstraintType, Parent, Constraints = { [name: string]: Constraint<Value, ConstraintType, Parent> }>(
     context: InternalValidationContext<Value, Parent>,
@@ -63,7 +66,7 @@ export function validateConstraint<Value, ConstraintType, Parent, Constraints = 
 
 /**
  * Internal helper to validate a single constraint value, handling tuple and function forms.
- * @private
+ * @ignore
  */
 function _validateConstraint<Value, ConstraintType, Parent>(
     context: InternalValidationContext<Value, Parent>,

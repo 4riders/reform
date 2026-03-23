@@ -22,6 +22,7 @@ export type InstanceValue = object | null | undefined
  * @see {@link id}
  * @see {@link CommonConstraints}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface InstanceConstraints<Value extends InstanceValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -98,6 +99,7 @@ export const instanceKind = "instance"
  * @param constraints - The instance constraints.
  * @param groups - Optional validation groups.
  * @returns A field decorator that stores the instance constraints and validation function in the class metadata.
+ * @category Property Decorators
  */
 export function instance<Value extends InstanceValue, Parent>(constraints?: InstanceConstraints<Value, Parent>, groups?: Groups<InstanceConstraints<Value, Parent>>) {
     if (typeof constraints?.of === "string" || (typeof constraints?.of === "function" && constraints.of.prototype == null)) {

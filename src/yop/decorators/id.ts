@@ -27,6 +27,7 @@ import { InstanceConstraints } from "./instance"
  * @see {@link Yop.registerClass}
  * @see {@link InstanceConstraints}
  * @see {@link ArrayConstraints}
+ * @category Class Decorators
  */
 export function id<Type extends object, Class extends Constructor<Type>>(id: string) {
     return function decorateClass(target: Class, _: ClassDecoratorContext<Class>) {

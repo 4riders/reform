@@ -9,6 +9,7 @@ import { InternalValidationContext, ValuedContext } from "../ValidationContext"
  * @property min - Minimum constraint for the value, if any.
  * @property max - Maximum constraint for the value, if any.
  * @property isMinMaxType - Type guard for min/max values.
+ * @category Shared Constraints
  */
 export interface MinMaxConstraints<Value, MinMax, Parent = unknown> {
     /**
@@ -37,6 +38,7 @@ export interface MinMaxConstraints<Value, MinMax, Parent = unknown> {
  * @param validateMin - Function to validate the min constraint.
  * @param validateMax - Function to validate the max constraint.
  * @returns True if both min and max constraints pass, false otherwise.
+ * @ignore
  */
 export function validateMinMaxConstraints<Value, MinMax, Parent>(
     context: InternalValidationContext<Value, Parent>,

@@ -17,6 +17,7 @@ import { Message } from "../constraints/Constraint"
  * @see {@link MinMaxConstraints}
  * @see {@link OneOfConstraint}
  * @see {@link TestConstraint}
+ * @category Property Decorators
  */
 export interface TimeConstraints<Value extends StringValue, Parent> extends
     CommonConstraints<Value, Parent>,
@@ -104,6 +105,7 @@ export function validateTime<Value extends StringValue, Parent>(context: Interna
  * @param groups - Optional validation groups.
  * @returns A field decorator function with validation.
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats#time_strings
+ * @category Property Decorators
  */
 export function time<Value extends StringValue, Parent>(constraints?: TimeConstraints<Value, Parent>, groups?: Groups<TimeConstraints<Value, Parent>>) {
     return fieldValidationDecorator("time", constraints ?? {}, groups, validateTime, isString)

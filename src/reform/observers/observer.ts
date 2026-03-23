@@ -13,16 +13,13 @@ import { FormConfig } from "../useForm"
 
 /**
  * Options for observer callback behavior.
- *
- * @property untouch - If `true`, marks the field as untouched.
- * @property propagate - If `true`, propagates the value change to other observers. Defaults to `false`
- *   to prevent potential infinite loops.
+ * @category Observers
  */
 export type ObserverCallbackOptions = {
 
     /** If `true`, marks the field as untouched. */
     untouch?: boolean
-    /** If `true`, propagates the value change to other observers. */
+    /** If `true`, propagates the value change to other observers. Defaults to `false` to prevent potential infinite loops*/
     propagate?: boolean
 }
 
@@ -30,11 +27,7 @@ export type ObserverCallbackOptions = {
  * Context object passed to observer callbacks.
  *
  * @template T - The type of the field value where the observer is attached.
- * @property path - The absolute path of the field value where the observer is attached.
- * @property observedValue - The value being observed.
- * @property currentValue - The current value of the field where the observer is attached.
- * @property setValue - Function to set the value of the field where the observer is attached.
- * @property event - The event object providing context, see {@link ReformSetValueEvent}.
+ * @category Observers
  */
 export type ObserverCallbackContext<T> = {
     
@@ -55,6 +48,7 @@ export type ObserverCallbackContext<T> = {
  *
  * @template T - The type of the field value where the observer is attached.
  * @param context - The context for the observer callback. See {@link ObserverCallbackContext}.
+ * @category Observers
  */
 export type ObserverCallback<T> = (context: ObserverCallbackContext<T>) => void
 
@@ -62,8 +56,7 @@ export type ObserverCallback<T> = (context: ObserverCallbackContext<T>) => void
  * Metadata for an observer, including its path and callback.
  *
  * @template T - The type of the field value where the observer is attached.
- * @property path - The path of the field being observed.
- * @property callback - The observer callback function.
+ * @ignore
  */
 export type ObserverMetadata<T> = {
 
@@ -75,11 +68,13 @@ export type ObserverMetadata<T> = {
 
 /**
  * Map of observer metadata, keyed by observed path.
+ * @ignore
  */
 export type Observers = Map<string, ObserverMetadata<any>>
 
 /**
  * Field metadata type that can hold observers in addition to common constraints.
+ * @ignore
  */
 export type ObserversField = InternalCommonConstraints & { observers?: Observers }
 
@@ -123,6 +118,7 @@ export type ObserversField = InternalCommonConstraints & { observers?: Observers
  * @param path - The path to observe.
  * @param callback - The observer callback function, or undefined to remove it.
  * @returns A field decorator function.
+ * @category Observers
  */
 export function observer<Value, Parent>(path: string, callback: ObserverCallback<Value> | undefined) {
     return fieldDecorator<Parent, Value>(field => {

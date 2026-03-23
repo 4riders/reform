@@ -15,6 +15,7 @@ export type TestConstraintFunction<Value, Parent = unknown> = ConstraintFunction
  * @property unavailableMessage - Message to show if async service is unavailable.
  * @property dependencies - Function to get dependencies for revalidation.
  * @property revalidate - Function to determine if revalidation is needed.
+ * @category Shared Constraints
  */
 export interface AsyncTestConstraint<Value, Parent = unknown> {
     promise: (context: ValidationContext<NonNullable<Value>, Parent>) => Promise<TestConstraintMessage>
@@ -29,6 +30,7 @@ export interface AsyncTestConstraint<Value, Parent = unknown> {
  * @template Value - The type of the value being validated.
  * @template Parent - The type of the parent object.
  * @property test - The test constraint function or async constraint.
+ * @category Shared Constraints
  */
 export interface TestConstraint<Value, Parent = unknown> {
     test?: TestConstraintFunction<Value, Parent> | AsyncTestConstraint<Value, Parent> | readonly [TestConstraintFunction<Value, Parent>, AsyncTestConstraint<Value, Parent>]
@@ -45,6 +47,7 @@ const defaultShouldRevalidate = (_context: InternalValidationContext<unknown>, p
  * @param context - The validation context.
  * @param testConstraint - The test constraint to validate.
  * @returns True if the constraint passes, false otherwise.
+ * @ignore
  */
 export function validateTestConstraint<Value, Parent>(
     context: InternalValidationContext<Value, Parent>,
@@ -64,7 +67,7 @@ export function validateTestConstraint<Value, Parent>(
 
 /**
  * Internal helper to validate a test constraint (sync and async).
- * @private
+ * @ignore
  */
 function _validateTestConstraint<Value, Parent>(
     context: InternalValidationContext<Value, Parent>,
@@ -82,7 +85,7 @@ function _validateTestConstraint<Value, Parent>(
 
 /**
  * Internal helper to validate a synchronous test constraint function.
- * @private
+ * @ignore
  */
 function _validateTestConstraintFunction<Value, Parent>(
     context: InternalValidationContext<NonNullable<Value>, Parent>,
@@ -108,7 +111,7 @@ function _validateTestConstraintFunction<Value, Parent>(
 
 /**
  * Internal helper to validate an asynchronous test constraint.
- * @private
+ * @ignore
  */
 function _validateAsyncTestConstraint<Value, Parent>(
     context: InternalValidationContext<NonNullable<Value>, Parent>,

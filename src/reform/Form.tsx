@@ -10,6 +10,7 @@ import { Reform } from "./Reform"
  * Props for the Form component.
  * @property form - The form manager instance.
  * @property disabled - Whether the form is disabled.
+ * @category Form Management
  */
 export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "onSubmit"> {
 
@@ -38,6 +39,7 @@ export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "on
  * 
  * @param props - The Form props.
  * @returns The rendered Form component.
+ * @category Form Management
  */
 export function Form(props: FormProps) {
     const { form, children, disabled, ...formAttrs } = props

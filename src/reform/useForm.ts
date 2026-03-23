@@ -10,6 +10,7 @@ import { useObservers } from "./observers/useObservers"
 /**
  * Configuration options for the useForm hook.
  * @template T - The type of the form values.
+ * @category Form Management
  */
 export type FormConfig<T extends object | any[] | null | undefined> = {
 
@@ -126,6 +127,7 @@ export type FormConfig<T extends object | any[] | null | undefined> = {
 
 /**
  * Type for a class constructor of a model.
+ * @ignore
  */
 type Model<T> = new (...args: any) => NonNullable<T>
 
@@ -148,6 +150,7 @@ type Model<T> = new (...args: any) => NonNullable<T>
  * @param config - The form configuration object.
  * @param deps - Optional dependency list for memoization of the form manager.
  * @returns The form manager instance.
+ * @category Form Management
  */
 export function useForm<T extends object | null | undefined>(config: FormConfig<T>, deps?: React.DependencyList): FormManager<T>
 
@@ -168,6 +171,7 @@ export function useForm<T extends object | null | undefined>(config: FormConfig<
  * @param onSubmit - Callback for form submission.
  * @param deps - Optional dependency list for memoization of the form manager.
  * @returns The form manager instance.
+ * @category Form Management
  */
 export function useForm<T extends object | null | undefined>(model: Model<T>, onSubmit: (form: FormManager<T>) => void, deps?: React.DependencyList): FormManager<T>
 
@@ -179,6 +183,7 @@ export function useForm<T extends object | null | undefined>(model: Model<T>, on
  * @param onSubmitOrDeps - The onSubmit callback or dependency list.
  * @param deps - Dependency list for memoization.
  * @returns The form manager instance.
+ * @ignore
  */
 export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.DependencyList = []) {
 

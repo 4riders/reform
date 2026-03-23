@@ -11,6 +11,7 @@ import { Reform } from "./Reform"
 /**
  * Validation settings for reform forms, extending base validation settings.
  * @property method - The validation method to use.
+ * @ignore
  */
 export interface ReformValidationSettings extends ValidationSettings {
     method: "validate" | "validateAt" | "constraintsAt"
@@ -18,6 +19,7 @@ export interface ReformValidationSettings extends ValidationSettings {
 
 /**
  * Settings for constraintsAt validation, combining reform and Yop constraint settings.
+ * @ignore
  */
 export interface ReformConstraintsAtSettings extends ReformValidationSettings, ConstraintsAtSettings {
 }
@@ -27,6 +29,7 @@ export interface ReformConstraintsAtSettings extends ReformValidationSettings, C
  * @property touch - Whether to mark the field as touched.
  * @property validate - Whether to validate after setting the value.
  * @property propagate - Whether to propagate the change to observers.
+ * @category Form Management
  */
 export type SetValueOptionsObject = {
     /** Whether to mark the field as touched. */
@@ -39,11 +42,13 @@ export type SetValueOptionsObject = {
 
 /**
  * Options for setValue: either a boolean (validate) or an options object.
+ * @category Form Management
  */
 export type SetValueOptions = boolean | SetValueOptionsObject
 
 /**
  * Interface for a form manager, providing value management, validation, and event APIs.
+ * @category Form Management
  */
 export interface FormManager<T> extends ValidationForm {
 
@@ -156,12 +161,14 @@ export interface FormManager<T> extends ValidationForm {
 
 /**
  * The event type string for reform set value events.
+ * @ignore
  */
 const ReformSetValueEventType = 'reform:set-value'
 
 /**
  * Event fired when a value is set in the form, used for observer propagation.
  * @template T - The type of the value being set.
+ * @category Form Management
  */
 export interface ReformSetValueEvent<T = any> extends CustomEvent<{
     readonly form: FormManager<unknown>,
@@ -181,6 +188,7 @@ export interface ReformSetValueEvent<T = any> extends CustomEvent<{
  * @param value - The new value being set.
  * @param options - The set value options.
  * @returns The created ReformSetValueEvent.
+ * @ignore
  */
 function createReformSetValueEvent<T = any>(
     form: FormManager<unknown>,

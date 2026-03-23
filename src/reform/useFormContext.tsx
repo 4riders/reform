@@ -4,6 +4,7 @@ import { Form } from "./Form"
 
 /**
  * React context for providing a FormManager instance to descendant components.
+ * @ignore
  */
 export const FormContext = React.createContext<FormManager<unknown> | null>(null)
 
@@ -29,6 +30,7 @@ export const FormContext = React.createContext<FormManager<unknown> | null>(null
  * 
  * @template T - The type of the form values managed by the FormManager.
  * @returns The {@link FormManager} instance from context.
+ * @category Form Management
  */
 export function useFormContext<T = unknown>() {
     return React.useContext(FormContext)! as FormManager<T>

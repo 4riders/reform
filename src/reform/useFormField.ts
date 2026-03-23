@@ -11,6 +11,7 @@ import { useRender } from "./useRender";
  * @template Value - The type of the field value.
  * @template MinMax - The type for min/max constraints.
  * @template Root - The type of the root form values.
+ * @category Form Management
  */
 export type FieldState<Value, MinMax, Root = any> = {
     /** The current value of the field. */
@@ -45,6 +46,7 @@ export type FieldState<Value, MinMax, Root = any> = {
  * @param name - The field name or path.
  * @param unsafeMetadata - Whether to use unsafe metadata for constraints.
  * @returns The current state of the field. See {@link FieldState} for details.
+ * @category Form Management
  */
 export function useFormField<Value, MinMax, Root = any>(name: string, unsafeMetadata = false): FieldState<Value, MinMax, Root> {
     const render = useRender()

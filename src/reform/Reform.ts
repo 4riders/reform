@@ -1,5 +1,6 @@
 /**
  * Static configuration for form error display and logging.
+ * @category Form Management
  */
 export class Reform {
     /**

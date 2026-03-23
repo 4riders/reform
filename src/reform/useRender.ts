@@ -5,6 +5,7 @@ import { useReducer } from "react"
  * Useful for triggering updates in custom hooks or non-stateful logic.
  *
  * @returns A function that, when called, forces the component to re-render.
+ * @category Form Management
  */
 export function useRender(): () => void {
     return useReducer(() => ({}), {})[1] as () => void

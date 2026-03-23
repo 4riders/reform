@@ -201,7 +201,11 @@ function createReformEventListener(model: ClassConstructor<any>) {
  *
  * Example usage:
  * ```tsx
- * const form = useForm(MyFormModel, ...)
+ * const form = useForm({
+ *     initialValues: {},
+ *     validationSchema: instance({ of: MyFormModel }),
+ *     onSubmit: (form) => { ... }
+ * })
  * useObservers(MyFormModel, form) // scan MyFormModel for observers and register listeners
  * ```
  *

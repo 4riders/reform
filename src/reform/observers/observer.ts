@@ -109,7 +109,6 @@ export type ObserversField = InternalCommonConstraints & { observers?: Observers
  * }
  * 
  * const form = useForm(MyFormModel, ...)
- * useObservers(MyFormModel, form)
  * 
  * ```
  *

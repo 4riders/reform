@@ -2,6 +2,9 @@ import React, { InputHTMLAttributes, useRef } from "react"
 import { InputAttributes, ReformEvents } from "./InputHTMLProps"
 import { useFormField } from "../.."
 
+/**
+ * @ignore
+ */
 export type BaseRadioFieldHTMLAttributes = Omit<InputAttributes<'radio'>,
     'accept' |
     'alt' |
@@ -24,11 +27,17 @@ export type BaseRadioFieldHTMLAttributes = Omit<InputAttributes<'radio'>,
     'width'
 >
 
+/**
+ * @ignore
+ */
 export type BaseRadioFieldProps<V> = BaseRadioFieldHTMLAttributes & ReformEvents<V> & {
     modelValue: V
     render: () => void
 }
 
+/**
+ * @ignore
+ */
 export function BaseRadioField<V = any>(props: BaseRadioFieldProps<V>) {
     const { onChange, onBlur, modelValue, render, ...inputProps } = props
     const { value: fieldValue, form } = useFormField<V | null, number>(props.name)

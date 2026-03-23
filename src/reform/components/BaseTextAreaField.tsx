@@ -2,6 +2,9 @@ import React, { DOMAttributes, TextareaHTMLAttributes, useRef } from "react"
 import { useFormField } from "../useFormField"
 import { ReformEvents } from "./InputHTMLProps"
 
+/**
+ * @ignore
+ */
 export type BaseTextAreaFieldHTMLAttributes = (
     Omit<TextareaHTMLAttributes<HTMLTextAreaElement>,
         // HTMLAttributes
@@ -31,10 +34,16 @@ export type BaseTextAreaFieldHTMLAttributes = (
     }
 )
 
+/**
+ * @ignore
+ */
 export type BaseTextAreaFieldProps = BaseTextAreaFieldHTMLAttributes & ReformEvents<string> & {
     render: () => void
 }
 
+/**
+ * @ignore
+ */
 export function BaseTextAreaField(props: BaseTextAreaFieldProps) {
 
     const { render, onChange, onBlur, ...textAreaProps } = props

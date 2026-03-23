@@ -2,6 +2,9 @@ import React, { DOMAttributes, SelectHTMLAttributes, useRef } from "react"
 import { ReformEvents } from "./InputHTMLProps"
 import { useFormField } from "../useFormField"
 
+/**
+ * @ignore
+ */
 export type BaseSelectFieldHTMLAttributes = (
     Omit<SelectHTMLAttributes<HTMLSelectElement>,
         // HTMLAttributes
@@ -31,6 +34,9 @@ export type BaseSelectFieldHTMLAttributes = (
     }
 )
 
+/**
+ * @ignore
+ */
 export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEvents<V> & {
     modelValues: V[]
     toOptionValue: (modelValue: V) => string
@@ -52,6 +58,7 @@ export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEven
  *     toModelValue={ optionValue => optionValue === "" ? null : optionValue }
  *     render={ myRenderFunction } />
  * ```
+ * @ignore
  */
 export function BaseSelectField<Value = string>(props: BaseSelectFieldProps<Value | null>) {
 

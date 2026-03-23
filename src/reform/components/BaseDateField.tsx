@@ -3,6 +3,9 @@ import { useFormField } from "../useFormField"
 import { BaseTextFieldHTMLAttributes } from "./BaseTextField"
 import { ReformEvents } from "./InputHTMLProps"
 
+/**
+ * @ignore
+ */
 export const localDateToString = (date: Date | null | undefined) => {
     if (date && !isNaN(date.getTime())) {
         const year = date.getFullYear().toString().padStart(4, '0')
@@ -13,6 +16,9 @@ export const localDateToString = (date: Date | null | undefined) => {
     return null
 }
 
+/**
+ * @ignore
+ */
 export const stringToLocalDate = (value: unknown) => {
     if (value == null || typeof value !== "string")
         return null
@@ -23,10 +29,16 @@ export const stringToLocalDate = (value: unknown) => {
     return isNaN(date.getTime()) ? null : date
 }
 
+/**
+ * @ignore
+ */
 type BaseDateFieldProps = BaseTextFieldHTMLAttributes & ReformEvents<Date> & {
     render: () => void
 }
 
+/**
+ * @ignore
+ */
 export function BaseDateField(props: BaseDateFieldProps) {
 
     const { onChange, onBlur, render, ...inputProps } = props

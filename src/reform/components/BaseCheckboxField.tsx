@@ -2,6 +2,9 @@ import React, { InputHTMLAttributes, useRef } from "react"
 import { InputAttributes, ReformEvents } from "./InputHTMLProps"
 import { useFormField } from "../useFormField"
 
+/**
+ * @ignore
+ */
 export type BaseCheckboxFieldHTMLAttributes = Omit<InputAttributes<'checkbox'>,
     'accept' |
     'alt' |
@@ -24,10 +27,16 @@ export type BaseCheckboxFieldHTMLAttributes = Omit<InputAttributes<'checkbox'>,
     'width'
 >
 
+/**
+ * @ignore
+ */
 export type BaseCheckboxFieldProps = BaseCheckboxFieldHTMLAttributes & Omit<ReformEvents<boolean>, 'onBlur'> & {
     render: () => void
 }
 
+/**
+ * @ignore
+ */
 export function BaseCheckboxField(props: BaseCheckboxFieldProps) {
     const { onChange, render, ...inputProps } = props
     const { value: fieldValue, form } = useFormField<boolean | null, unknown>(props.name)

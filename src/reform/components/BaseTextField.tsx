@@ -2,12 +2,18 @@ import React, { InputHTMLAttributes, useRef } from "react"
 import { InputAttributes, ReformEvents } from "./InputHTMLProps"
 import { useFormField } from "../useFormField"
 
+/**
+ * @ignore
+ */
 export interface InputSelection {
     start: number | null
     end: number | null
     direction?: "forward" | "backward" | "none"
 }
 
+/**
+ * @ignore
+ */
 export type BaseTextFieldHTMLAttributes = Omit<InputAttributes<"text" | "search" | "number" | "date" | "email" | "password" | "tel" | "time">,
     'accept' |
     'alt' |
@@ -19,26 +25,21 @@ export type BaseTextFieldHTMLAttributes = Omit<InputAttributes<"text" | "search"
     'width'
 >
 
+/**
+ * @ignore
+ */
 export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V> & {
     toModelValue?: (value: string) => V | null
     toTextValue?: (value: V | null) => string
     acceptInputValue?: (value: string) => boolean
     formatDisplayedValue?: (value: string) => string
     formatOnEdit?: boolean
-
-    /**
-     * Method to re-render this `BaseTextField` together with its parent component.
-     * 
-     * You can use {@link useRender} in the parent component:
-     * ```
-     * const render = useRender()
-     * ...
-     * return <BaseTextField render={ render } ... />
-     * ```
-     */
     render: () => void
 }
 
+/**
+ * @ignore
+ */
 export function BaseTextField<Value = string>(props: BaseTextFieldProps<Value>) {
 
     const { onChange, onBlur, toModelValue, toTextValue, acceptInputValue, formatDisplayedValue, formatOnEdit, render, ...inputProps } = props

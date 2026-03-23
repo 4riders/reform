@@ -18,25 +18,45 @@ export const validationSymbol = Symbol('YopValidation')
 
 /**
  * Type for async validation status, including dependencies.
+ * @category Validation Management
  */
 export type AsyncValidationStatus = {
+
+    /**
+     * The current validation status, which can be "pending", "unavailable", or a regular validation status.
+     */
     status?: ValidationStatus | undefined
+    /**
+     * The dependencies for the asynchronous validation.
+     */
     dependencies: any[]
 }
 
 /**
  * Type for resolved constraints, including required, min, and max.
  * @template MinMax - The type for min/max values.
+ * @category Validation Management
  */
 export type ResolvedConstraints<MinMax = unknown> = {
+
+    /**
+     * Whether the field is required.
+     */
     required: boolean
+    /**
+     * The minimum value or length for the field, if applicable.
+     */
     min?: MinMax
+    /**
+     * The maximum value or length for the field, if applicable.
+     */
     max?: MinMax
 }
 
 /**
  * Type for resolved constraints with optional field metadata.
  * @template MinMax - The type for min/max values.
+ * @ignore
  */
 export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<MinMax> &{
     fieldMetadata?: CommonConstraints<any, any> | undefined
@@ -44,6 +64,7 @@ export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<Mi
 
 /**
  * Interface for a validation form, representing form state and operations.
+ * @category Validation Management
  */
 export interface ValidationForm {
 

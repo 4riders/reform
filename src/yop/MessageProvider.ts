@@ -3,6 +3,7 @@ import { InternalValidationContext, Level } from "./ValidationContext";
 
 /**
  * Interface for providing localized validation messages.
+ * @category Localization
  */
 export interface MessageProvider {
     /**
@@ -29,6 +30,7 @@ export interface MessageProvider {
  * @param dateFormat - The date formatter.
  * @param listFormat - The list formatter.
  * @returns The formatted string.
+ * @ignore
  */
 function format(value: any, numberFormat: Intl.NumberFormat, dateFormat: Intl.DateTimeFormat, listFormat: Intl.ListFormat): string {
     return (
@@ -41,6 +43,7 @@ function format(value: any, numberFormat: Intl.NumberFormat, dateFormat: Intl.Da
 
 /**
  * Properties passed to a message function for formatting.
+ * @ignore
  */
 type MessageProps = {
     context: InternalValidationContext<unknown>
@@ -55,13 +58,16 @@ type MessageProps = {
 
 /**
  * Function type for generating a message from message properties.
+ * @ignore
  */
 type MessageFunction = (props: MessageProps) => string
 
 /**
  * Basic implementation of MessageProvider for localized validation messages.
+ * @category Localization
  */
 export class BasicMessageProvider implements MessageProvider {
+
     private readonly numberFormat: Intl.NumberFormat
     private readonly dateFormat: Intl.DateTimeFormat
     private readonly listFormat: Intl.ListFormat
@@ -87,7 +93,6 @@ export class BasicMessageProvider implements MessageProvider {
     }
 
     /**
-     * Returns a localized message for a given validation context and code.
      * @inheritdoc
      */
     getMessage(context: InternalValidationContext<unknown>, code: string, constraint: any, message: ConstraintMessage | undefined, level: Level): ConstraintMessage {
@@ -115,6 +120,7 @@ export class BasicMessageProvider implements MessageProvider {
  * Returns the plural suffix 's' if the plural rule is not 'one'.
  * @param plural - The plural rule.
  * @returns 's' if plural, otherwise an empty string.
+ * @ignore
  */
 function s(plural?: Intl.LDMLPluralRule): string {
     return plural == null || plural === "one" ? "" : "s"
@@ -122,6 +128,7 @@ function s(plural?: Intl.LDMLPluralRule): string {
 
 /**
  * English (US) message provider for validation messages.
+ * @category Localization
  */
 export const messageProvider_en_US = new BasicMessageProvider("en-US", [
     ["string.min", ({ constraint }) => `Minimum ${ constraint.formatted } character${ s(constraint.plural) }`],
@@ -159,6 +166,7 @@ export const messageProvider_en_US = new BasicMessageProvider("en-US", [
 
 /**
  * French (FR) message provider for validation messages.
+ * @category Localization
  */
 export const messageProvider_fr_FR = new BasicMessageProvider("fr-FR", [
     ["string.min", ({ constraint }) => `Minimum ${ constraint.formatted } caractère${ s(constraint.plural) }`],

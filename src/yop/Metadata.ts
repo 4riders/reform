@@ -11,6 +11,7 @@ import { InstanceConstraints, instanceKind } from "./decorators/instance"
 /**
  * Internal constraints for a class, including test and field constraints.
  * @template Class - The type of the class.
+ * @ignore
  */
 export interface InternalClassConstraints<Class = any> extends InternalConstraints {
     /**
@@ -30,6 +31,7 @@ export interface InternalClassConstraints<Class = any> extends InternalConstrain
  * @param key - The field name or index to traverse.
  * @param traverseNullish - If true, traverses only if value is not nullish; otherwise, returns undefined for nullish values.
  * @returns A tuple of the field constraints (if any) and the value at the given key.
+ * @ignore
  */
 export function traverseClass(
     context: InternalValidationContext<unknown>,
@@ -47,6 +49,7 @@ export function traverseClass(
  * @param context - The validation context for the class object.
  * @param constraints - The class constraints to validate.
  * @returns True if all constraints pass, false otherwise.
+ * @ignore
  */
 export function validateClass(context: InternalValidationContext<{ [x: string]: any }>, constraints: InternalClassConstraints) {
     if (context.value == null || !validateTypeConstraint(context, isObject, "object"))
@@ -79,6 +82,7 @@ export function validateClass(context: InternalValidationContext<{ [x: string]: 
  * Initializes and returns the internal class constraints for a given decorator metadata object.
  * @param decoratorMetadata - The metadata object from a class decorator.
  * @returns The initialized internal class constraints.
+ * @ignore
  */
 export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
     const metadata = decoratorMetadata as unknown as { [validationSymbol]: InternalClassConstraints }    
@@ -96,6 +100,7 @@ export function initClassConstraints(decoratorMetadata: DecoratorMetadata) {
  * Type for a class field decorator function.
  * @template Value - The type of the field value.
  * @template Parent - The type of the parent object.
+ * @ignore
  */
 export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void
 
@@ -105,6 +110,7 @@ export type ClassFieldDecorator<Value, Parent = unknown> = (_: unknown, context:
  * @template Parent - The type of the parent object.
  * @param decorator - The class field decorator function.
  * @returns The field constraints metadata for a placeholder field.
+ * @ignore
  */
 export function getMetadataFromDecorator<Value, Parent>(decorator: ClassFieldDecorator<Value, Parent>) {
     const metadata = { [validationSymbol]: {} as InternalClassConstraints }
@@ -117,6 +123,7 @@ export function getMetadataFromDecorator<Value, Parent>(decorator: ClassFieldDec
  * @template T - The type of the class instance.
  * @param model - The class constructor.
  * @returns The common constraints metadata, if any.
+ * @ignore
  */
 export function getMetadata<T>(model: ClassConstructor<T>) {
     return model?.[Symbol.metadata]?.[validationSymbol] as CommonConstraints<any, T> | undefined
@@ -127,6 +134,7 @@ export function getMetadata<T>(model: ClassConstructor<T>) {
  * @template T - The type of the class instance.
  * @param model - The class constructor.
  * @returns An object mapping field names to their constraints, if any.
+ * @ignore
  */
 export function getMetadataFields<T>(model: ClassConstructor<T>) {
     const metadata = model?.[Symbol.metadata]?.[validationSymbol] as InternalClassConstraints | undefined
@@ -138,6 +146,7 @@ export function getMetadataFields<T>(model: ClassConstructor<T>) {
  * @template T - The type of the class instance.
  * @param metadata - The validation metadata object.
  * @returns The class constructor, if found.
+ * @ignore
  */
 export function getClassConstructor<T>(metadata: any): ClassConstructor<T> | undefined {
     if (metadata?.kind === arrayKind) {
@@ -155,6 +164,7 @@ export function getClassConstructor<T>(metadata: any): ClassConstructor<T> | und
 
 /**
  * Symbol used to tag validation decorators with their kind.
+ * @ignore
  */
 const decoratorSymbol = Symbol("YopValidationDecorator")
 
@@ -162,6 +172,7 @@ const decoratorSymbol = Symbol("YopValidationDecorator")
  * Retrieves the kind of a validation decorator from a value.
  * @param value - The value to inspect.
  * @returns The decorator kind, if present.
+ * @ignore
  */
 export function getValidationDecoratorKind(value: any): string | undefined {
     return value?.[decoratorSymbol]
@@ -174,6 +185,7 @@ export function getValidationDecoratorKind(value: any): string | undefined {
  * @param properties - An object or function to assign/modify field constraints.
  * @param reset - If true, resets the field constraints before applying properties.
  * @returns A class field decorator function.
+ * @ignore
  */
 export function fieldDecorator<Parent, Value>(properties: object | ((field: InternalCommonConstraints) => void), reset = false) {
     return (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => {
@@ -196,6 +208,7 @@ export function fieldDecorator<Parent, Value>(properties: object | ((field: Inte
 /**
  * Type for a map of group names to constraints.
  * @template Constraints - The type of the constraints.
+ * @ignore
  */
 export type Groups<Constraints> = { [group: string]: Constraints }
 
@@ -205,6 +218,7 @@ export type Groups<Constraints> = { [group: string]: Constraints }
  * @param props - The main constraints object.
  * @param groups - Optional groups of constraints.
  * @param merger - Function to merge each constraints object.
+ * @ignore
  */
 export function mergeMetadata<Constraints>(props?: Constraints, groups?: Groups<Constraints>, merger: (params: Constraints) => void = () => {}) {
     Object.values(groups ?? {}).concat(props != null ? [props] : []).forEach(params => {
@@ -221,6 +235,7 @@ export function mergeMetadata<Constraints>(props?: Constraints, groups?: Groups<
  * @param decorator - The field decorator function.
  * @param defaultProps - The default constraint properties to merge.
  * @returns A new field decorator function with merged defaults.
+ * @ignore
  */
 export function mergeDefaultMetadata<Constraints extends {}, Parent, Value>(
     decorator: (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void,
@@ -259,6 +274,7 @@ export function mergeDefaultMetadata<Constraints extends {}, Parent, Value>(
  * @param isMinMaxType - Optional function to check min/max type.
  * @param traverse - Optional traverser function for the field.
  * @returns A class field decorator function with validation.
+ * @ignore
  */
 export function fieldValidationDecorator<
     Constraints extends CommonConstraints<any, any>,

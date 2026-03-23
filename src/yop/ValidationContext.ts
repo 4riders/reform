@@ -4,6 +4,7 @@ import { ValidationForm, ValidationSettings, Yop } from "./Yop"
 
 /**
  * Type representing the validation group or groups being currently validated. `undefined` means the default group.
+ * @category Validation Management
  */
 export type Group = string | ((string | undefined)[])
 
@@ -12,12 +13,14 @@ export type Group = string | ((string | undefined)[])
  * "pending" indicates that the asynchronous validation is in progress, while "unavailable" indicates that the validation
  * couldn't be performed (e.g., due to an unreachable server).
  * @see {@link ValidationStatus}
+ * @category Validation Management
  */
 export type Level = "info" | "warning" | "error" | "pending" | "unavailable"
 
 /**
  * Interface representing the status of a validation, including its level, path, value, kind, code, constraint, and message.
  * This is used to track the results of validation operations and provide feedback to the user.
+ * @category Validation Management
  */
 export type ValidationStatus = {
 
@@ -64,6 +67,7 @@ export type ValidationStatus = {
  * 
  * @template Value - The type of the value being validated.
  * @template Parent - The type of the parent object containing the value.
+ * @category Validation Management
  */
 export interface ValidationContext<Value, Parent = unknown> {
     

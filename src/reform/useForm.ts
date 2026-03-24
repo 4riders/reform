@@ -133,7 +133,11 @@ type Model<T> = new (...args: any) => NonNullable<T>
 
 
 /**
- * React hook to create and manage a form with validation, initial values, and observer support.
+ * React hook to create and manage a form with all configuration options available in {@link FormConfig}. This overload allows for the most flexible
+ * usage of the `useForm` hook, with full control over initial values, validation schema, submission logic, and more.
+ * 
+ * However, it doesn't register automatically observers listeners, and you need to use the {@link useObservers} hook manually to register observers on
+ * the form manager instance, as shown in the example below.
  *
  * Example usage:
  * ```tsx
@@ -145,6 +149,8 @@ type Model<T> = new (...args: any) => NonNullable<T>
  *         form.setSubmitting(false)
  *     }
  * })
+ * // Optional, if observers are used in the form:
+ * useObservers(Person, form)
  * ```
  * @template T - The type of the form values.
  * @param config - The form configuration object.
@@ -155,10 +161,14 @@ type Model<T> = new (...args: any) => NonNullable<T>
 export function useForm<T extends object | null | undefined>(config: FormConfig<T>, deps?: React.DependencyList): FormManager<T>
 
 /**
- * React hook to create and manage a form with validation, and observer support. This overload allows for a simpler syntax. The initial values will be created
- * by instantiating the provided model class, and the validation schema will be automatically generated using the `instance` decorator with the provided model
- * class and `required: true`.
+ * React hook to create and manage a form with validation, and automatic observer support. This overload allows for a simpler syntax. The initial values
+ * will be created by instantiating the provided model class, and the validation schema will be automatically generated using the `instance` decorator with
+ * the provided model class and `required: true`.
  *
+ * There is no need to use {@link useObservers}, observers will be automatically registered on the form manager instance
+ * for the provided model class. The code example below is strictly equivalent to the one in the other overload signature,
+ * but with a simpler syntax.
+ * 
  * Example usage:
  * ```tsx
  * const form = useForm(Person, (form) => {
@@ -166,6 +176,7 @@ export function useForm<T extends object | null | undefined>(config: FormConfig<
  *     form.setSubmitting(false)
  * })
  * ```
+ * 
  * @template T - The type of the form values.
  * @param model - The model class constructor.
  * @param onSubmit - Callback for form submission.
@@ -177,13 +188,12 @@ export function useForm<T extends object | null | undefined>(model: Model<T>, on
 
 /**
  * Implementation of the useForm hook. Handles both config and model overloads, supports async initial values,
- * and manages form state, validation, and observer eventing.
+ * and manages form state, validation, and observer eventing. See the overload signatures for usage details.
  *
  * @param configOrModel - The form config object or model class constructor.
  * @param onSubmitOrDeps - The onSubmit callback or dependency list.
  * @param deps - Dependency list for memoization.
  * @returns The form manager instance.
- * @ignore
  */
 export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.DependencyList = []) {
 

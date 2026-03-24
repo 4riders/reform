@@ -3,7 +3,7 @@ import { getClassConstructor, getMetadataFields } from "../../yop/Metadata"
 import { Path, splitPath } from "../../yop/ObjectsUtil"
 import { ClassConstructor } from "../../yop/TypesUtil"
 import { FormManager, ReformSetValueEvent, SetValueOptions } from "../FormManager"
-import { ObserverCallbackContext, ObserverCallbackOptions, ObserverMetadata, ObserversField } from "./observer"
+import { ObserverCallbackContext, ObserverCallbackOptions, ObserverMetadata, ObserversField, observer } from "./observer"
 import { observerPathToRegexp, splitObserverPath } from "./observerPath"
 
 /**
@@ -197,16 +197,21 @@ function createReformEventListener(model: ClassConstructor<any>) {
 }
 
 /**
- * React hook to register reform event listeners for observers on a model.
+ * React hook to register reform event listeners for {@link observer}s on a model. This hook scans the provided model class for any observer metadata
+ * and registers a single event listener on the form manager instance that will trigger the appropriate observer callbacks when relevant fields
+ * are updated.
+ * 
+ * There is no need to use this hook if you are using the {@link useForm} hook with a model class, as observers will be automatically registered on
+ * the form manager instance.
  *
  * Example usage:
  * ```tsx
  * const form = useForm({
- *     initialValues: {},
+ *     initialValues: new MyFormModel(),
  *     validationSchema: instance({ of: MyFormModel }),
  *     onSubmit: (form) => { ... }
  * })
- * useObservers(MyFormModel, form) // scan MyFormModel for observers and register listeners
+ * useObservers(MyFormModel, form)
  * ```
  *
  * @template T

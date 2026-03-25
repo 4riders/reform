@@ -14,30 +14,63 @@ Atlas Reform is a powerful, type-safe, and extensible validation and form manage
 
 ## Installation
 
+Using npm:
 ```bash
-npm install atlas-reform
-# or
-yarn add atlas-reform
+$ npm install @dsid-opcoatlas/reform3
+```
+
+Using yarn:
+```bash
+$ yarn add @dsid-opcoatlas/reform3
 ```
 
 ## Quick Start
 
 ### Defining a Model with Decorators
 
-```typescript
-import { string, number } from 'atlas-reform'
+```tsx
+import { string } from '@dsid-opcoatlas/reform3'
 
-class User {
+class Person {
 	
-    @string({ required: true })
+    @string({ required: true, min: 1 })
     name: string | null = null
-
-    @number({ min: 18, max: [99, "No user can be a century old or more!"] })
-    age: number | null = null
 }
 ```
 
+The `name` property above can neither be `null` nor `undefined` because of the `required: true` constraint but can be an empty string. Add a `min: 1`
+constraint to disallow empty strings. See the [string](functions/string.html) decorator for more options.
+
+To validate a value based on this model, you can use the [validate](classes/Yop.html#validate-2) function (we will later use the `useForm` hook to manage form state and validation in React, but this is how you can validate any value against the model):
+
+```tsx
+import { Yop, instance } from '@dsid-opcoatlas/reform3'
+
+const statuses = Yop.validate({}, instance({ of: Person }))
+// or: Yop.validate(new Person(), instance({ of: Person }))
+console.log(statuses)
+```
+
+This will print in the console an array of one validation status, because the `name` property is required but is currently `undefined`:
+
+```json
+[{
+    "level": "error",
+    "path": "name",
+    "value": undefined,
+    "kind": "string",
+    "code": "required",
+    "constraint": true,
+    "message": "Required field"
+}]
+```
+
+See [ValidationStatus](types/ValidationStatus.html) for more details on the validation status object.
+
 <!-- ### Using with React
+
+    @number({ min: 18, max: [99, "No user can be a century old or more!"] })
+    age: number | null = null
 
 ```tsx
 import { useForm } from 'atlas-reform'
@@ -80,7 +113,7 @@ observer('age', (newValue, oldValue) => {
 
 ## API Reference
 
-See the [TypeDoc documentation](./docs/index.html) for a full API reference, including all decorators, utilities, and form management hooks.
+See [full API reference](modules.html), including all decorators, utilities, and form management hooks.
 
 ## License
 

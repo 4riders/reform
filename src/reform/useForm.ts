@@ -127,9 +127,9 @@ export type FormConfig<T extends object | any[] | null | undefined> = {
 
 /**
  * Type for a class constructor of a model.
- * @ignore
+ * @category Form Management
  */
-type Model<T> = new (...args: any) => NonNullable<T>
+export type Model<T> = new (...args: any) => NonNullable<T>
 
 
 /**

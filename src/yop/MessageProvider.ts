@@ -1,5 +1,5 @@
 import { ConstraintMessage } from "./constraints/Constraint";
-import { InternalValidationContext, Level } from "./ValidationContext";
+import { InternalValidationContext, Level, ValidationContext } from "./ValidationContext";
 
 /**
  * Interface for providing localized validation messages.
@@ -43,10 +43,10 @@ function format(value: any, numberFormat: Intl.NumberFormat, dateFormat: Intl.Da
 
 /**
  * Properties passed to a message function for formatting.
- * @ignore
+ * @category Localization
  */
-type MessageProps = {
-    context: InternalValidationContext<unknown>
+export type MessageProps = {
+    context: ValidationContext<unknown>
     code: string
     constraint: {
         raw: any
@@ -58,9 +58,10 @@ type MessageProps = {
 
 /**
  * Function type for generating a message from message properties.
- * @ignore
+ * @see {@link MessageProps}
+ * @category Localization
  */
-type MessageFunction = (props: MessageProps) => string
+export type MessageFunction = (props: MessageProps) => string
 
 /**
  * Basic implementation of MessageProvider for localized validation messages.

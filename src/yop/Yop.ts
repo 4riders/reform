@@ -54,9 +54,11 @@ export type ResolvedConstraints<MinMax = unknown> = {
 }
 
 /**
- * Type for resolved constraints with optional field metadata.
+ * Type for resolved constraints with an editable field metadata. *Warning*: the `fieldMetadata` property is mutable and should be used with
+ * caution, as modifying it can lead to unexpected behavior in validation logic. It is intended for advanced use cases where access to the
+ * original constraints is necessary, but it should not be modified during normal validation operations.
  * @template MinMax - The type for min/max values.
- * @ignore
+ * @category Validation Management
  */
 export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<MinMax> &{
     fieldMetadata?: CommonConstraints<any, any> | undefined
@@ -197,8 +199,6 @@ export class Yop {
      * @param id The ID of the class or a function reference.
      * @param silent If true, suppresses error messages for unregistered classes.
      * @returns The resolved class constructor, or undefined if not found.
-     * @see {@link Yop.registerClass}
-     * @see {@link id}
      * @ignore
      */
     static resolveClass<T>(id: unknown, silent = false): Constructor<T> | undefined {

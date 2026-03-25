@@ -24,7 +24,6 @@ import { InstanceConstraints } from "./instance"
  * @template Class - The constructor type of the class.
  * @param id - The unique identifier for the class.
  * @returns A class decorator function that registers the class in the Yop registry.
- * @see {@link Yop.registerClass}
  * @see {@link InstanceConstraints}
  * @see {@link ArrayConstraints}
  * @category Class Decorators

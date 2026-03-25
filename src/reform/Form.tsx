@@ -21,7 +21,7 @@ export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "on
 }
 
 /**
- * React component for rendering an HTML form with context (see {@link FormContext}), error display, and automatic form disabling. All children of
+ * React component for rendering an HTML form with context, error display, and automatic form disabling. All children of
  * this component will have access to the form manager via context, and they will be enclosed in an HTML `fieldset` that is disabled according to the
  * `disabled` prop. If there are any validation errors, and if the debug option `displayFormErrors` is enabled (see {@link Reform.displayFormErrors}),
  * they will be displayed in a formatted block below the form.

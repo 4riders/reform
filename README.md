@@ -26,7 +26,7 @@ $ yarn add @dsid-opcoatlas/reform3
 
 ## Quick Start
 
-### Defining a Model with Decorators
+### Defining a Model with Decorators and Running Validations
 
 ```tsx
 import { string } from '@dsid-opcoatlas/reform3'
@@ -38,20 +38,24 @@ class Person {
 }
 ```
 
-The `name` property above can neither be `null` nor `undefined` because of the `required: true` constraint but can be an empty string. Add a `min: 1`
-constraint to disallow empty strings. See the [string](functions/string.html) decorator for more options.
+The `name` property above can neither be `null` nor `undefined` because of the `required: true` constraint but could be an empty string without the `min: 1` constraint. See the [string](functions/string.html) decorator for more options.
 
-To validate a value based on this model, you can use the [validate](classes/Yop.html#validate-2) function (we will later use the `useForm` hook to manage form state and validation in React, but this is how you can validate any value against the model):
+To validate a value based on this model, you can use the [validate](classes/Yop.html#validate-2) function (we will later use the [useForm](functions/useForm.html) hook to manage form state and validation in React, but this is how you can validate any value against a model):
 
 ```tsx
 import { Yop, instance } from '@dsid-opcoatlas/reform3'
 
-const statuses = Yop.validate({}, instance({ of: Person }))
-// or: Yop.validate(new Person(), instance({ of: Person }))
+const statuses = Yop.validate(
+    {}, // (1)
+    instance({ of: Person }) // (2)
+)
 console.log(statuses)
 ```
 
-This will print in the console an array of one validation status, because the `name` property is required but is currently `undefined`:
+1. The value we want to validate, in this case an empty object `{}`. This could be any value, even `null` or `undefined`, and of course a `new Person()`.
+2. A validation schema defined as an instance of the `Person` class, which tells the validator to use the constraints defined by the decorators used in the `Person` class.
+
+Running the code above will print in the console an array of one validation status, because the `name` property is required but is `undefined` in the `{}` value:
 
 ```json
 [{
@@ -66,6 +70,9 @@ This will print in the console an array of one validation status, because the `n
 ```
 
 See [ValidationStatus](types/ValidationStatus.html) for more details on the validation status object.
+
+### Defining a Model with Decorators and Running Validations
+
 
 <!-- ### Using with React
 

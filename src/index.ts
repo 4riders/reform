@@ -6,7 +6,7 @@
  * receives context about the change. The observer paths support a flexible syntax for targeting specific fields, including
  * wildcards, absolute and relative paths.
  * 
- * @categoryDescription Constraints
+ * @categoryDescription Shared Constraints
  * Constraints are validation rules that can be applied to form fields or entire form models. They define the conditions that the field
  * values must satisfy in order to be considered valid. Constraints can be simple, such as checking if a value is required or if it falls
  * within a certain range, or they can be complex, involving custom logic that depends on multiple fields. By applying constraints to your form

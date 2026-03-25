@@ -5,8 +5,9 @@ import { Constructor } from "../TypesUtil"
 /**
  * Utility type to extract the instance type from a constructor.
  * @template Class - The constructor type.
+ * @category Class Decorators
  */
-type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
+export type InstanceType<Class> = Class extends Constructor<infer Type> ? Type : never
 
 /**
  * Class decorator to add a test constraint function to a class for validation. The test function will be called with the

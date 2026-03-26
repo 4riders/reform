@@ -71,8 +71,92 @@ Running the code above will print in the console an array of one validation stat
 
 See [ValidationStatus](types/ValidationStatus.html) for more details on the validation status object.
 
-### Defining a Model with Decorators and Running Validations
+### Custom Validation Messages and Dynamic Constraints
 
+You can provide custom validation messages directly in the constraints as a tuple where the first element is the constraint value and the second element is the custom message (which can be a `string` or a `JSX.Element`):
+
+```tsx
+import { string } from '@dsid-opcoatlas/reform3'
+
+class Person {
+	
+	@string({ required: [true, "Please enter your name!"] })
+	name: string | null = null
+}
+const statuses = Yop.validate(new Person(), instance({ of: Person }))
+console.log(statuses)
+```
+
+Running this code will print the following validation status with the custom message:
+
+```json
+[{
+    "level": "error",
+    "path": "name",
+    "value": null,
+    "kind": "string",
+    "code": "required",
+    "constraint": true,
+    "message": "Please enter your name!"
+}]
+```
+
+Constraints can also be defined as a function that returns a tuple of the constraint value and the message, which allows for dynamic messages based on the value or other factors:
+
+```tsx
+import { string } from '@dsid-opcoatlas/reform3'
+
+class Person {
+
+	minNameLength = 4
+	
+	@string({ min: ctx => [ctx.parent.minNameLength, `Name must be at least ${ctx.parent.minNameLength} characters long, but got ${ctx.value.length}!`] })
+	name: string | null = "Bob"
+}
+
+const statuses = Yop.validate(new Person(), instance({ of: Person }))
+console.log(statuses)
+```
+
+Running this code will print the following validation status with the parameterized custom message:
+
+```json
+[{
+    "level": "error",
+    "path": "name",
+    "value": "Bob",
+    "kind": "string",
+    "code": "min",
+    "constraint": 4,
+    "message": "Name must be at least 4 characters long, but got 3!"
+}]
+```
+
+### Form Management with React
+
+After defining your model with decorators, you can use the [useForm](functions/useForm) hook to manage form state and validation in React. The `useForm` hook has two overloads, the simplest one takes the model and a submit function, and returns a [FormManager](interfaces/FormManager.html) instance.
+
+```tsx
+import { useForm, Form } from '@dsid-opcoatlas/reform3'
+
+function UserForm() {
+    
+    const form = useForm(Person, form => {
+        // This function is called when the form is submitted and valid
+        console.log('Form submitted with values:', form.values)
+        form.setSubmitting(false)
+    })
+
+    return (
+        <Form form={ form } autoComplete="off" noValidate>
+            {/* Inputs here */}
+            <button type="submit">Submit</button>
+        </Form>
+    )
+}
+```
+
+The [Form](functions/Form.html) component is a wrapper around the standard HTML `<form>` element that handles the submit event and calls the provided submit function with the form manager instance. It also sets a React `Context` that allows child components to access the form manager and its state through the [useFormContext](functions/useFormContext.html) hook.
 
 <!-- ### Using with React
 

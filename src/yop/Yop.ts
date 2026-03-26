@@ -6,6 +6,7 @@ import { ClassFieldDecorator, getMetadataFromDecorator } from "./Metadata"
 import { joinPath, Path, splitPath } from "./ObjectsUtil"
 import { Constructor, isBoolean } from "./TypesUtil"
 import { Group, InternalValidationContext, ValidationStatus } from "./ValidationContext"
+import { FormManager } from "../reform/FormManager"
 
 (Symbol as any).metadata ??= Symbol.for("Symbol.metadata")
 
@@ -65,7 +66,7 @@ export type UnsafeResolvedConstraints<MinMax = unknown> = ResolvedConstraints<Mi
 }
 
 /**
- * Interface for a validation form, representing form state and operations.
+ * Base interface of a form manager, extended by {@link FormManager}, representing form state and operations.
  * @category Validation Management
  */
 export interface ValidationForm {
@@ -131,13 +132,36 @@ export interface ValidationForm {
 
 /**
  * Interface for validation settings, including path, groups, and options.
- * @ignore
+ * @category Validation Management
  */
 export interface ValidationSettings {
+
+    /**
+     * The path to the field or object being validated. This can be a string with dot notation (e.g., "address.street") or
+     * an array of path segments (e.g., ["address", "street"]). If omitted, the validation will be performed on the root value.
+     */
     path?: string | Path
+
+    /**
+     * Validation groups to apply during validation. This can be a single group or an array of groups. If specified, only the
+     * constraints associated with at least one of the active groups will be validated.
+     */
     groups?: Group
+
+    /**
+     * Function to determine if a path should be ignored during validation.
+     */
     ignore?: (path: Path) => boolean
+
+    /**
+     * Whether to skip asynchronous validation.
+     */
     skipAsync?: boolean
+
+    /**
+     * The validation form associated with this validation context. This form is set by the form manager when performing form-level validation
+     * and can be used to access form state and operations during validation.
+     */
     form?: ValidationForm
 }
 

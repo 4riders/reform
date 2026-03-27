@@ -134,7 +134,7 @@ Running this code will print the following validation status with the parameteri
 
 ### Form Management with React
 
-After defining your model with decorators, you can use the [useForm](functions/useForm) hook to manage form state and validation in React. The `useForm` hook has two overloads, the simplest one takes the model and a submit function, and returns a [FormManager](interfaces/FormManager.html) instance.
+After defining your model with decorators, you can use the [useForm](functions/useForm.html) hook to manage form state and validation in React. The `useForm` hook has two overloads, the simplest one takes the model and a submit function, and returns a [FormManager](interfaces/FormManager.html) instance.
 
 ```tsx
 import { useForm, Form } from '@dsid-opcoatlas/reform3'
@@ -148,7 +148,7 @@ function UserForm() {
     })
 
     return (
-        <Form form={ form } autoComplete="off" noValidate>
+        <Form form={ form } autoComplete="off" noValidate disabled={ form.submitting }>
             {/* Inputs here */}
             <button type="submit">Submit</button>
         </Form>
@@ -156,55 +156,110 @@ function UserForm() {
 }
 ```
 
-The [Form](functions/Form.html) component is a wrapper around the standard HTML `<form>` element that handles the submit event and calls the provided submit function with the form manager instance. It also sets a React `Context` that allows child components to access the form manager and its state through the [useFormContext](functions/useFormContext.html) hook.
+The [Form](functions/Form.html) component is a wrapper around the standard HTML `<form>` element that handles the submit event and calls the provided submit function with the form manager instance. It also sets a React `Context` that allows child components to access the form manager and its state through the [useFormContext](functions/useFormContext.html) hook. All children of the `Form` component are enclosed within an HTML `<fieldset>` element, which is disabled when the `disabled` property is set to `true`.
 
-<!-- ### Using with React
+### Form Inputs Components
 
-    @number({ min: 18, max: [99, "No user can be a century old or more!"] })
-    age: number | null = null
+You can create your own form input components that are connected to the form state and validation by using the [useFormField](functions/useFormField.html) hook, which takes a field path and returns the field's constraints, validation status, and a render function. For example, here is a simple `TextField` component that uses the [BaseTextField](functions/BaseTextField.html) component and connects it to the form state:
 
 ```tsx
-import { useForm } from 'atlas-reform'
+import { ComponentType } from 'react'
+import { BaseTextField, Form, string, StringConstraints, StringValue, useForm, useFormField } from '@dsid-opcoatlas/reform3'
 
-function UserForm() {
-	const form = useForm({ initialValues: new User(), validationSchema: userSchema })
+function TextField(props: { label: string, path: string }) { // (1)
+    const { constraints, status, render } = useFormField<StringValue, number>(props.path!)
 
-	return (
-		<form onSubmit={form.handleSubmit}>
-			<input
-				value={form.values.name}
-				onChange={e => form.setFieldValue('name', e.target.value)}
-			/>
-			{form.errors.name && <span>{form.errors.name}</span>}
-
-			<input
-				type="number"
-				value={form.values.age}
-				onChange={e => form.setFieldValue('age', Number(e.target.value))}
-			/>
-			{form.errors.age && <span>{form.errors.age}</span>}
-
-			<button type="submit">Submit</button>
-		</form>
-	)
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div>{ props.label + (constraints?.required ? " *" : "") }</div>
+            <BaseTextField name={ props.path! } render={ render } />
+            { status?.message && <div style={{ color: 'red' }}>{ status.message }</div> }
+        </div>
+    )
 }
-``` -->
+
+type TextFieldProps<Parent> = StringConstraints<StringValue, Parent> & { // (2)
+    input?: ComponentType<any>
+    label?: string
+    path?: string
+}
+
+function textField<Parent>(props?: TextFieldProps<Parent>) { // (3)
+    return string<StringValue, Parent>({ input: TextField, ...props })
+}
+
+class Person {
+
+    @textField({ label: "Name", required: true })  // (4)
+    name: string | null = null
+}
+
+function PersonForm() { // (5)
+    
+    const form = useForm(Person, form => {
+        console.log('Form submitted with values:', form.values)
+        form.setSubmitting(false)
+    })
+
+    return (
+        <Form form={ form } autoComplete="off" noValidate disabled={ form.submitting }>
+            <TextField path="name" label="Name" />
+            <button type="submit">Submit</button>
+        </Form>
+    )
+}
+```
+
+1. The `TextField` component uses the [useFormField](functions/useFormField.html) hook to get the constraints and validation status for the field based on the provided path, and renders a label, the input component, and any validation message. It uses the `BaseTextField` component as the input, which is a simple wrapper around an HTML `<input type="text">` element that handles change and blur events and calls the provided render function to update the form state.
+2. The `TextFieldProps` type defines the props for the `TextField` component and the `textField` decorator. It extends [StringConstraints](interfaces/StringConstraints.html) and adds a `path` property (the path to the field in the model), a `label` property, and an `input` component to render.
+3. The `textField` function is a decorator that creates a string constraint with the `TextField` component as the default input, allowing us to use it directly in the model definition.
+4. The `name` property in the `Person` class is decorated with the `@textField` decorator, which defines it as a required string field with the `TextField` component as its input and a label of "Name". Note that the `BaseTextField` component converts automatically an empty string to `null` so there is no need to add a `min: 1` constraint to disallow empty values.
+5. The `PersonForm` component uses the [useForm](functions/useForm.html) hook to create a form manager for the `Person` model, and renders a [Form](functions/Form.html) component with a `TextField` for the `name` property and a submit button.
 
 ### Observers
 
-React to changes in other fields:
+You can also create observers that react to changes in form fields using the [observer](functions/observer.html) decorator, which takes a field path and a callback function that is called whenever the field value changes. For example, you can create an observer that logs the current value and validation status of the `name` field whenever it changes:
 
-```typescript
-import { observer } from 'atlas-reform'
+```tsx
+import { observer, useForm } from '@dsid-opcoatlas/reform3'
 
-observer('age', (newValue, oldValue) => {
-	// Do something when age changes
-})
+class Person {
+
+    age: number | null = null
+ 
+    ＠observer("age", (context) => context.setValue(
+          context.observedValue != null ? (context.observedValue as number) >= 18 : null
+    ))
+    adult: boolean | null = null
+}
+ 
+const form = useForm(MyFormModel, () => {})
+```
+
+In this example, the `adult` field is automatically updated to `true` or `false` based on the value of the `age` field, and it is also marked as untouched to avoid triggering validation messages when it changes.
+
+See the [observer](functions/observer.html) decorator for more details and options.
+
+Note that observers are automatically set up when using the simpler overload of the `useForm` hook, so you don't need to do anything special to enable them. However, if you are using the more advanced overload of the `useForm` hook, you need to call the [useObservers](functions/useObservers.html) hook after initializing the form:
+
+```tsx
+const form = useForm(MyFormModel, () => {})
+useObservers(MyFormModel, form)
 ```
 
 ## API Reference
 
 See [full API reference](modules.html), including all decorators, utilities, and form management hooks.
+
+## Building, Testing, and Publishing
+
+Use the following commands to build, test, and publish the package:
+
+```bash
+$ yarn build # build the library
+$ yarn test # run tests
+$ npm publish # publish to npm
+```
 
 ## License
 

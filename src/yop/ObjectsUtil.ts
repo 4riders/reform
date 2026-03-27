@@ -358,9 +358,27 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
  * @category Utilities
  */
 export type Diff<A = any, B  = any> = {
+
+    /**
+     * The first value in the diff comparison.
+     */
     a: A
+
+    /**
+     * The second value in the diff comparison.
+     */
     b: B
+
+    /**
+     * The diff tree representing differences between the two values. The tree is a nested object where keys are path segments and values are
+     * either further nested objects or empty objects indicating a difference at that path. If a path is not present in the tree, it means
+     * the values are equal at that path. When `equal` is true, the tree is an empty object: `{}`.
+     */
     tree: { [key: string | number]: any }
+
+    /**
+     * Indicates whether the two values are equal.
+     */
     equal: boolean
 }
 

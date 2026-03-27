@@ -30,14 +30,15 @@ export const stringToLocalDate = (value: unknown) => {
 }
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 type BaseDateFieldProps = BaseTextFieldHTMLAttributes & ReformEvents<Date> & {
     render: () => void
 }
 
 /**
- * @ignore
+ * A base date field component that can be used to create custom date input components connected to the form state.
+ * @category Base Inputs Components
  */
 export function BaseDateField(props: BaseDateFieldProps) {
 

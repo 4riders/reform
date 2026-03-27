@@ -35,7 +35,7 @@ export type BaseSelectFieldHTMLAttributes = (
 )
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEvents<V> & {
     modelValues: V[]
@@ -46,7 +46,7 @@ export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEven
 }
 
 /**
- * Provides a basic select field for Reform.
+ * A base select field component that can be used to create custom select input components connected to the form state.
  * 
  * To use it with with a basic { value, label } pair, you can use the following props:
  * ```tsx
@@ -58,7 +58,7 @@ export type BaseSelectFieldProps<V> = BaseSelectFieldHTMLAttributes & ReformEven
  *     toModelValue={ optionValue => optionValue === "" ? null : optionValue }
  *     render={ myRenderFunction } />
  * ```
- * @ignore
+ * @category Base Inputs Components
  */
 export function BaseSelectField<Value = string>(props: BaseSelectFieldProps<Value | null>) {
 

@@ -35,14 +35,15 @@ export type BaseTextAreaFieldHTMLAttributes = (
 )
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 export type BaseTextAreaFieldProps = BaseTextAreaFieldHTMLAttributes & ReformEvents<string> & {
     render: () => void
 }
 
 /**
- * @ignore
+ * A base text area component that can be used to create custom text area input components connected to the form state.
+ * @category Base Inputs Components
  */
 export function BaseTextAreaField(props: BaseTextAreaFieldProps) {
 

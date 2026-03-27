@@ -28,7 +28,7 @@ export type BaseRadioFieldHTMLAttributes = Omit<InputAttributes<'radio'>,
 >
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 export type BaseRadioFieldProps<V> = BaseRadioFieldHTMLAttributes & ReformEvents<V> & {
     modelValue: V
@@ -36,7 +36,8 @@ export type BaseRadioFieldProps<V> = BaseRadioFieldHTMLAttributes & ReformEvents
 }
 
 /**
- * @ignore
+ * A base radio field component that can be used to create custom radio input components connected to the form state.
+ * @category Base Inputs Components
  */
 export function BaseRadioField<V = any>(props: BaseRadioFieldProps<V>) {
     const { onChange, onBlur, modelValue, render, ...inputProps } = props

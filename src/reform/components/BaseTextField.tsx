@@ -26,7 +26,7 @@ export type BaseTextFieldHTMLAttributes = Omit<InputAttributes<"text" | "search"
 >
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V> & {
     toModelValue?: (value: string) => V | null
@@ -38,7 +38,11 @@ export type BaseTextFieldProps<V> = BaseTextFieldHTMLAttributes & ReformEvents<V
 }
 
 /**
- * @ignore
+ * A base text field component that can be used to create custom text input components connected to the form state. It handles change and blur events,
+ * converts between the input value and the model value using the provided `toModelValue` and `toTextValue` functions, and calls the provided `render`
+ * function to update the form state when the value changes. It also supports an `acceptInputValue` function to validate the input value on each change
+ * and a `formatDisplayedValue` function to format the displayed value while editing.
+ * @category Base Inputs Components
  */
 export function BaseTextField<Value = string>(props: BaseTextFieldProps<Value>) {
 

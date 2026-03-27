@@ -28,14 +28,15 @@ export type BaseCheckboxFieldHTMLAttributes = Omit<InputAttributes<'checkbox'>,
 >
 
 /**
- * @ignore
+ * @category Base Inputs Components
  */
 export type BaseCheckboxFieldProps = BaseCheckboxFieldHTMLAttributes & Omit<ReformEvents<boolean>, 'onBlur'> & {
     render: () => void
 }
 
 /**
- * @ignore
+ * A base checkbox field component that can be used to create custom checkbox input components connected to the form state.
+ * @category Base Inputs Components
  */
 export function BaseCheckboxField(props: BaseCheckboxFieldProps) {
     const { onChange, render, ...inputProps } = props

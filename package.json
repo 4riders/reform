@@ -1,7 +1,7 @@
 {
-  "name": "@dsid-opcoatlas/reform3",
-  "version": "3.0.24",
-  "description": "Atlas Reform is a powerful, type-safe, and extensible validation and form management library for TypeScript and React",
+  "name": "@4riders/reform",
+  "version": "3.0.25",
+  "description": "Reform is a powerful, type-safe, and extensible validation and form management library for TypeScript and React",
   "type": "module",
   "module": "./dist/index.es.js",
   "types": "./dist/index.d.ts",
@@ -11,13 +11,13 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "homepage": "https://github.com/Service-SI-OPCO-Atlas/atlas-reform#readme",
+  "homepage": "https://github.com/4riders/reform#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Service-SI-OPCO-Atlas/atlas-reform.git"
+    "url": "https://github.com/4riders/reform.git"
   },
   "bugs": {
-    "url": "https://github.com/Service-SI-OPCO-Atlas/atlas-reform/issues"
+    "url": "https://github.com/4riders/reform/issues"
   },
   "keywords": [
     "react",
@@ -46,22 +46,25 @@
     "react-dom": ">=18"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.4",
-    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-proposal-decorators": "^7.29.0",
+    "@rolldown/plugin-babel": "^0.2.2",
     "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.0",
-    "@types/node": "^22.18.10",
-    "@types/react": "^18.3.24",
+    "@testing-library/react": "^16.3.2",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react": "^4.7.0",
-    "jsdom": "^26.1.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "jsdom": "^29.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typedoc": "^0.28.17",
-    "typescript": "^5.9.3",
-    "vite": "^6.4.0",
+    "typedoc": "^0.28.18",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.13.0"
 }

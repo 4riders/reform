@@ -1,6 +1,6 @@
-# Atlas Reform
+# Reform
 
-Atlas Reform is a powerful, type-safe, and extensible validation and form management library for TypeScript and React. A unique feature of this framework is its use of modern TypeScript class decorators to define validation schemas and constraints directly on your model classes, enabling highly expressive, maintainable, and type-safe form logic. It provides advanced features for building complex forms, handling validation, and managing form state with a focus on flexibility and developer experience.
+Reform is a powerful, type-safe, and extensible validation and form management library for TypeScript and React. A unique feature of this framework is its use of modern TypeScript class decorators to define validation schemas and constraints directly on your model classes, enabling highly expressive, maintainable, and type-safe form logic. It provides advanced features for building complex forms, handling validation, and managing form state with a focus on flexibility and developer experience.
 
 ## Features
 
@@ -16,12 +16,12 @@ Atlas Reform is a powerful, type-safe, and extensible validation and form manage
 
 Using npm:
 ```bash
-$ npm install @dsid-opcoatlas/reform3
+$ npm install @4riders/reform
 ```
 
 Using yarn:
 ```bash
-$ yarn add @dsid-opcoatlas/reform3
+$ yarn add @4riders/reform
 ```
 
 ## Quick Start
@@ -29,7 +29,7 @@ $ yarn add @dsid-opcoatlas/reform3
 ### Defining a Model with Decorators and Running Validations
 
 ```tsx
-import { string } from '@dsid-opcoatlas/reform3'
+import { string } from '@4riders/reform'
 
 class Person {
 	
@@ -43,7 +43,7 @@ The `name` property above can neither be `null` nor `undefined` because of the `
 To validate a value based on this model, you can use the [validate](classes/Yop.html#validate-2) function (we will later use the [useForm](functions/useForm.html) hook to manage form state and validation in React, but this is how you can validate any value against a model):
 
 ```tsx
-import { Yop, instance } from '@dsid-opcoatlas/reform3'
+import { Yop, instance } from '@4riders/reform'
 
 const statuses = Yop.validate(
     {}, // (1)
@@ -76,7 +76,7 @@ See [ValidationStatus](types/ValidationStatus.html) for more details on the vali
 You can provide custom validation messages directly in the constraints as a tuple where the first element is the constraint value and the second element is the custom message (which can be a `string` or a `JSX.Element`):
 
 ```tsx
-import { string } from '@dsid-opcoatlas/reform3'
+import { string } from '@4riders/reform'
 
 class Person {
 	
@@ -104,7 +104,7 @@ Running this code will print the following validation status with the custom mes
 Constraints can also be defined as a function that returns a tuple of the constraint value and the message, which allows for dynamic messages based on the value or other factors:
 
 ```tsx
-import { string } from '@dsid-opcoatlas/reform3'
+import { string } from '@4riders/reform'
 
 class Person {
 
@@ -137,7 +137,7 @@ Running this code will print the following validation status with the parameteri
 After defining your model with decorators, you can use the [useForm](functions/useForm.html) hook to manage form state and validation in React. The `useForm` hook has two overloads, the simplest one takes the model and a submit function, and returns a [FormManager](interfaces/FormManager.html) instance.
 
 ```tsx
-import { useForm, Form } from '@dsid-opcoatlas/reform3'
+import { useForm, Form } from '@4riders/reform'
 
 function UserForm() {
     
@@ -164,7 +164,7 @@ You can create your own form input components that are connected to the form sta
 
 ```tsx
 import { ComponentType } from 'react'
-import { BaseTextField, Form, string, StringConstraints, StringValue, useForm, useFormField } from '@dsid-opcoatlas/reform3'
+import { BaseTextField, Form, string, StringConstraints, StringValue, useForm, useFormField } from '@4riders/reform'
 
 function TextField(props: { label: string, path: string }) { // (1)
     const { constraints, status, render } = useFormField<StringValue, number>(props.path!)
@@ -221,7 +221,7 @@ function PersonForm() { // (5)
 You can also create observers that react to changes in form fields using the [observer](functions/observer.html) decorator, which takes a field path and a callback function that is called whenever the field value changes. For example, you can create an observer that logs the current value and validation status of the `name` field whenever it changes:
 
 ```tsx
-import { observer, useForm } from '@dsid-opcoatlas/reform3'
+import { observer, useForm } from '@4riders/reform'
 
 class Person {
 

@@ -1,10 +1,9 @@
-import { FormHTMLAttributes, useCallback } from "react"
-import { FormContext } from "./useFormContext"
-import React from "react"
+import React, { type FormHTMLAttributes } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
-import { FormManager, InternalFormManager } from "./FormManager"
-import { ValidationStatus } from "../yop/ValidationContext"
+import type { ValidationStatus } from "../yop/ValidationContext"
+import type { FormManager } from "./FormManager"
 import { Reform } from "./Reform"
+import { FormContext } from "./useFormContext"
 
 /**
  * Props for the Form component.
@@ -43,16 +42,12 @@ export interface FormProps extends Omit<FormHTMLAttributes<HTMLFormElement>, "on
  */
 export function Form(props: FormProps) {
     const { form, children, disabled, ...formAttrs } = props
-    
-    const formRef = useCallback((htmlForm: HTMLFormElement) => {
-        (form as InternalFormManager<any>).htmlForm = htmlForm
-    }, [form])
 
-    const errors = new Map<string, ValidationStatus>([...form.statuses].filter(([_, status]) => status.level === "error"))
+    const errors = new Map<string, ValidationStatus>([...form.statuses].filter(([, status]) => status.level === "error"))
 
     return (
         <FormContext.Provider value={ form }>
-            <form ref={ formRef } onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
+            <form onSubmit={ (e) => form.submit(e) } { ...formAttrs }>
                 <fieldset disabled={ disabled }>{ children }</fieldset>
                 
                 { errors.size > 0 && Reform.displayFormErrors &&

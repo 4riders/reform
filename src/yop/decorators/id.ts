@@ -1,7 +1,7 @@
-import { Constructor } from "../TypesUtil"
+import type { Constructor } from "../TypesUtil"
 import { Yop } from "../Yop"
-import { ArrayConstraints } from "./array"
-import { InstanceConstraints } from "./instance"
+import type { ArrayConstraints } from "./array"
+import type { InstanceConstraints } from "./instance"
 
 /**
  * Class decorator to register a class with a unique identifier in the Yop registry. It can be used when you need to reference
@@ -29,7 +29,7 @@ import { InstanceConstraints } from "./instance"
  * @category Class Decorators
  */
 export function id<Type extends object, Class extends Constructor<Type>>(id: string) {
-    return function decorateClass(target: Class, _: ClassDecoratorContext<Class>) {
+    return function decorateClass(target: Class) {
         Yop.registerClass(id, target)
     }
 }

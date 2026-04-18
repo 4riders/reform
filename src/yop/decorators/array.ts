@@ -1,14 +1,12 @@
-import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
-import { fieldValidationDecorator, getValidationDecoratorKind, Groups, InternalClassConstraints } from "../Metadata"
+import { type CommonConstraints, type InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { fieldValidationDecorator, getValidationDecoratorKind, type Groups, type InternalClassConstraints } from "../Metadata"
 import { defineLazyProperty } from "../ObjectsUtil"
-import { ArrayElementType, Constructor, isNumber } from "../TypesUtil"
+import { type ArrayElementType, type Constructor, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 import { id } from "./id"
-import { string } from "./string"
-import { number } from "./number"
 
 /**
  * Type for an array value, which can be an array, null, or undefined.
@@ -142,7 +140,7 @@ export const arrayKind = "array"
 export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConstraints<Value, Parent>, groups?: Groups<ArrayConstraints<Value, Parent>>) {
     if (getValidationDecoratorKind(constraints?.of) != null) {
         const of = constraints!.of as ((_: any, context: Partial<ClassFieldDecoratorContext<Value, ArrayElementType<Value>>>) => void)
-        defineLazyProperty(constraints, "of", (_this) => {
+        defineLazyProperty(constraints, "of", () => {
             const metadata = { [validationSymbol]: {} as InternalClassConstraints }
             of(null, { metadata, name: "of" })
             return { [Symbol.metadata]: { [validationSymbol]: metadata[validationSymbol]!.fields!.of }}
@@ -150,7 +148,7 @@ export function array<Value extends ArrayValue, Parent>(constraints?: ArrayConst
     }
     else if (typeof constraints?.of === "string" || (typeof constraints?.of === "function" && constraints.of.prototype == null)) {
         const of = constraints!.of
-        defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of))
+        defineLazyProperty(constraints, "of", () => Yop.resolveClass(of))
     }
     return fieldValidationDecorator(arrayKind, constraints ?? ({} as ArrayConstraints<Value, Parent>), groups, validateArray, isNumber, traverseArray)
 }

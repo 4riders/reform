@@ -1,5 +1,5 @@
-import { Constraint, validateConstraint } from "./Constraint"
-import { InternalValidationContext, ValuedContext } from "../ValidationContext"
+import { type Constraint, validateConstraint } from "./Constraint"
+import { InternalValidationContext, type ValuedContext } from "../ValidationContext"
 
 /**
  * Interface for min and max constraints on a value.

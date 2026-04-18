@@ -1,5 +1,5 @@
-import { ConstraintMessage } from "./constraints/Constraint";
-import { InternalValidationContext, Level, ValidationContext } from "./ValidationContext";
+import type { ConstraintMessage } from "./constraints/Constraint";
+import { InternalValidationContext, type Level, type ValidationContext } from "./ValidationContext";
 
 /**
  * Interface for providing localized validation messages.
@@ -69,6 +69,8 @@ export type MessageFunction = (props: MessageProps) => string
  */
 export class BasicMessageProvider implements MessageProvider {
 
+    readonly locale!: string
+
     private readonly numberFormat: Intl.NumberFormat
     private readonly dateFormat: Intl.DateTimeFormat
     private readonly listFormat: Intl.ListFormat
@@ -84,7 +86,9 @@ export class BasicMessageProvider implements MessageProvider {
      * @param locale - The locale identifier.
      * @param entries - Optional array of [code, message function] pairs.
      */
-    constructor(readonly locale: string, entries?: (readonly [string, MessageFunction])[]) {
+    constructor(locale: string, entries?: (readonly [string, MessageFunction])[]) {
+        this.locale = locale
+        
         this.numberFormat = new Intl.NumberFormat(this.locale)
         this.dateFormat = new Intl.DateTimeFormat(this.locale)
         this.listFormat = new Intl.ListFormat(this.locale, { type: "disjunction" })

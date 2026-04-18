@@ -1,12 +1,12 @@
-import { CommonConstraints } from "./constraints/CommonConstraints"
+import type { CommonConstraints } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
-import { MinMaxConstraints, validateMinMaxConstraints } from "./constraints/MinMaxConstraints"
-import { MessageProvider, messageProvider_en_US, messageProvider_fr_FR } from "./MessageProvider"
-import { ClassFieldDecorator, getMetadataFromDecorator } from "./Metadata"
-import { joinPath, Path, splitPath } from "./ObjectsUtil"
-import { Constructor, isBoolean } from "./TypesUtil"
-import { Group, InternalValidationContext, ValidationStatus } from "./ValidationContext"
-import { FormManager } from "../reform/FormManager"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "./constraints/MinMaxConstraints"
+import { type MessageProvider, messageProvider_en_US, messageProvider_fr_FR } from "./MessageProvider"
+import { type ClassFieldDecorator, getMetadataFromDecorator } from "./Metadata"
+import { joinPath, type Path, splitPath } from "./ObjectsUtil"
+import { type Constructor, isBoolean } from "./TypesUtil"
+import { type Group, InternalValidationContext, type ValidationStatus } from "./ValidationContext"
+import type { FormManager } from "../reform/FormManager"
 
 (Symbol as any).metadata ??= Symbol.for("Symbol.metadata")
 
@@ -254,7 +254,7 @@ export class Yop {
         })
 
         for (const segment of segments) {
-            [constraints, value] = constraints.traverse?.(context, constraints, segment, traverseNullish) ?? [,]
+            [constraints, value] = constraints.traverse?.(context, constraints, segment, traverseNullish) ?? []
             if (constraints == null)
                 return undefined
             context = context.createChildContext({ kind: constraints.kind, value, key: segment })
@@ -325,7 +325,7 @@ export class Yop {
      */
     rawValidate<Value>(value: any, decorator: ClassFieldDecorator<Value>, settings: ValidationSettings = { path: [] }) {
         const [context, constraints] = this.contextAt(decorator, value, settings) ?? []
-        if (context != null && constraints != null)
+        if (context != null && constraints != null && constraints.validate != null)
             constraints.validate(context, constraints)
         return context
     }

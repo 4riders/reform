@@ -1,11 +1,11 @@
-import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { Constraint, Message, validateConstraint } from "../constraints/Constraint"
-import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
-import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { type CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type Constraint, type Message, validateConstraint } from "../constraints/Constraint"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
+import { type OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isNumber, isRegExp, isString, isStringArray } from "../TypesUtil"
-import { InternalValidationContext, ValuedContext } from "../ValidationContext"
-import { fieldValidationDecorator, Groups } from "../Metadata"
+import { InternalValidationContext, type ValuedContext } from "../ValidationContext"
+import { fieldValidationDecorator, type Groups } from "../Metadata"
 
 /**
  * Type for a string value, which can be a string, null, or undefined.

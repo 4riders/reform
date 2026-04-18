@@ -1,12 +1,12 @@
 import { assign, clone } from "./ObjectsUtil"
-import { ClassConstructor, isBoolean, isObject } from "./TypesUtil"
+import { type ClassConstructor, isBoolean, isObject } from "./TypesUtil"
 import { InternalValidationContext } from "./ValidationContext"
 import { validationSymbol } from "./Yop"
-import { CommonConstraints, ContraintsParent, ContraintsValue, InternalCommonConstraints, InternalConstraints, Traverser, validateCommonConstraints, validateTypeConstraint, Validator } from "./constraints/CommonConstraints"
+import { type CommonConstraints, type ContraintsParent, type ContraintsValue, type InternalCommonConstraints, type InternalConstraints, type Traverser, validateCommonConstraints, validateTypeConstraint, type Validator } from "./constraints/CommonConstraints"
 import { validateConstraint } from "./constraints/Constraint"
-import { TestConstraintFunction, validateTestConstraint } from "./constraints/TestConstraint"
-import { ArrayConstraints, arrayKind } from "./decorators/array"
-import { InstanceConstraints, instanceKind } from "./decorators/instance"
+import { type TestConstraintFunction, validateTestConstraint } from "./constraints/TestConstraint"
+import { type ArrayConstraints, arrayKind } from "./decorators/array"
+import { type InstanceConstraints, instanceKind } from "./decorators/instance"
 
 /**
  * Internal constraints for a class, including test and field constraints.
@@ -237,7 +237,7 @@ export function mergeMetadata<Constraints>(props?: Constraints, groups?: Groups<
  * @returns A new field decorator function with merged defaults.
  * @ignore
  */
-export function mergeDefaultMetadata<Constraints extends {}, Parent, Value>(
+export function mergeDefaultMetadata<Constraints extends object, Parent, Value>(
     decorator: (_: unknown, context: ClassFieldDecoratorContext<Parent, Value>) => void,
     defaultProps: Constraints
 ) {

@@ -1,8 +1,8 @@
-import { CommonConstraints, InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
-import { fieldValidationDecorator, Groups, InternalClassConstraints, validateClass } from "../Metadata"
+import { type CommonConstraints, type InternalCommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { fieldValidationDecorator, type Groups, type InternalClassConstraints, validateClass } from "../Metadata"
 import { defineLazyProperty } from "../ObjectsUtil"
-import { ClassConstructor, isObject } from "../TypesUtil"
+import { type ClassConstructor, isObject } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
 import { validationSymbol, Yop } from "../Yop"
 import { id } from "./id"
@@ -104,7 +104,7 @@ export const instanceKind = "instance"
 export function instance<Value extends InstanceValue, Parent>(constraints?: InstanceConstraints<Value, Parent>, groups?: Groups<InstanceConstraints<Value, Parent>>) {
     if (typeof constraints?.of === "string" || (typeof constraints?.of === "function" && constraints.of.prototype == null)) {
         const of = constraints.of
-        defineLazyProperty(constraints, "of", (_this) => Yop.resolveClass(of))
+        defineLazyProperty(constraints, "of", () => Yop.resolveClass(of))
     }
     return fieldValidationDecorator(instanceKind, constraints ?? ({} as InstanceConstraints<Value, Parent>), groups, validateInstance, undefined, traverseInstance)
 }

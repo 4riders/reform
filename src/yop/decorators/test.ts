@@ -1,6 +1,6 @@
-import { TestConstraintFunction } from "../constraints/TestConstraint"
+import type { TestConstraintFunction } from "../constraints/TestConstraint"
 import { initClassConstraints } from "../Metadata"
-import { Constructor } from "../TypesUtil"
+import type { Constructor } from "../TypesUtil"
 
 /**
  * Utility type to extract the instance type from a constructor.

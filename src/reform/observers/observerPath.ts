@@ -1,4 +1,4 @@
-import { Path } from "../../yop/ObjectsUtil"
+import { type Path } from "../../yop/ObjectsUtil"
 
 
 /**
@@ -109,7 +109,7 @@ export function splitObserverPath(path: string, cache?: Map<string, PathElement[
     }
 
     for ( ; i < path.length; i++) {
-        let c = path.charAt(i)
+        const c = path.charAt(i)
 
         switch (c) {
 

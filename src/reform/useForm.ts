@@ -1,10 +1,8 @@
-import { useMemo } from "react"
+import { useEffect, useEffectEvent, useRef, useState } from "react"
 import { instance } from "../yop/decorators/instance"
-import { Path } from "../yop/ObjectsUtil"
-import { isPromise } from "../yop/TypesUtil"
-import { Group } from "../yop/ValidationContext"
-import { FormManager, InternalFormManager } from "./FormManager"
-import { useRender } from "./useRender"
+import type { Path } from "../yop/ObjectsUtil"
+import type { Group } from "../yop/ValidationContext"
+import { createInternalFormRef, createInternalFormState, type FormManager, InternalFormManager, type InternalFormRef } from "./FormManager"
 import { useObservers } from "./observers/useObservers"
 
 /**
@@ -15,24 +13,10 @@ import { useObservers } from "./observers/useObservers"
 export type FormConfig<T extends object | any[] | null | undefined> = {
 
     /**
-     * Initial values for the form. Can be an object, a function returning an object, or a function returning a promise that
-     * resolves to an object. Initial values are cloned and stored internally the first time they are neither `null` nor `undefined`.
-     * If a function is provided, it will be called on the first render and whenever the config changes, allowing for dynamic
-     * initial values. If the function returns a promise, the form will be in a pending state until the promise resolves, at
-     * which point the initial values will be set and the form will re-render.
-     * 
-     * @see {@link FormManager.initialValuesPending}
-     * @see {@link FormConfig.initialValuesConverter}
+     * Initial values for the form. Can be an object, or a function returning an object. Initial values are cloned and stored
+     * internally the first time they are neither `null` nor `undefined`.
      */
-    readonly initialValues?: T | (() => T) | (() => Promise<T>) | null
-
-    /**
-     * Converter function for initial values. This function is called with the initial values whenever they become neither
-     * `null` nor `undefined`. It allows for transformation or normalization of the initial values before they are set in the form.
-     * @param values - The initial values.
-     * @returns The transformed initial values.
-     */
-    readonly initialValuesConverter?: (values: T) => T
+    readonly initialValues?: T | (() => T) | null
 
     /**
      * The validation schema for the form. This can be a schema object created with the `instance` or `array` decorator.
@@ -82,15 +66,6 @@ export type FormConfig<T extends object | any[] | null | undefined> = {
     readonly ignore?: (path: Path, form: FormManager<T>) => boolean
 
     /**
-     * Function to determine if the form can be submitted. This function is called with the form manager instance when a submit
-     * is attempted. If it returns `true`, the form will be submitted and the `onSubmit` callback will be called. If it returns
-     * `false`, the submit will be aborted and the `onSubmit` callback will not be called.
-     * @param form - The form manager instance.
-     * @returns `true` if the form can be submitted, `false` otherwise.
-     */
-    readonly submitGuard?: (form: FormManager<T>) => boolean
-
-    /**
      * Callback for form submission. This function is called with the form manager instance when the form is submitted and the
      * `submitGuard` (if provided) returns `true`. It is responsible for handling the form submission logic, such as sending
      * the form values to a server or updating application state. The {@link FormManager.submitting} is automatically set to
@@ -117,12 +92,6 @@ export type FormConfig<T extends object | any[] | null | undefined> = {
      * @returns void
      */
     readonly onSubmit?: (form: FormManager<T>) => void
-
-    /**
-     * Whether to dispatch events for observer propagation. If `true`, when a value changes, an event will be dispatched that can
-     * be listened to by observers to react to value changes. Default is `true`.
-     */
-    readonly dispatchEvent?: boolean
 }
 
 /**
@@ -157,11 +126,10 @@ export type Model<T> = new (...args: any) => NonNullable<T>
  * @overload
  * @template T - The type of the form values.
  * @param config - The form configuration object.
- * @param deps - Optional dependency list for memoization of the form manager.
  * @returns The form manager instance.
  * @category Form Management
  */
-export function useForm<T extends object | null | undefined>(config: FormConfig<T>, deps?: React.DependencyList): FormManager<T>
+export function useForm<T extends object | null | undefined>(config: FormConfig<T>): FormManager<T>
 
 /**
  * ## Second overload signature
@@ -186,61 +154,55 @@ export function useForm<T extends object | null | undefined>(config: FormConfig<
  * @template T - The type of the form values.
  * @param model - The model class constructor.
  * @param onSubmit - Callback for form submission.
- * @param deps - Optional dependency list for memoization of the form manager.
  * @returns The form manager instance.
  * @category Form Management
  */
-export function useForm<T extends object | null | undefined>(model: Model<T>, onSubmit: (form: FormManager<T>) => void, deps?: React.DependencyList): FormManager<T>
+export function useForm<T extends object | null | undefined>(model: Model<T>, onSubmit: (form: FormManager<T>) => void): FormManager<T>
 
 /*
  * Implementation of the useForm hook. Handles both config and model overloads, supports async initial values,
  * and manages form state, validation, and observer eventing. See the overload signatures for usage details.
  */
-export function useForm(configOrModel: any, onSubmitOrDeps?: any, deps: React.DependencyList = []) {
+export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) => void) {
+    const { model, config } = typeof configOrModel === "function" ?
+        { model: configOrModel as Model<any>, config: undefined } :
+        { model: undefined, config: configOrModel as FormConfig<any> }
 
-    const model = typeof configOrModel === "function" ? configOrModel : undefined
-    const render = useRender()
+    const ref = useRef<InternalFormRef>(undefined)
+    const [state, setState] = useState(() => createInternalFormState(
+        model != null ?
+        new model() :
+        typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
+    ))
 
-    deps = Array.isArray(onSubmitOrDeps) ? onSubmitOrDeps : deps
-    const manager = useMemo(() => {
-        const newManager = new InternalFormManager(render)
+    function getInternalFormRef() {
+        if (ref.current == null)
+            ref.current = createInternalFormRef()
         
-        if (typeof configOrModel === "function") {
-            configOrModel = {
-                initialValues: new configOrModel(),
-                validationSchema: instance({ of: configOrModel, required: true }),
-                onSubmit: onSubmitOrDeps as ((form: FormManager<any>) => void),
+        if (config != null)
+            ref.current.config = config
+        else if (model != null && (ref.current.config.validationSchema == null || ref.current.config.model !== model))
+            ref.current.config = { model, validationSchema: instance({ of: model, required: true }), onSubmit }
+
+        return ref.current
+    }
+
+    const resetState = useEffectEvent((initialValues?: unknown) => setState(createInternalFormState(initialValues)))
+
+    useEffect(() => {
+        if (state.initialValues == null) {
+            if (model != null)
+                resetState(new model())
+            else if (config?.initialValues != null) {
+                const initialValues = typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
+                if (initialValues != null)
+                    resetState(initialValues)
             }
         }
-        else if (typeof configOrModel.initialValues === "function") {
-            let initialValues = configOrModel.initialValues()
-            if (isPromise(initialValues)) {
-                newManager.initialValuesPending = true
-                initialValues.then((value: any) => {
-                    setTimeout(() => {
-                        configOrModel = { ...newManager.config, initialValues: value }
-                        newManager.onRender(configOrModel)
-                        newManager.commitInitialValues()
-                        newManager.initialValuesPending = false
-                        render()
-                    }, 0)
-                })
-                initialValues = newManager.initialValues
-            }
-            configOrModel = { ...configOrModel, initialValues }
-        }
-        
-        newManager.onRender(configOrModel)
-        return newManager
-    }, deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [model, config?.initialValues])
 
-    // We need this code to normalize configOrModel when useMemo doesn't re-run.
-    if (typeof configOrModel === "function")
-        configOrModel = { ...manager.config, onSubmit: onSubmitOrDeps as ((form: FormManager<any>) => void) }
-    else if (typeof configOrModel.initialValues === "function")
-        configOrModel = { ...configOrModel, initialValues: manager.initialValues }
-
-    manager.onRender(configOrModel)
+    const manager = new InternalFormManager(state, setState, getInternalFormRef())
     useObservers(model, manager)
     return manager
 }

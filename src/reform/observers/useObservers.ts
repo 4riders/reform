@@ -1,10 +1,11 @@
 import { useEffect } from "react"
 import { getClassConstructor, getMetadataFields } from "../../yop/Metadata"
-import { Path, splitPath } from "../../yop/ObjectsUtil"
-import { ClassConstructor } from "../../yop/TypesUtil"
-import { FormManager, ReformSetValueEvent, SetValueOptions } from "../FormManager"
-import { ObserverCallbackContext, ObserverCallbackOptions, ObserverMetadata, ObserversField, observer } from "./observer"
+import { type Path, splitPath } from "../../yop/ObjectsUtil"
+import { type ClassConstructor } from "../../yop/TypesUtil"
+import { type FormManager, type ReformSetValueEvent, type SetValueOptions } from "../FormManager"
+import { type ObserverCallbackContext, type ObserverCallbackOptions, type ObserverMetadata, type ObserversField, observer } from "./observer"
 import { observerPathToRegexp, splitObserverPath } from "./observerPath"
+import { useForm } from "../useForm"
 
 /**
  * Holds observer metadata and its associated path.
@@ -82,7 +83,7 @@ function createCallbackContext<T>(path: Path, value: any, event: ReformSetValueE
         observedValue: event.detail.value,
         currentValue: value,
         setValue: (value: any, options?: ObserverCallbackOptions) => {
-            const setValueOptions: SetValueOptions = { touch: true, propagate: false }
+            const setValueOptions: SetValueOptions = { touch: true, propagate: false, commit: false }
             if (options != null) {
                 if (options.untouch === true)
                     setValueOptions.touch = false
@@ -228,5 +229,6 @@ export function useObservers<T extends object>(model: ClassConstructor<T> | null
                 form.removeReformEventListener(reformEventListener)
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [model])
 }

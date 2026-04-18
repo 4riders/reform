@@ -1,13 +1,8 @@
-import { renderHook } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import { array, instance, isPromise, number, string, useForm, ValidationStatus } from '../src'
+import { renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { array, instance, isPromise, number, string, useForm, type ValidationStatus } from '../src';
 import { observer } from '../src/reform/observers/observer';
-import { useObservers } from '../src/reform/observers/useObservers';
 import { observerPathToRegexp, splitObserverPath } from '../src/reform/observers/observerPath';
-
-const sleep = (ms?: number) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 describe('Reform', () => {
 
@@ -38,7 +33,7 @@ describe('Reform', () => {
             person: Person | null = null
         }
 
-        const form = renderHook(() => useForm({
+        const { result: form } = renderHook(() => useForm({
             initialValues: {
                 person: {
                     firstname: "John",
@@ -52,102 +47,104 @@ describe('Reform', () => {
                 },
             } as Test,
             validationSchema: instance({ of: Test })
-        })).result.current
+        }))
 
-        expect(form.isDirty()).toBe(false)
-        expect(form.isTouched("person")).toBe(false)
-        expect(form.isTouched("person.firstname")).toBe(false)
-        expect(form.isTouched("person.age")).toBe(false)
-        expect(form.isTouched("person.friends")).toBe(false)
-        expect(form.isTouched("person.friends[0]")).toBe(false)
-        expect(form.isTouched("person.friends[0].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[0].age")).toBe(false)
-        expect(form.isTouched("person.friends[1]")).toBe(false)
-        expect(form.isTouched("person.friends[1].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[1].age")).toBe(false)
-        expect(form.statuses.size).toEqual(0)
+        expect(form.current.isDirty()).toBe(false)
+        expect(form.current.isTouched("person")).toBe(false)
+        expect(form.current.isTouched("person.firstname")).toBe(false)
+        expect(form.current.isTouched("person.age")).toBe(false)
+        expect(form.current.isTouched("person.friends")).toBe(false)
+        expect(form.current.isTouched("person.friends[0]")).toBe(false)
+        expect(form.current.isTouched("person.friends[0].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[0].age")).toBe(false)
+        expect(form.current.isTouched("person.friends[1]")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].age")).toBe(false)
+        expect(form.current.statuses.size).toEqual(0)
 
-        form.setValue("person.firstname", "Jack", true)
+        form.current.setValue("person.firstname", "Jack")
 
-        expect(form.isDirty()).toBe(true)
-        expect(form.isTouched("person")).toBe(true)
-        expect(form.isTouched("person.firstname")).toBe(true)
-        expect(form.isTouched("person.age")).toBe(false)
-        expect(form.isTouched("person.friends")).toBe(false)
-        expect(form.isTouched("person.friends[0]")).toBe(false)
-        expect(form.isTouched("person.friends[0].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[1]")).toBe(false)
-        expect(form.isTouched("person.friends[1].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[1].age")).toBe(false)
-        expect(form.statuses.size).toEqual(0)
+        expect(form.current.isDirty()).toBe(true)
+        expect(form.current.isTouched("person")).toBe(true)
+        expect(form.current.isTouched("person.firstname")).toBe(true)
+        expect(form.current.isTouched("person.age")).toBe(false)
+        expect(form.current.isTouched("person.friends")).toBe(false)
+        expect(form.current.isTouched("person.friends[0]")).toBe(false)
+        expect(form.current.isTouched("person.friends[0].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[1]")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].age")).toBe(false)
+        expect(form.current.statuses.size).toEqual(0)
 
-        form.setValue("person.friends[0].firstname", "Jim", true)
+        form.current.setValue("person.friends[0].firstname", "Jim")
 
-        expect(form.isDirty()).toBe(true)
-        expect(form.isTouched("person")).toBe(true)
-        expect(form.isTouched("person.firstname")).toBe(true)
-        expect(form.isTouched("person.age")).toBe(false)
-        expect(form.isTouched("person.friends")).toBe(true)
-        expect(form.isTouched("person.friends[0]")).toBe(true)
-        expect(form.isTouched("person.friends[0].firstname")).toBe(true)
-        expect(form.isTouched("person.friends[0].age")).toBe(false)
-        expect(form.isTouched("person.friends[1]")).toBe(false)
-        expect(form.isTouched("person.friends[1].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[1].age")).toBe(false)
-        expect(form.statuses.size).toEqual(0)
+        expect(form.current.isDirty()).toBe(true)
+        expect(form.current.isTouched("person")).toBe(true)
+        expect(form.current.isTouched("person.firstname")).toBe(true)
+        expect(form.current.isTouched("person.age")).toBe(false)
+        expect(form.current.isTouched("person.friends")).toBe(true)
+        expect(form.current.isTouched("person.friends[0]")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].firstname")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].age")).toBe(false)
+        expect(form.current.isTouched("person.friends[1]")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].age")).toBe(false)
+        expect(form.current.statuses.size).toEqual(0)
 
-        form.setValue("person.friends[1].firstname", null, { touch: true })
-        form.setValue("person.friends[1].age", -1, true)
+        form.current.setValue("person.friends[1].firstname", null, { touch: true })
+        form.current.setValue("person.friends[1].age", -1)
 
-        expect(form.isDirty()).toBe(true)
-        expect(form.isTouched("person")).toBe(true)
-        expect(form.isTouched("person.firstname")).toBe(true)
-        expect(form.isTouched("person.age")).toBe(false)
-        expect(form.isTouched("person.friends")).toBe(true)
-        expect(form.isTouched("person.friends[0]")).toBe(true)
-        expect(form.isTouched("person.friends[0].firstname")).toBe(true)
-        expect(form.isTouched("person.friends[0].age")).toBe(false)
-        expect(form.isTouched("person.friends[1]")).toBe(true)
-        expect(form.isTouched("person.friends[1].firstname")).toBe(true)
-        expect(form.isTouched("person.friends[1].age")).toBe(true)
-        expect(form.statuses.size).toEqual(2)
-        expect(form.statuses.get("person.friends[1].firstname")).not.toBeUndefined()
-        expect(form.statuses.get("person.friends[1].age")).not.toBeUndefined()
+        expect(form.current.isDirty()).toBe(true)
+        expect(form.current.isTouched("person")).toBe(true)
+        expect(form.current.isTouched("person.firstname")).toBe(true)
+        expect(form.current.isTouched("person.age")).toBe(false)
+        expect(form.current.isTouched("person.friends")).toBe(true)
+        expect(form.current.isTouched("person.friends[0]")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].firstname")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].age")).toBe(false)
+        expect(form.current.isTouched("person.friends[1]")).toBe(true)
+        expect(form.current.isTouched("person.friends[1].firstname")).toBe(true)
+        expect(form.current.isTouched("person.friends[1].age")).toBe(true)
+        expect(form.current.statuses.size).toEqual(2)
+        expect(form.current.statuses.get("person.friends[1].firstname")).not.toBeUndefined()
+        expect(form.current.statuses.get("person.friends[1].age")).not.toBeUndefined()
 
-        form.setValue("person.friends[1].firstname", null, { touch: false, validate: true })
+        form.current.setValue("person.friends[1].firstname", null, { touch: false, validate: "form" })
 
-        expect(form.isDirty()).toBe(true)
-        expect(form.isTouched("person")).toBe(true)
-        expect(form.isTouched("person.firstname")).toBe(true)
-        expect(form.isTouched("person.age")).toBe(false)
-        expect(form.isTouched("person.friends")).toBe(true)
-        expect(form.isTouched("person.friends[0]")).toBe(true)
-        expect(form.isTouched("person.friends[0].firstname")).toBe(true)
-        expect(form.isTouched("person.friends[0].age")).toBe(false)
-        expect(form.isTouched("person.friends[1]")).toBe(true)
-        expect(form.isTouched("person.friends[1].firstname")).toBe(false)
-        expect(form.isTouched("person.friends[1].age")).toBe(true)
-        expect(form.statuses.size).toEqual(1)
-        expect(form.statuses.get("person.friends[1].firstname")).toBeUndefined()
-        expect(form.statuses.get("person.friends[1].age")).not.toBeUndefined()
+        expect(form.current.isDirty()).toBe(true)
+        expect(form.current.isTouched("person")).toBe(true)
+        expect(form.current.isTouched("person.firstname")).toBe(true)
+        expect(form.current.isTouched("person.age")).toBe(false)
+        expect(form.current.isTouched("person.friends")).toBe(true)
+        expect(form.current.isTouched("person.friends[0]")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].firstname")).toBe(true)
+        expect(form.current.isTouched("person.friends[0].age")).toBe(false)
+        expect(form.current.isTouched("person.friends[1]")).toBe(true)
+        expect(form.current.isTouched("person.friends[1].firstname")).toBe(false)
+        expect(form.current.isTouched("person.friends[1].age")).toBe(true)
+        expect(form.current.statuses.size).toEqual(1)
+        expect(form.current.statuses.get("person.friends[1].firstname")).toBeUndefined()
+        expect(form.current.statuses.get("person.friends[1].age")).not.toBeUndefined()
     })
 
     it('array', async () => {
-        const form = renderHook(() => useForm({
-            initialValues: null,
+        const { result: form, rerender } = renderHook(() => useForm({
             validationSchema: array({ of: String, required: true, min: 1 })
-        })).result.current
+        }))
 
-        form.setValue("", null, true)
-        expect(form.statuses.size).toEqual(1)
-        expect(form.statuses.get("")?.code).toEqual("required")
+        form.current.setValue("", null)
+        rerender()
+        expect(form.current.statuses.size).toEqual(1)
+        expect(form.current.statuses.get("")?.code).toEqual("required")
 
-        form.setValue("", [], true)
-        expect(form.statuses.size).toEqual(1)
-        expect(form.statuses.get("")?.code).toEqual("min")
+        form.current.setValue("", [])
+        rerender()
+        expect(form.current.statuses.size).toEqual(1)
+        expect(form.current.statuses.get("")?.code).toEqual("min")
 
-        form.setValue("", ["bla"], true)
-        expect(form.statuses.size).toEqual(0)
+        form.current.setValue("", ["bla"])
+        rerender()
+        expect(form.current.statuses.size).toEqual(0)
     })
 
     it('ArrayHelper', async () => {
@@ -188,6 +185,8 @@ describe('Reform', () => {
             validationSchema: instance({ of: Test })
         })).result.current
 
+        const initialValues = form.values
+
         const friendsTouchedState = () => {
             return Array.from(Array(((form.values as any)?.person?.friends ?? []).length).keys()).map(index => [
                 form.isTouched(`person.friends[${ index }]`),
@@ -209,7 +208,7 @@ describe('Reform', () => {
         form.setValue("person.friends[1].firstname", "Mike", { touch: true })
         form.setValue("person.friends[2].firstname", null, { touch: true })
         form.setValue("person.friends[2].age", 24, { touch: true })
-        form.setValue("person.friends[3].firstname", "Jim", true)
+        form.setValue("person.friends[3].firstname", "Jim")
 
         expect(form.isDirty()).toBe(true)
         expect(form.isTouched("person")).toBe(true)
@@ -243,7 +242,6 @@ describe('Reform', () => {
         expect(form.statuses.size).toEqual(2)
         expect(form.statuses.get("person.friends[0].age")).not.toBeUndefined()
         expect(form.statuses.get("person.friends[2].firstname")).not.toBeUndefined()
-
 
         form.array("person.friends")!.swap(0, 3)
 
@@ -281,7 +279,9 @@ describe('Reform', () => {
         expect(form.statuses.get("person.friends[1].firstname")).not.toBeUndefined()
         expect(form.statuses.get("person.friends[3].age")).not.toBeUndefined()
 
+        const preReplace = form.values
         form.array<Friend>("person.friends")!.replace(2, { firstname: "Frank", age: 23 })
+        expect(form.values === preReplace).toBe(false)
 
         expect(form.isDirty()).toBe(true)
         expect(form.isTouched("person")).toBe(true)
@@ -318,7 +318,7 @@ describe('Reform', () => {
         expect(form.statuses.get("person.friends[1].firstname")).not.toBeUndefined()
         expect(form.statuses.get("person.friends[4].age")).not.toBeUndefined()
 
-        form.setValue("person.friends[2].age", -1, true)
+        form.setValue("person.friends[2].age", -1)
 
         expect(form.isDirty()).toBe(true)
         expect(form.isTouched("person")).toBe(true)
@@ -365,6 +365,16 @@ describe('Reform', () => {
         expect(form.isTouched("person.age")).toBe(false)
         expect(friendsTouchedState()).toEqual([])
         expect(form.statuses.size).toEqual(0)
+
+        expect(form.values === initialValues).toBe(false)
+        expect(form.initialValues === initialValues).toBe(true)
+        expect(initialValues).toEqual({
+            person: {
+                firstname: "John",
+                age: 30,
+                friends: []
+            },
+        })
     })
 
     it('Asynchronous', async () => {
@@ -375,7 +385,7 @@ describe('Reform', () => {
             firstname: string | null = null
 
             @number({ test: {
-                promise: _context => new Promise<boolean>((resolve) => {
+                promise: () => new Promise<boolean>((resolve) => {
                     setTimeout(() => resolve(true), 1000)
                 }),
                 pendingMessage: "Age validation pending..."
@@ -383,20 +393,19 @@ describe('Reform', () => {
             age: number | null = null
         }
 
-        const form = renderHook(() => useForm({
-            validationSchema: instance({ of: Person })
-        })).result.current
+        const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
+        form.current.setValue("firstname", "Jack")
+        rerender()
 
-        form.setValue("firstname", "Jack", true)
+        expect(form.current.statuses.get("firstname")).toBeUndefined()
+        expect(form.current.statuses.get("age")).toBeUndefined()
 
-        expect(form.statuses.get("firstname")).toBeUndefined()
-        expect(form.statuses.get("age")).toBeUndefined()
-
-        form.setValue("age", 34, true)
+        form.current.setValue("age", 34)
+        rerender()
         
-        expect(form.statuses.get("firstname")).toBeUndefined()
-        expect(form.statuses.size).toEqual(1)
-        expect(form.statuses.get("age")).toSatisfy((status: ValidationStatus) =>
+        expect(form.current.statuses.get("firstname")).toBeUndefined()
+        expect(form.current.statuses.size).toEqual(1)
+        expect(form.current.statuses.get("age")).toSatisfy((status: ValidationStatus) =>
             status.level === "pending" &&
             status.path === "age" &&
             status.value === 34 &&
@@ -406,11 +415,11 @@ describe('Reform', () => {
             status.message === "Age validation pending..."
         )
 
-        await form.statuses.get("age")!.constraint
-        form.validate()
+        await form.current.statuses.get("age")!.constraint
+        form.current.validate()
 
-        expect(form.statuses.get("firstname")).toBeUndefined()
-        expect(form.statuses.get("age")).toBeUndefined()
+        expect(form.current.statuses.get("firstname")).toBeUndefined()
+        expect(form.current.statuses.get("age")).toBeUndefined()
     })
 
     describe("useObservers", () => {
@@ -543,27 +552,21 @@ describe('Reform', () => {
                 age: number | null = null
             }
 
-            let form = renderHook(() => useForm({
-                initialValues: {} as any,
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
+            const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
 
-            expect(form.values!.age).toBeUndefined()
-            form.setValue("firstname", "Jack", true)
-            await sleep()
-            expect(form.values!.age).toBeUndefined()
+            const values1 = form.current.values
+            expect(values1.age).toBeNull()
+            expect(values1.firstname).toBeNull()
 
-            form = renderHook(() => useForm({
-                initialValues: new Person(),
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
-
-            expect(form.values!.age).toBeNull()
-            form.setValue("firstname", "Jack", true)
-            await sleep()
-            expect(form.values!.age).toBe(10)
+            form.current.setValue("firstname", "Jack")
+            rerender()
+            
+            expect(values1.age).toBeNull()
+            expect(values1.firstname).toBeNull()
+            
+            const values2 = form.current.values
+            expect(values2.firstname).toBe("Jack")
+            expect(values2.age).toBe(10)
         })
 
         it('root', async () => {
@@ -591,28 +594,36 @@ describe('Reform', () => {
                 friends: Friend[] = [new Friend(), new Friend()]
             }
 
-            const form = renderHook(() => useForm({
-                initialValues: new Person(),
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
+            const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
 
-            expect(form.values!.age).toBeNull()
-            expect(form.values!.friend!.name).toBeNull()
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBeNull()
-            expect(form.values!.friends[0].name2).toBeNull()
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBeNull()
-            form.setValue("firstname", "Jack", true)
-            await sleep()
-            expect(form.values!.age).toBe(10)
-            expect(form.values!.friend!.name).toBe("Jackie")
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBe("Jackie")
-            expect(form.values!.friends[0].name2).toBe("Jacko")
-            expect(form.values!.friends[1].name).toBe("Jackie")
-            expect(form.values!.friends[1].name2).toBe("Jacko")
+            const values1 = form.current.values
+            expect(values1.age).toBeNull()
+            expect(values1.friend!.name).toBeNull()
+            expect(values1.friend!.name2).toBeNull()
+            expect(values1.friends[0].name).toBeNull()
+            expect(values1.friends[0].name2).toBeNull()
+            expect(values1.friends[1].name).toBeNull()
+            expect(values1.friends[1].name2).toBeNull()
+
+            form.current.setValue("firstname", "Jack")
+            rerender()
+
+            const values2 = form.current.values
+            expect(values2.age).toBe(10)
+            expect(values2.friend!.name).toBe("Jackie")
+            expect(values2.friend!.name2).toBeNull()
+            expect(values2.friends[0].name).toBe("Jackie")
+            expect(values2.friends[0].name2).toBe("Jacko")
+            expect(values2.friends[1].name).toBe("Jackie")
+            expect(values2.friends[1].name2).toBe("Jacko")
+
+            expect(values1.age).toBeNull()
+            expect(values1.friend!.name).toBeNull()
+            expect(values1.friend!.name2).toBeNull()
+            expect(values1.friends[0].name).toBeNull()
+            expect(values1.friends[0].name2).toBeNull()
+            expect(values1.friends[1].name).toBeNull()
+            expect(values1.friends[1].name2).toBeNull()
         })
 
         it('beyond.root', async () => {
@@ -634,18 +645,16 @@ describe('Reform', () => {
                 friend: Friend | null = new Friend()
             }
 
-            const form = renderHook(() => useForm({
-                initialValues: new Person(),
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
+            const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
 
-            expect(form.values!.age).toBeNull()
-            expect(form.values!.friend!.name).toBeNull()
-            form.setValue("firstname", "Jack", true)
-            await sleep()
-            expect(form.values!.age).toBeNull()
-            expect(form.values!.friend!.name).toBeNull()
+            expect(form.current.values.age).toBeNull()
+            expect(form.current.values.friend!.name).toBeNull()
+            
+            form.current.setValue("firstname", "Jack")
+            rerender()
+            
+            expect(form.current.values.age).toBeNull()
+            expect(form.current.values.friend!.name).toBeNull()
         })
 
         it('bad.path', async () => {
@@ -658,16 +667,14 @@ describe('Reform', () => {
                 age: number | null = null
             }
 
-            const form = renderHook(() => useForm({
-                initialValues: new Person(),
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
+            const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
 
-            expect(form.values!.age).toBeNull()
-            form.setValue("firstname", "Jack", true)
-            await sleep()
-            expect(form.values!.age).toBeNull()
+            expect(form.current.values.firstname).toBeNull()
+            expect(form.current.values.age).toBeNull()
+            form.current.setValue("firstname", "Jack")
+            rerender()
+            expect(form.current.values.firstname).toEqual("Jack")
+            expect(form.current.values.age).toBeNull()
         })
 
         it('arrays', async () => {
@@ -707,96 +714,92 @@ describe('Reform', () => {
                 blo: number | null = null
             }
 
-            const form = renderHook(() => useForm({
-                initialValues: new Person(),
-                validationSchema: instance({ of: Person })
-            })).result.current
-            renderHook(() => useObservers(Person, form))
+            const { result: form, rerender } = renderHook(() => useForm(Person, () => {}))
 
-            expect(form.values!.firstname).toBeNull()
-            expect(form.values!.age).toBeNull()
-            expect(form.values!.friend!.name).toBeNull()
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBeNull()
-            expect(form.values!.friends[0].name2).toBeNull()
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBeNull()
+            expect(form.current.values.firstname).toBeNull()
+            expect(form.current.values.age).toBeNull()
+            expect(form.current.values.friend!.name).toBeNull()
+            expect(form.current.values.friend!.name2).toBeNull()
+            expect(form.current.values.friends[0].name).toBeNull()
+            expect(form.current.values.friends[0].name2).toBeNull()
+            expect(form.current.values.friends[1].name).toBeNull()
+            expect(form.current.values.friends[1].name2).toBeNull()
             
-            form.setValue("friend.name", "Jack", true)
-            await sleep()
-            expect(form.values!.firstname).toBe("Jack")
-            expect(form.values!.age).toBeNull()
-            expect(form.values!.friend!.name).toBe("Jack")
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBeNull()
-            expect(form.values!.friends[0].name2).toBeNull()
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBeNull()
+            form.current.setValue("friend.name", "Jack")
+            rerender()
+            expect(form.current.values.firstname).toBe("Jack")
+            expect(form.current.values.age).toBeNull()
+            expect(form.current.values.friend!.name).toBe("Jack")
+            expect(form.current.values.friend!.name2).toBeNull()
+            expect(form.current.values.friends[0].name).toBeNull()
+            expect(form.current.values.friends[0].name2).toBeNull()
+            expect(form.current.values.friends[1].name).toBeNull()
+            expect(form.current.values.friends[1].name2).toBeNull()
 
-            form.setValue("friends[0].name", "Jim", true)
-            await sleep()
-            expect(form.values!.firstname).toBe("Jack")
-            expect(form.values!.age).toBe(3)
-            expect(form.values!.friend!.name).toBe("Jack")
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBe("Jim")
-            expect(form.values!.friends[0].name2).toBeNull()
-            expect(form.values!.friends[0].nickname).toBe("Ji")
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBeNull()
-            expect(form.values!.friends[1].nickname).toBeNull()
+            form.current.setValue("friends[0].name", "Jim")
+            rerender()
+            expect(form.current.values.firstname).toBe("Jack")
+            expect(form.current.values.age).toBe(3)
+            expect(form.current.values.friend!.name).toBe("Jack")
+            expect(form.current.values.friend!.name2).toBeNull()
+            expect(form.current.values.friends[0].name).toBe("Jim")
+            expect(form.current.values.friends[0].name2).toBeNull()
+            expect(form.current.values.friends[0].nickname).toBe("Ji")
+            expect(form.current.values.friends[1].name).toBeNull()
+            expect(form.current.values.friends[1].name2).toBeNull()
+            expect(form.current.values.friends[1].nickname).toBeNull()
 
-            form.setValue("friends[0].name2", "John", true)
-            await sleep()
-            expect(form.values!.firstname).toBe("Jack")
-            expect(form.values!.age).toBe(3)
-            expect(form.values!.friend!.name).toBeNull()
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBe("Jim")
-            expect(form.values!.friends[0].name2).toBe("John")
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBeNull()
+            form.current.setValue("friends[0].name2", "John")
+            rerender()
+            expect(form.current.values.firstname).toBe("Jack")
+            expect(form.current.values.age).toBe(3)
+            expect(form.current.values.friend!.name).toBeNull()
+            expect(form.current.values.friend!.name2).toBeNull()
+            expect(form.current.values.friends[0].name).toBe("Jim")
+            expect(form.current.values.friends[0].name2).toBe("John")
+            expect(form.current.values.friends[1].name).toBeNull()
+            expect(form.current.values.friends[1].name2).toBeNull()
 
-            form.setValue("friend.name", "Jack", true)
-            form.setValue("friend.name2", "Joe", true)
-            expect(form.values!.friend!.name).toBe("Jack")
-            expect(form.values!.friend!.name2).toBe("Joe")
+            form.current.setValue("friend.name", "Jack")
+            form.current.setValue("friend.name2", "Joe")
+            expect(form.current.values.friend!.name).toBe("Jack")
+            expect(form.current.values.friend!.name2).toBe("Joe")
             
-            form.setValue("friends[1].name2", "Ike", true)
-            await sleep()
-            expect(form.values!.firstname).toBe("Jack")
-            expect(form.values!.age).toBe(3)
-            expect(form.values!.friend!.name).toBeNull()
-            expect(form.values!.friend!.name2).toBeNull()
-            expect(form.values!.friends[0].name).toBe("Jim")
-            expect(form.values!.friends[0].name2).toBe("John")
-            expect(form.values!.friends[1].name).toBeNull()
-            expect(form.values!.friends[1].name2).toBe("Ike")
+            form.current.setValue("friends[1].name2", "Ike")
+            rerender()
+            expect(form.current.values.firstname).toBe("Jack")
+            expect(form.current.values.age).toBe(3)
+            expect(form.current.values.friend!.name).toBeNull()
+            expect(form.current.values.friend!.name2).toBeNull()
+            expect(form.current.values.friends[0].name).toBe("Jim")
+            expect(form.current.values.friends[0].name2).toBe("John")
+            expect(form.current.values.friends[1].name).toBeNull()
+            expect(form.current.values.friends[1].name2).toBe("Ike")
 
-            expect(form.values!.bla).toBeNull()
-            expect(form.values!.bli).toBeNull()
-            form.setValue("friends[1]", new Friend(), true)
-            await sleep()
-            expect(form.values!.bla).toBeNull()
-            expect(form.values!.bli).toBe(6)
+            expect(form.current.values.bla).toBeNull()
+            expect(form.current.values.bli).toBeNull()
+            form.current.setValue("friends[1]", new Friend())
+            rerender()
+            expect(form.current.values.bla).toBeNull()
+            expect(form.current.values.bli).toBe(6)
 
-            form.setValue("bli", null, true)
-            expect(form.values!.bla).toBeNull()
-            expect(form.values!.bli).toBeNull()
-            form.setValue("friends[0]", new Friend(), true)
-            await sleep()
-            expect(form.values!.bla).toBe(10)
-            expect(form.values!.bli).toBe(6)
+            form.current.setValue("bli", null)
+            expect(form.current.values.bla).toBeNull()
+            expect(form.current.values.bli).toBeNull()
+            form.current.setValue("friends[0]", new Friend())
+            rerender()
+            expect(form.current.values.bla).toBe(10)
+            expect(form.current.values.bli).toBe(6)
 
-            expect(form.values!.blo).toBeNull()
-            form.setValue("friends[1].nickname", 10, true)
-            await sleep()
-            expect(form.values!.blo).toBe(8)
+            expect(form.current.values.blo).toBeNull()
+            form.current.setValue("friends[1].nickname", 10)
+            rerender()
+            expect(form.current.values.blo).toBe(8)
 
-            form.setValue("blo", null, true)
-            form.setValue("friend.nickname", 10, true)
-            await sleep()
-            expect(form.values!.blo).toBe(8)
+            form.current.setValue("blo", null)
+            form.current.setValue("friend.nickname", 10)
+            rerender()
+            expect(form.current.values.blo).toBe(8)
         })
     })
 })

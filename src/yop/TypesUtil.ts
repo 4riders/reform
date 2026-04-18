@@ -75,7 +75,7 @@ export const isObject = <T extends object>(value: any): value is T => value != n
  * @returns True if value is a function.
  * @ignore
  */
-export const isFunction = <T extends Function>(value: any): value is T => typeof value === "function"
+export const isFunction = <T extends (...args: any[]) => any>(value: any): value is T => typeof value === "function"
 /**
  * Checks if a value is a valid Date object.
  * @template T - The Date type.

@@ -1,15 +1,65 @@
 import { describe, expect, it } from "vitest"
-import { array, boolean, clone, CommonConstraints, date, diff, email, emailRegex, equal, fieldValidationDecorator, file, Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, Message, messageProvider_en_US, number, splitPath, string, StringValue, test, time, timeRegex, validateTypeConstraint, ValidationStatus, validationSymbol, Yop } from "../src"
+import { array, boolean, clone, shallowSet, type CommonConstraints, date, diff, email, emailRegex, equal, fieldValidationDecorator, file, type Groups, id, ignored, instance, InternalValidationContext, isFunction, isPromise, isString, isSubclassOf, joinPath, type Message, messageProvider_en_US, number, splitPath, string, type StringValue, test, time, timeRegex, validateTypeConstraint, type ValidationStatus, validationSymbol, Yop, shallowUnset } from "../src"
 
 function textField(props?: any) {
     return string({ input: () => {}, ...props })
 }
 
 function getMetadata(model: any) {
-    return (model as any)[Symbol.metadata]?.[validationSymbol]?.fields
+    return (model as any)[(Symbol as any).metadata]?.[validationSymbol]?.fields
 }
 
 describe("Yop", () => {
+
+    it("shallowSet", () => {
+        const a = { a: 1, b: [2, {c: 3}], d: { e: 4 } }
+        const b = shallowSet(a, "b[1].c", 4)?.root as typeof a
+        expect(a).toEqual({ a: 1, b: [2, {c: 3}], d: { e: 4 } })
+        expect(b).toEqual({ a: 1, b: [2, {c: 4}], d: { e: 4 } })
+        expect(a === b).toBe(false)
+        expect(a.b === b.b).toBe(false)
+        expect(a.b[1] === b.b[1]).toBe(false)
+        expect(a.d === b.d).toBe(true)
+        const c = shallowSet(b, "b[1].c", 5, undefined, { initialValue: a })?.root as typeof a
+        const d = shallowSet(c, "d.e", 5, undefined, { initialValue: a })?.root as typeof a
+        expect(a).toEqual({ a: 1, b: [2, {c: 3}], d: { e: 4 } })
+        expect(b).toEqual({ a: 1, b: [2, {c: 5}], d: { e: 5 } })
+        expect(c).toEqual({ a: 1, b: [2, {c: 5}], d: { e: 5 } })
+        expect(d).toEqual({ a: 1, b: [2, {c: 5}], d: { e: 5 } })
+        expect(a === b).toBe(false)
+        expect(a === c).toBe(false)
+        expect(b === c).toBe(true)
+        expect(b.b === c.b).toBe(true)
+        expect(b.b[1] === c.b[1]).toBe(true)
+        expect(a.d === b.d).toBe(false)
+
+        class A {
+            a: number = 1
+            b: any[] = [2, {c: 3}]
+        }
+
+        const aa = new A()
+        const bb = shallowSet(aa, "b[1].c", 4)?.root as A
+        expect(bb instanceof A).toBe(true)
+        expect(aa).toEqual({ a: 1, b: [2, {c: 3}] })
+        expect(bb).toEqual({ a: 1, b: [2, {c: 4}] })
+        
+        const x = { a: 1, b: { c: true } }
+        x.b = shallowSet(x.b, "", null)?.root as any
+        expect(x).toEqual({ a: 1, b: null })
+    })
+
+    it("shallowUnset", () => {
+        const a = { a: 1, b: [2, {c: 3}], d: { e: 4 } }
+        const b = shallowUnset(a, "b[1].c")?.root as typeof a
+        expect(a).toEqual({ a: 1, b: [2, {c: 3}], d: { e: 4 } })
+        expect(b).toEqual({ a: 1, b: [2, {}], d: { e: 4 } })
+        expect(a === b).toBe(false)
+        const c = shallowUnset(a, "b[2].c")?.root as typeof a
+        expect(a).toEqual({ a: 1, b: [2, {c: 3}], d: { e: 4 } })
+        expect(c).toEqual({ a: 1, b: [2, {c: 3}], d: { e: 4 } })
+        expect(a === c).toBe(true)
+    })
 
     it("clone", () => {
         
@@ -134,7 +184,7 @@ describe("Yop", () => {
             expect(joinPath(["a", 0, "c"])).toEqual("a[0].c")
             expect(joinPath(["a", "0", "c"])).toEqual("a['0'].c")
             expect(joinPath(["a", "0b", "c"])).toEqual("a['0b'].c")
-            expect(joinPath(["a", "b\'x", "c"])).toEqual("a['b\\'x'].c")
+            expect(joinPath(["a", "b'x", "c"])).toEqual("a['b\\'x'].c")
         })
     })
 
@@ -261,7 +311,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, string({ min: 1, max: 1, oneOf: [], match: /\d+/, test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, string({ min: 1, max: 1, oneOf: [], match: /\d+/, test: () => false }))).toEqual([])
         })
 
         it("string.null", () => {
@@ -285,7 +335,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, string({ min: 1, max: 1, oneOf: [], match: /\d+/, test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, string({ min: 1, max: 1, oneOf: [], match: /\d+/, test: () => false }))).toEqual([])
         })
 
         it("string.empty", () => {
@@ -641,7 +691,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, number({ min: 1, max: 1, oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, number({ min: 1, max: 1, oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("number.null", () => {
@@ -665,7 +715,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, number({ min: 1, max: 1, oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, number({ min: 1, max: 1, oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("number.NaN", () => {
@@ -936,7 +986,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, boolean({ oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, boolean({ oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("boolean.null", () => {
@@ -960,14 +1010,14 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, boolean({ oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, boolean({ oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("boolean.true", () => {
             expect(Yop.validate(true, boolean())).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [true] }))).toEqual([])
-            expect(Yop.validate(true, boolean({ oneOf: _ctx => [true] }))).toEqual([])
-            expect(Yop.validate(true, boolean({ oneOf: _ctx => undefined }))).toEqual([])
+            expect(Yop.validate(true, boolean({ oneOf: () => [true] }))).toEqual([])
+            expect(Yop.validate(true, boolean({ oneOf: () => undefined }))).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [true, false] }))).toEqual([])
             expect(Yop.validate(true, boolean({ oneOf: [false] }))).toEqual([{
                 level: "error",
@@ -978,7 +1028,7 @@ describe("Yop", () => {
                 constraint: [false],
                 message: "Must be one of: false"
             }])
-            expect(Yop.validate(true, boolean({ oneOf: _ctx => [false] }))).toEqual([{
+            expect(Yop.validate(true, boolean({ oneOf: () => [false] }))).toEqual([{
                 level: "error",
                 path: "",
                 value: true,
@@ -1085,7 +1135,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, date({ oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, date({ oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("date.null", () => {
@@ -1109,7 +1159,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, date({ oneOf: [], test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, date({ oneOf: [], test: () => false }))).toEqual([])
         })
 
         it("date.*", () => {
@@ -1265,7 +1315,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, file({ min: 0, max: 0, test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, file({ min: 0, max: 0, test: () => false }))).toEqual([])
         })
 
         it("file.null", () => {
@@ -1289,7 +1339,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, file({ min: 0, max: 0, test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, file({ min: 0, max: 0, test: () => false }))).toEqual([])
         })
 
         it("file.*", () => {
@@ -1402,7 +1452,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, array({ of: string(), min: 0, max: 0, test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, array({ of: string(), min: 0, max: 0, test: () => false }))).toEqual([])
         })
 
         it("array.null", () => {
@@ -1426,7 +1476,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, array({ of: string(), min: 0, max: 0, test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, array({ of: string(), min: 0, max: 0, test: () => false }))).toEqual([])
         })
 
         it("array.*", () => {
@@ -1630,7 +1680,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(undefined, instance({ of: Test, test: _ => false }))).toEqual([])
+            expect(Yop.validate(undefined, instance({ of: Test, test: () => false }))).toEqual([])
         })
 
         it("instance.null", () => {
@@ -1654,7 +1704,7 @@ describe("Yop", () => {
                 constraint: true,
                 message: "Required field"
             }])
-            expect(Yop.validate(null, instance({ of: Test, test: _ => false }))).toEqual([])
+            expect(Yop.validate(null, instance({ of: Test, test: () => false }))).toEqual([])
         })
         
         class Test2 {
@@ -2432,7 +2482,7 @@ describe("Yop", () => {
                 }
             }})
             const yop = new Yop()
-            let statuses = yop.validate("abc", constraint)
+            const statuses = yop.validate("abc", constraint)
             
             expect(statuses).toSatisfy((statuses: ValidationStatus[]) =>
                 statuses.length === 1 &&
@@ -2477,7 +2527,7 @@ describe("Yop", () => {
                 }
             }})
             const yop = new Yop()
-            let statuses = yop.validate("abc", constraint)
+            const statuses = yop.validate("abc", constraint)
             
             expect(statuses).toSatisfy((statuses: ValidationStatus[]) =>
                 statuses.length === 1 &&

@@ -216,7 +216,7 @@ export function splitPath(path: string, cache?: Map<string, Path>): Path | undef
  */
 export function joinPath(segments: Path): string {
     let path = ""
-    for (let segment of segments) {
+    for (const segment of segments) {
         if (typeof segment === "number")
             path += "[" + (Number.isNaN(segment) ? "?" : segment) + "]"
         else if (isValidIdentifier(segment))
@@ -313,6 +313,65 @@ export function set(value: unknown, path: string | Path, newValue: unknown, cach
     return { root, previousValue }
 }
 
+const UNSET = Symbol("unset")
+
+export function shallowSet(value: unknown, path: string | Path, newValue: unknown, cache?: Map<string, Path>, options: {
+    initialValue?: unknown
+    clone?: boolean
+    condition?: (currentValue: unknown) => boolean
+} = { clone: false }): SetResult {
+
+    const keys = typeof path === "string" ? splitPath(path, cache) : path
+    if (keys == null)
+        return undefined
+
+    if (options.clone)
+        newValue = clone(newValue)
+
+    if (keys.length === 0)
+        return { root: newValue }
+
+    const lastKeyIndex = keys.length - 1
+    const lastKey = keys[lastKeyIndex]
+
+    const initialRoot = Object.hasOwn(options, "initialValue") ? options.initialValue : UNSET
+    const root = (
+        typeof (keys[0] ?? lastKey) === "number" ?
+        Array.isArray(value) ? (initialRoot === UNSET || value === initialRoot ? shallowCopy(value) : value) : [] :
+        value != null && typeof value === "object" ? (initialRoot === UNSET || value === initialRoot ? shallowCopy(value) : value) : {}
+    )
+
+    let parent: any = root
+    let initialParent: any = initialRoot
+    for (let i = 0; i < lastKeyIndex; i++) {
+        const key = keys[i]
+        const array = typeof (keys[i + 1] ?? lastKey) === "number"
+
+        if (parent[key] == null)
+            parent[key] = array ? [] : {}
+        else if (array) {
+            if (!Array.isArray(parent[key]))
+                parent[key] = []
+            else if (initialRoot === UNSET || parent[key] === initialParent?.[key])
+                parent[key] = shallowCopy(parent[key])
+        }
+        else if (!(parent[key] instanceof Object))
+            parent[key] = {}
+        else if (initialRoot === UNSET || parent[key] === initialParent?.[key])
+            parent[key] = shallowCopy(parent[key])
+        
+        parent = parent[key]
+        if (initialRoot !== UNSET)
+            initialParent = initialParent?.[key]
+
+    }
+
+    const previousValue = parent[lastKey]
+    if (options.condition?.(previousValue) !== false)
+        parent[lastKey] = newValue
+    return { root, previousValue }
+}
+
 /**
  * Removes a value from an object or array at a given path.
  * @param value - The root object or array.
@@ -349,6 +408,45 @@ export function unset(value: unknown, path: string | Path, cache?: Map<string, P
         return false
     }
     return true
+}
+
+type ShallowUnsetResult = {
+    root: unknown
+    deleted: boolean
+    deletedValue?: unknown
+} | undefined
+
+export function shallowUnset(value: unknown, path: string | Path, cache?: Map<string, Path>): ShallowUnsetResult {
+    if (value == null)
+        return { root: value, deleted: false }
+
+    const keys = typeof path === "string" ? splitPath(path, cache) : path
+    if (keys == null || keys.length === 0)
+        return undefined
+
+    const lastKeyIndex = keys.length - 1
+    const lastKey = keys[lastKeyIndex]
+    const root = shallowCopy(value)
+    
+    let parent: any = root
+    for (let i = 0; i < lastKeyIndex; i++) {
+        const key = keys[i]
+        if (parent[key] == null)
+            return { root: value, deleted: false }
+        parent = parent[key] = shallowCopy(parent[key])
+    }
+
+    if (!(lastKey in parent))
+        return { root: value, deleted: false }
+
+    const deletedValue = parent[lastKey]
+    try {
+        delete parent[lastKey]
+    }
+    catch {
+        return { root: value, deleted: false }
+    }
+    return { root, deleted: true, deletedValue }
 }
 
 /**
@@ -394,7 +492,7 @@ export function differs(diff: Diff, path: Path): boolean {
         return false
     
     let { a, b, tree } = diff
-    for (let key of path) {
+    for (const key of path) {
         if (tree[key] == null) {
             a = get(a, path)
             b = get(b, path)
@@ -547,11 +645,11 @@ function _diff(a: any, b: any, known: Map<any, any>, path: Path, diffPaths: Path
         }
 
         const keys = new Set<any>()
-        for (let key of Object.keys(a)) {
+        for (const key of Object.keys(a)) {
             keys.add(key)
             _diff(a[key], b[key], known, [...path, key], diffPaths)
         }
-        for (let key of Object.keys(b)) {
+        for (const key of Object.keys(b)) {
             if (!keys.has(key))
                 _diff(a[key], b[key], known, [...path, key], diffPaths)
         }
@@ -722,7 +820,7 @@ export function clone<T>(value: T, cloned?: Map<any, any>): T {
     }
 
     if (Array.isArray(value)) {
-        const copy = new Array()
+        const copy: any[] = []
         cloned.set(value, copy)
         value.forEach(item => copy.push(clone(item, cloned)))
         return copy as T
@@ -767,6 +865,36 @@ export function clone<T>(value: T, cloned?: Map<any, any>): T {
 }
 
 /**
+ * Creates a shallow copy of a value, handling primitive types, arrays, objects, dates, maps, sets, and files.
+ * @template T - The value type.
+ * @param value - The value to copy.
+ * @returns The shallow copy of the value.
+ */
+export function shallowCopy<T>(value: T): T {
+    if (value == null || typeof value !== 'object')
+        return value
+
+    if (Array.isArray(value))
+        return value.slice() as T
+    if (value instanceof Date)
+        return new Date(value) as T
+    if (value instanceof RegExp)
+        return new RegExp(value) as T
+    if (value instanceof Set)
+        return new Set(value) as T
+    if (value instanceof Map)
+        return new Map(value) as T
+    if (value instanceof File)
+        return value
+
+    const copy = Object.create(Object.getPrototypeOf(value))
+    const descriptors = Object.getOwnPropertyDescriptors(value)
+    Object.defineProperties(copy, descriptors)
+
+    return copy as T
+}
+
+/**
  * Defines a lazily-evaluated property on an object.
  * @template T - The object type.
  * @param o - The object.
@@ -792,7 +920,7 @@ export function defineLazyProperty<T>(o: T, name: PropertyKey, get: ((_this: T) 
  * @returns The merged object.
  * @category Utilities
  */
-export function assign<T extends {}, U>(target: T, source: U, options?: { skipUndefined?: boolean, includes?: (keyof U)[], excludes?: (keyof U)[] }): T & U {
+export function assign<T extends object, U>(target: T, source: U, options?: { skipUndefined?: boolean, includes?: (keyof U)[], excludes?: (keyof U)[] }): T & U {
     const descriptors = Object.getOwnPropertyDescriptors(source)
     if (options && (options.skipUndefined || options.includes || options.excludes)) {
         for (const [name, descriptor] of Object.entries(descriptors)) {
@@ -808,4 +936,29 @@ export function assign<T extends {}, U>(target: T, source: U, options?: { skipUn
     return target as T & U
 }
 
+/**
+ * @ignore
+ */
+export const localDateToString = (date: Date | null | undefined) => {
+    if (date && !isNaN(date.getTime())) {
+        const year = date.getFullYear().toString().padStart(4, '0')
+        const month = (date.getMonth() + 1).toString().padStart(2, '0')
+        const day = date.getDate().toString().padStart(2, '0')
+        return `${ year }-${ month }-${ day }`
+    }
+    return null
+}
+
+/**
+ * @ignore
+ */
+export const stringToLocalDate = (value: unknown) => {
+    if (value == null || typeof value !== "string")
+        return null
+    const timeIndex = value.indexOf("T")
+    if (timeIndex >= 0)
+        value = value.substring(0, timeIndex)
+    const date = new Date(value + "T00:00:00")
+    return isNaN(date.getTime()) ? null : date
+}
 

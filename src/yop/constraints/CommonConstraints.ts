@@ -1,7 +1,7 @@
-import { Constraint, validateConstraint } from "./Constraint"
+import { type Constraint, validateConstraint } from "./Constraint"
 import { isBoolean } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { Groups } from "../Metadata"
+import type { Groups } from "../Metadata"
 
 /**
  * Common validation constraints for a value, used in decorators and validation logic.
@@ -36,13 +36,13 @@ export interface CommonConstraints<Value, Parent = unknown> {
  * Extracts the value type from a CommonConstraints type.
  * @ignore
  */
-export type ContraintsValue<Contraints> = Contraints extends CommonConstraints<infer Value, infer _Parent> ? Value : never
+export type ContraintsValue<Contraints> = Contraints extends CommonConstraints<infer Value, never> ? Value : never
 
 /**
  * Extracts the parent type from a CommonConstraints type.
  * @ignore
  */
-export type ContraintsParent<Contraints> = Contraints extends CommonConstraints<infer _Value, infer Parent> ? Parent : never
+export type ContraintsParent<Contraints> = Contraints extends CommonConstraints<never, infer Parent> ? Parent : never
 
 /**
  * Type for a validation function for a set of constraints.

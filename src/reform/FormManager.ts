@@ -1,12 +1,10 @@
-import { FormEvent } from "react"
-import { clone, equal, get, set, SetResult, unset } from "../yop/ObjectsUtil"
-import { FormConfig } from "./useForm"
-import { ValidationForm, ResolvedConstraints, UnsafeResolvedConstraints, ValidationSettings, Yop, ConstraintsAtSettings } from "../yop/Yop"
-import { joinPath, Path } from "../yop/ObjectsUtil"
-import { ValidationStatus } from "../yop/ValidationContext"
+import { equal, get, joinPath, type Path, set, type SetResult, shallowSet, shallowUnset } from "../yop/ObjectsUtil"
+import type { ValidationStatus } from "../yop/ValidationContext"
+import { type ConstraintsAtSettings, type ResolvedConstraints, type UnsafeResolvedConstraints, type ValidationForm, type ValidationSettings, Yop } from "../yop/Yop"
 import { ignored } from "../yop/decorators/ignored"
 import { ArrayHelper } from "./ArrayHelper"
 import { Reform } from "./Reform"
+import type { FormConfig, Model } from "./useForm"
 
 /**
  * Validation settings for reform forms, extending base validation settings.
@@ -26,25 +24,27 @@ export interface ReformConstraintsAtSettings extends ReformValidationSettings, C
 
 /**
  * Options object for setValue operations.
- * @property touch - Whether to mark the field as touched.
- * @property validate - Whether to validate after setting the value.
- * @property propagate - Whether to propagate the change to observers.
  * @category Form Management
  */
-export type SetValueOptionsObject = {
-    /** Whether to mark the field as touched. */
-    touch?: boolean
-    /** Whether to validate after setting the value. */
-    validate?: boolean
-    /** Whether to propagate the change to observers. */
-    propagate?: boolean
-}
+export type SetValueOptions = {
 
-/**
- * Options for setValue: either a boolean (validate) or an options object.
- * @category Form Management
- */
-export type SetValueOptions = boolean | SetValueOptionsObject
+    /** Whether to mark the field as touched (`true`) or untouched (`false`). If not specified, defaults is to keep the current touched state. */
+    touch?: boolean
+    
+    /** Whether to validate the entire form or the field that was set after setting the value. If not specified, defaults is to perform no validation. */
+    validate?: "form" | "field"
+    
+    /** Whether to propagate the change to observers. If not specified, defaults is to not propagate. */
+    propagate?: boolean
+
+    /**
+     * Whether to commit the state of the form and render it. If not specified, defaults is to not commit. When setting a field's value, the {@link FormManager}
+     * creates a draft copy of the form state, applies the changes on the draft, and then commits the changes if this option is set to true. Otherwise, the form
+     * keeps the draft copy until a commit is triggered. This can be useful when making multiple updates to the form state in quick succession, to avoid
+     * unnecessary renders and to ensure that the state is only updated once after all changes have been made.
+     */
+    commit?: boolean
+}
 
 /**
  * Interface for a form manager, providing value management, validation, and event APIs.
@@ -69,11 +69,6 @@ export interface FormManager<T> extends ValidationForm {
      * represent the original state of the form.
      */
     readonly initialValues: T | null | undefined
-
-    /**
-     * Used when initialValues is provided as a promise. Indicates whether the promise is still pending.
-     */
-    readonly initialValuesPending: boolean
 
     /**
      * The current values of the form. These values are managed by the form manager and should be considered the source of truth
@@ -136,7 +131,7 @@ export interface FormManager<T> extends ValidationForm {
      * form submission behavior,
      * @param e - The form submission event.
      */
-    submit(e: FormEvent<HTMLFormElement>): void
+    submit(e: React.SubmitEvent<HTMLFormElement>): void
 
     /**
      * Retrieves an array helper for a specific field. The array helper provides methods for manipulating array fields, such
@@ -170,12 +165,13 @@ const ReformSetValueEventType = 'reform:set-value'
  * @template T - The type of the value being set.
  * @category Form Management
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ReformSetValueEvent<T = any> extends CustomEvent<{
     readonly form: FormManager<unknown>,
     readonly path: string,
     readonly previousValue: T,
     readonly value: T,
-    readonly options: SetValueOptionsObject
+    readonly options: SetValueOptions
 }> {
 }
 
@@ -195,10 +191,39 @@ function createReformSetValueEvent<T = any>(
     path: string,
     previousValue: T,
     value: T,
-    options: SetValueOptionsObject
+    options: SetValueOptions
 ): ReformSetValueEvent<T> {
     return new CustomEvent(ReformSetValueEventType, { detail: { form, path, previousValue, value, options }})
 }
+
+export function createInternalFormRef() {
+    return {
+        yop: new Yop(),
+        eventTarget: new EventTarget(),
+        pathCache: new Map<string, Path>(),
+        config: {} as (FormConfig<any> & { model?: Model<any> })
+    }
+}
+
+export type InternalFormRef = ReturnType<typeof createInternalFormRef>
+
+export function createInternalFormState(initialValues?: unknown) {
+    return {
+        initialValues: initialValues as unknown,
+        values: initialValues as unknown,
+        touched: null as object | true | null,
+        statuses: new Map<string, ValidationStatus>(),
+        submitting: false,
+        submitted: false,
+    }
+}
+
+export type InternalFormState = ReturnType<typeof createInternalFormState>
+
+export function runLater(callback: () => void) {
+    setTimeout(callback)
+}
+
 
 /**
  * Implementation of the FormManager interface, providing value management, validation, eventing, and array helpers.
@@ -206,194 +231,200 @@ function createReformSetValueEvent<T = any>(
  */
 export class InternalFormManager<T extends object | null | undefined> implements FormManager<T> {
 
-    private _config: FormConfig<T> = { validationSchema: ignored() }
-    private yop = new Yop()
-    private pathCache = new Map<string, Path>()
+    private initialState!: InternalFormState
+    private state!: InternalFormState
+    private setState!: (state: InternalFormState) => void
+    private ref!: InternalFormRef
+    readonly config!: FormConfig<T>
 
-    private _initialValues: unknown = undefined
-    private _initialValuesPending = false
-    private _values: unknown = undefined
-    private _statuses = new Map<string, ValidationStatus>()
-    private touched: object | true | null = null
-    private _submitting = false
-    private _submitted = false
-
-    private eventTarget = new EventTarget()
-
-    htmlForm?: HTMLFormElement
-
-    constructor(readonly render: () => void) {
+    constructor(
+        state: InternalFormState,
+        setState: (state: InternalFormState) => void,
+        ref: InternalFormRef,
+    ) {
+        this.initialState = state
+        this.state = state
+        this.setState = setState
+        this.ref = ref
+        this.config = ref.config
     }
 
     addReformEventListener(listener: EventListener) {
-        this.eventTarget.addEventListener(ReformSetValueEventType, listener)
+        this.ref.eventTarget.addEventListener(ReformSetValueEventType, listener)
     }
 
     removeReformEventListener(listener: EventListener) {
-        this.eventTarget.removeEventListener(ReformSetValueEventType, listener)
-    }
-
-    get initialValuesPending() {
-        return this._initialValuesPending
+        this.ref.eventTarget.removeEventListener(ReformSetValueEventType, listener)
     }
 
     get submitted() {
-        return this._submitted
+        return this.state.submitted
     }
 
     get submitting() {
-        return this._submitting
-    }
-
-    get config() {
-        return this._config
+        return this.state.submitting
     }
 
     get store() {
-        return this.yop.store
+        return this.ref.yop.store
     }
 
-    set initialValuesPending(pending: boolean) {
-        this._initialValuesPending = pending
+    get render() {
+        return () => {}
     }
 
     setSubmitting(submitting: boolean): void {
-        this._submitting = submitting
-        this.render()
-    }
-
-    commitInitialValues() {
-        this._initialValues = clone(this._config.initialValues)
-        if (this._config.initialValuesConverter != null)
-            this._initialValues = this._config.initialValuesConverter(this._initialValues as T)
-        this._values = clone(this._initialValues)
-        this.touched = null
-        this._statuses = new Map()
-    }
-
-    onRender(config: FormConfig<T>) {
-        this._config = config
+        this.setState?.({ ...this.state, submitting })
     }
 
     get initialValues(): T | null | undefined {
-        return this._initialValues as T | null | undefined
+        return this.state.initialValues as T | null | undefined
     }
 
     get values(): T {
-        if (this._values == null && this._config.initialValues != null)
-            this.commitInitialValues()
-        return this._values as T
+        return this.state.values as T
     }
 
     getValue<V = any>(path: string | Path): V | undefined {
-        return get<V>(this.values, path, this.pathCache)
+        return get<V>(this.values, path, this.ref.pathCache)
+    }
+
+    commit() {
+        if (this.state !== this.initialState) {
+            this.setState(this.state)
+            this.initialState = this.state
+        }
+    }
+
+    shallowSetState(stateProperty: keyof InternalFormState, path: string | Path, value: unknown, options?: Parameters<typeof shallowSet>[4]) {
+        const setOptions = options ?? {}
+        if (this.initialState !== this.state)
+            setOptions.initialValue = this.initialState[stateProperty]
+        else
+            this.state = { ...this.state }
+        const result = shallowSet(this.state[stateProperty], path, value, this.ref.pathCache, setOptions)
+        if (result != null)
+            this.state[stateProperty] = result.root as any
+        return result
     }
 
     setValue(path: string | Path, value: unknown, options?: SetValueOptions): SetResult {
-        const result = set(this.values, path, value, this.pathCache, { clone: true })
+        const result = this.shallowSetState("values", path, value)
         if (result == null)
             return undefined
-        this._values = result.root
 
-        const { touch, validate, propagate } = { propagate: true, ...(typeof options === "boolean" ? { validate: options } : options) }
-        if (touch === false)
-            this.untouch(path)
-        else if (validate || touch)
-            this.touch(path)
+        const { touch, validate, propagate, commit } = options ?? { touch: true, validate: "form", propagate: true, commit: true }
 
-        if (validate) {
+        if (touch === true)
+            this.touch(path, false)
+        else if (touch === false)
+            this.untouch(path, false)
+
+        if (propagate === true) {
+            this.ref.eventTarget.dispatchEvent(createReformSetValueEvent(
+                this,
+                typeof path === "string" ? path : joinPath(path),
+                result.previousValue,
+                value,
+                { touch, validate, propagate, commit }
+            ))
+        }
+
+        if (validate === "form")
             this.validate()
-            this.render()
-        }
+        else if (validate === "field")
+            this.validateAt(path)
 
-        if (this._config.dispatchEvent !== false && propagate === true) {
-            setTimeout(() => {
-                this.eventTarget.dispatchEvent(createReformSetValueEvent(
-                    this,
-                    typeof path === "string" ? path : joinPath(path),
-                    result.previousValue,
-                    value,
-                    { touch, validate, propagate }
-                ))
-            })
-        }
+        if (commit === true)
+            this.commit()
 
         return result
     }
 
     isDirty(path?: string | Path, ignoredPath?: string | Path) {
         if (path == null || path.length === 0)
-            return !equal(this.values, this._initialValues, ignoredPath)
-        return !equal(get(this.values, path, this.pathCache), get(this._initialValues, path, this.pathCache), ignoredPath)
+            return !equal(this.values, this.initialValues, ignoredPath)
+        return !equal(get(this.values, path, this.ref.pathCache), get(this.initialValues, path, this.ref.pathCache), ignoredPath)
     }
 
     isTouched(path: string | Path = []) {
-        return get(this.touched, path, this.pathCache) != null
+        return get(this.state.touched, path, this.ref.pathCache) != null
     }
 
-    touch(path: string | Path = []) {
-        this.touched = set(this.touched, path, true, this.pathCache, { condition: currentValue => currentValue === undefined })?.root ?? null
+    touch(path: string | Path = [], commit = true, reset = false) {
+        if (reset || !this.isTouched(path)) {
+            this.shallowSetState("touched", path, true)
+            if (commit)
+                this.commit()
+        }
     }
 
-    untouch(path: string | Path = []) {
-        if (path.length === 0)
-            this.touched = null
-        else
-            unset(this.touched, path, this.pathCache)
+    untouch(path: string | Path = [], commit = true) {
+        if (this.isTouched(path)) {
+            if (path.length === 0)
+                this.shallowSetState("touched", "", null)
+            else {
+                const result = shallowUnset(this.state.touched, path, this.ref.pathCache)
+                if (result != null)
+                    this.state.touched = result.root as true | object | null
+            }
+            if (commit)
+                this.commit()
+        }
     }
 
     getTouchedValue<T = any>(path: string | Path) {
-        return get(this.touched, path, this.pathCache) as T
+        return get(this.state.touched, path, this.ref.pathCache) as T
     }
 
     setTouchedValue(path: string | Path, value: any) {
-        this.touched = set(this.touched, path, value, this.pathCache)?.root ?? null
+        this.state.touched = set(this.state.touched, path, value, this.ref.pathCache)?.root ?? null
     }
 
     get statuses(): Map<string, ValidationStatus> {
-        return this._statuses
+        return this.state.statuses
     }
 
     get errors(): ValidationStatus[] {
-        return Array.from(this._statuses.values()).filter(status => status.level === "error")
+        return Array.from(this.state.statuses.values()).filter(status => status.level === "error")
     }
 
     validate(touchedOnly = true, ignore?: (path: Path, form: FormManager<T>) => boolean): Map<string, ValidationStatus> {
         let ignoreFn = ignore
-        if (this._config.ignore != null) {
+        if (this.config.ignore != null) {
             if (ignore != null)
-                ignoreFn = (path, form) => ignore(path, form) || this._config.ignore!(path, form)
+                ignoreFn = (path, form) => ignore(path, form) || this.config.ignore!(path, form)
             else
-                ignoreFn = this._config.ignore
+                ignoreFn = this.config.ignore
         }
-        if (!this._submitted && touchedOnly) {
+        if (!this.state.submitted && touchedOnly) {
             if (ignoreFn == null)
-                ignoreFn = (path, _form) => !this.isTouched(path)
+                ignoreFn = (path) => !this.isTouched(path)
             else {
                 const previousIgnore = ignoreFn
                 ignoreFn = (path, form) => !this.isTouched(path) || previousIgnore(path, form)
             }
         }
 
-        const schema = this._config.validationSchema ?? ignored()
+        const schema = this.config.validationSchema ?? ignored()
         const options: ReformValidationSettings = {
             method: "validate",
             form: this,
-            groups: this._config.validationGroups,
+            groups: this.config.validationGroups,
             ignore: ignoreFn != null ? path => ignoreFn(path, this) : undefined
         }
-        if (Array.isArray(this._config.validationPath)) {
-            this._statuses = new Map()
-            for (const path of this._config.validationPath) {
+        if (Array.isArray(this.config.validationPath)) {
+            this.state.statuses = new Map()
+            for (const path of this.config.validationPath) {
                 options.path = path
-                this.yop.rawValidate(this.values, schema, options)?.statuses?.forEach((status, path) => this._statuses.set(path, status))
+                this.ref.yop.rawValidate(this.values, schema, options)?.statuses?.forEach((status, path) => this.state.statuses.set(path, status))
             }
         }
         else {
-            options.path = this._config.validationPath
-            this._statuses = this.yop.rawValidate(this.values, schema, options)?.statuses ?? new Map()
+            options.path = this.config.validationPath
+            this.state.statuses = this.ref.yop.rawValidate(this.values, schema, options)?.statuses ?? new Map()
         }
-        return this._statuses
+        return this.state.statuses
     }
 
     validateAt(path: string | Path, touchedOnly = true, skipAsync = true) {
@@ -402,9 +433,9 @@ export class InternalFormManager<T extends object | null | undefined> implements
 
         let changed = false
         const prefix = typeof path === "string" ? path : joinPath(path)
-        for (const key of this._statuses.keys()) {
+        for (const key of this.state.statuses.keys()) {
             if (key.startsWith(prefix) && (key.length === prefix.length || ['.', '['].includes(key.charAt(prefix.length)))) {
-                this._statuses.delete(key)
+                this.state.statuses.delete(key)
                 changed = true
             }
         }
@@ -414,36 +445,36 @@ export class InternalFormManager<T extends object | null | undefined> implements
             form: this,
             path,
             skipAsync,
-            groups: this._config.validationGroups,
-            ignore: this._config.ignore != null ? path => this._config.ignore!(path, this) : undefined
+            groups: this.config.validationGroups,
+            ignore: this.config.ignore != null ? path => this.config.ignore!(path, this) : undefined
         }
         
-        const statuses = this.yop.rawValidate(this.values, this._config.validationSchema ?? ignored(), options)?.statuses ?? new Map<string, ValidationStatus>()
-        statuses.forEach((status, path) => this._statuses.set(path, status))
+        const statuses = this.ref.yop.rawValidate(this.values, this.config.validationSchema ?? ignored(), options)?.statuses ?? new Map<string, ValidationStatus>()
+        statuses.forEach((status, path) => this.state.statuses.set(path, status))
         return { changed: changed || statuses.size > 0, statuses }
     }
 
     constraintsAt<MinMax = unknown>(path: string | Path, unsafeMetadata?: boolean): ResolvedConstraints<MinMax> | undefined {
         const settings: ReformConstraintsAtSettings = { method: "constraintsAt", form: this, path, unsafeMetadata }
-        return this.yop.constraintsAt(this._config.validationSchema ?? ignored(), this.values, settings)
+        return this.ref.yop.constraintsAt(this.config.validationSchema ?? ignored(), this.values, settings)
     }
 
     updateAsyncStatus(path: string | Path) {
-        const status = this.yop.getAsyncStatus(path)
+        const status = this.ref.yop.getAsyncStatus(path)
         if (status != null)
-            this._statuses.set(status.path, status)
+            this.state.statuses.set(status.path, status)
         else {
             path = typeof path === "string" ? path : joinPath(path)
-            if (this._statuses.get(path)?.level === "pending")
-                this._statuses.delete(path)
+            if (this.state.statuses.get(path)?.level === "pending")
+                this.state.statuses.delete(path)
         }
     }
 
-    submit(e: FormEvent<HTMLFormElement>): void {
+    submit(e: React.SubmitEvent<HTMLFormElement>): void {
         e.preventDefault()
         e.stopPropagation()
 
-        this._submitted = true
+        // this._submitted = true
         this.setSubmitting(true)
 
         setTimeout(async () => {
@@ -455,20 +486,18 @@ export class InternalFormManager<T extends object | null | undefined> implements
                 const asyncStatuses = (await Promise.all<ValidationStatus | undefined>(pendings.map(status => status.constraint)))
                     .filter(status => status != null)
                 if (asyncStatuses.length > 0) {
-                    asyncStatuses.forEach(status => this._statuses.set(status.path, status))
-                    statuses = Array.from(this._statuses.values())
+                    asyncStatuses.forEach(status => this.state.statuses.set(status.path, status))
+                    statuses = Array.from(this.state.statuses.values())
                 }
             }
 
             const errors = statuses.filter(status => status.level === "error" || (status.level === "unavailable" && status.message))
-            const canSubmit = this._config.submitGuard?.(this)
-            if (errors.length === 0 && canSubmit !== false)
-                (this._config.onSubmit ?? (form => form.setSubmitting(false)))(this)
+            if (errors.length === 0)
+                (this.config.onSubmit ?? (form => form.setSubmitting(false)))(this)
             else {
-                if (Reform.logFormErrors && errors.length > 0)
+                if (Reform.logFormErrors)
                     console.error("Validation errors", errors)
-                if (canSubmit !== false)
-                    this.scrollToFirstError(errors)
+                this.scrollToFirstError(errors)
                 this.setSubmitting(false)
             }
         })

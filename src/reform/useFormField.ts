@@ -1,10 +1,9 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { isPromise } from "../yop/TypesUtil";
-import { ValidationStatus } from "../yop/ValidationContext";
-import { ResolvedConstraints } from "../yop/Yop";
-import { FormManager } from "./FormManager";
+import type { ValidationStatus } from "../yop/ValidationContext";
+import type { ResolvedConstraints } from "../yop/Yop";
+import type { FormManager } from "./FormManager";
 import { useFormContext } from "./useFormContext";
-import { useRender } from "./useRender";
 
 /**
  * Represents the state of a form field, including value, validation, and metadata.
@@ -22,8 +21,6 @@ export type FieldState<Value, MinMax, Root = any> = {
     status?: ValidationStatus
     /** The form manager instance. See {@link FormManager} for details. */
     form: FormManager<Root>
-    /** Function to trigger a re-render of the component that called {@link useFormField} to get this field state. */
-    render: () => void
     /** The resolved constraints for the field, if any. See {@link ResolvedConstraints} for details. */
     constraints?: ResolvedConstraints<MinMax>
 }
@@ -49,27 +46,30 @@ export type FieldState<Value, MinMax, Root = any> = {
  * @category Form Management
  */
 export function useFormField<Value, MinMax, Root = any>(name: string, unsafeMetadata = false): FieldState<Value, MinMax, Root> {
-    const render = useRender()
+    "use no memo"
+
     const form = useFormContext<Root>()
     const promiseRef = useRef<Promise<unknown>>(undefined)
 
     const status = form.statuses.get(name)
-    if (status?.level === "pending" && isPromise(status.constraint) && promiseRef.current !== status.constraint) {
-        promiseRef.current = status.constraint
-        status.constraint.finally(() => {
-            if (promiseRef.current === status.constraint) {
-                form.updateAsyncStatus(name)
-                form.render()
-            }
-        })
-    }
+
+    useEffect(() => {
+        if (status?.level === "pending" && isPromise(status.constraint) && promiseRef.current !== status.constraint) {
+            promiseRef.current = status.constraint
+            status.constraint.finally(() => {
+                if (promiseRef.current === status.constraint) {
+                    form.updateAsyncStatus(name)
+                    form.render()
+                }
+            })
+        }
+    }, [status, name, form])
 
     return {
         value: form.getValue<Value>(name),
         touched: form.isTouched(name),
         status,
         form,
-        render,
         constraints: form.constraintsAt(name, unsafeMetadata),
     }
 }

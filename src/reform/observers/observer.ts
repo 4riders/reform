@@ -1,15 +1,9 @@
-/**
- * Defines types and a decorator for observers in the Reform form management system. Observers allow you to react
- * to changes in other fields by specifying a path to observe and a callback function that receives context about
- * the change. The observer paths support a flexible syntax for targeting specific fields, including wildcards and
- * relative paths.
- */
-import { useObservers } from "./useObservers"
-import { InternalCommonConstraints } from "../../yop/constraints/CommonConstraints"
+import { type InternalCommonConstraints } from "../../yop/constraints/CommonConstraints"
 import { fieldDecorator } from "../../yop/Metadata"
-import { Path } from "../../yop/ObjectsUtil"
-import { ReformSetValueEvent } from "../FormManager"
-import { FormConfig } from "../useForm"
+import { type Path } from "../../yop/ObjectsUtil"
+import { type ReformSetValueEvent } from "../FormManager"
+import { useObservers } from "./useObservers"
+import { type FormConfig } from "../useForm"
 
 /**
  * Options for observer callback behavior.
@@ -19,7 +13,8 @@ export type ObserverCallbackOptions = {
 
     /** If `true`, marks the field as untouched. */
     untouch?: boolean
-    /** If `true`, propagates the value change to other observers. Defaults to `false` to prevent potential infinite loops*/
+    
+    /** If `true`, propagates the value change to other observers. Defaults to `false` to prevent potential infinite loops */
     propagate?: boolean
 }
 

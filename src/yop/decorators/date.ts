@@ -1,10 +1,10 @@
-import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
-import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { type CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
+import { type OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isDate, isDateArray } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator, Groups } from "../Metadata"
+import { fieldValidationDecorator, type Groups } from "../Metadata"
 
 /**
  * Type for a date value, which can be a Date object, null, or undefined.

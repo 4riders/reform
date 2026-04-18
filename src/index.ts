@@ -27,10 +27,6 @@
  * and user interactions. A form management library can provide tools and utilities to simplify these tasks, allowing developers to
  * focus on building the user interface and business logic of their applications.
  * 
- * @categoryDescription Base Inputs Components
- * Base input components are reusable building blocks for creating form fields in a web application. They provide a consistent interface and
- * behavior for common input types, such as text fields, checkboxes, radio buttons, and select dropdowns.
- * 
  * @categoryDescription Validation Management
  * Validation management involves defining and enforcing rules for validating form data. This can include simple checks, such as ensuring
  * that a field is not empty, as well as more complex rules that involve multiple fields or custom logic.
@@ -54,14 +50,6 @@ export * from "./reform/useForm"
 export * from "./reform/useFormContext"
 export * from "./reform/useFormField"
 export * from "./reform/useRender"
-
-export * from "./reform/components/BaseCheckboxField"
-export * from "./reform/components/BaseDateField"
-export * from "./reform/components/BaseRadioField"
-export * from "./reform/components/BaseSelectField"
-export * from "./reform/components/BaseTextAreaField"
-export * from "./reform/components/BaseTextField"
-export * from "./reform/components/InputHTMLProps"
 
 export * from "./yop/constraints/CommonConstraints"
 export * from "./yop/constraints/Constraint"

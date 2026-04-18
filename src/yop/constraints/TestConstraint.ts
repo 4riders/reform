@@ -1,5 +1,5 @@
-import { InternalValidationContext, Level, ValidationContext, ValidationStatus } from "../ValidationContext"
-import { ConstraintFunction, ConstraintMessage } from "./Constraint"
+import { InternalValidationContext, type Level, type ValidationContext, type ValidationStatus } from "../ValidationContext"
+import { type ConstraintFunction, type ConstraintMessage } from "./Constraint"
 import { isFunction, isObject } from "../TypesUtil"
 import { joinPath } from "../ObjectsUtil"
 
@@ -47,7 +47,7 @@ export interface TestConstraint<Value, Parent = unknown> {
     test?: TestConstraintFunction<Value, Parent> | AsyncTestConstraint<Value, Parent> | readonly [TestConstraintFunction<Value, Parent>, AsyncTestConstraint<Value, Parent>]
 }
 
-const defaultGetDependencies = (_context: InternalValidationContext<unknown>) => []
+const defaultGetDependencies = () => []
 const defaultShouldRevalidate = (_context: InternalValidationContext<unknown>, previous: any[], current: any[], status: ValidationStatus | undefined) =>
     status?.level !== "unavailable" && current.some((v, i) => v !== previous[i])
 

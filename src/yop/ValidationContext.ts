@@ -1,6 +1,6 @@
-import { ConstraintMessage } from "./constraints/Constraint"
-import { joinPath, Path } from "./ObjectsUtil"
-import { ValidationForm, ValidationSettings, Yop } from "./Yop"
+import type { ConstraintMessage } from "./constraints/Constraint"
+import { joinPath, type Path } from "./ObjectsUtil"
+import { type ValidationForm, type ValidationSettings, Yop } from "./Yop"
 
 /**
  * Type representing the validation group or groups being currently validated. `undefined` means the default group.

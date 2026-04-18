@@ -1,6 +1,6 @@
-import React from "react"
-import { FormManager } from "./FormManager"
-import { Form } from "./Form"
+import React from "react";
+import { Form } from "./Form";
+import { type FormManager } from "./FormManager";
 
 /**
  * React context for providing a FormManager instance to descendant components.
@@ -33,5 +33,7 @@ export const FormContext = React.createContext<FormManager<unknown> | null>(null
  * @category Form Management
  */
 export function useFormContext<T = unknown>() {
-    return React.useContext(FormContext)! as FormManager<T>
+    "use no memo"
+
+    return React.useContext(FormContext) as FormManager<T>
 }

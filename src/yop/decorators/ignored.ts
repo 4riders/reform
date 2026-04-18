@@ -1,6 +1,6 @@
-import { InternalCommonConstraints } from "../constraints/CommonConstraints"
-import { Constraint } from "../constraints/Constraint"
-import { fieldDecorator, Groups } from "../Metadata"
+import type { InternalCommonConstraints } from "../constraints/CommonConstraints"
+import type { Constraint } from "../constraints/Constraint"
+import { fieldDecorator, type Groups } from "../Metadata"
 
 /**
  * Field decorator to mark a field as ignored for validation.

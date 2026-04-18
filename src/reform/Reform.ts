@@ -11,5 +11,5 @@ export class Reform {
     /**
      * Whether to log form errors to the console (debug only).
      */
-    public static logFormErrors = true
+    public static logFormErrors = false
 }

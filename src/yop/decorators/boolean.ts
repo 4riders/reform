@@ -1,9 +1,9 @@
-import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { type CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isBoolean, isBooleanArray } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator, Groups } from "../Metadata"
+import { fieldValidationDecorator, type Groups } from "../Metadata"
 
 /**
  * Type for a boolean value, which can be true, false, null, or undefined.

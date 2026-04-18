@@ -1,9 +1,9 @@
-import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
-import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import { type CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
 import { isFile, isNumber } from "../TypesUtil"
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator, Groups } from "../Metadata"
+import { fieldValidationDecorator, type Groups } from "../Metadata"
 
 /**
  * Type for a file value, which can be a File object, null, or undefined.

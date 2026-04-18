@@ -1,6 +1,6 @@
 import { isFunction } from "../TypesUtil"
-import { InternalValidationContext, Level, ValidationContext } from "../ValidationContext"
-import { JSX } from "react"
+import { InternalValidationContext, type Level, type ValidationContext } from "../ValidationContext"
+import type { JSX } from "react"
 
 /**
  * Type representing a constraint message, which can be a direct string or JSX element.
@@ -108,7 +108,7 @@ function _validateConstraint<Value, ConstraintType, Parent>(
 
     if (constraint != null && !isConstraintType(constraint)) {
         if (Array.isArray(constraint)) {
-            const [maybeConstraint, maybeMessage, maybeLevel, _maybeGroup] = constraint
+            const [maybeConstraint, maybeMessage, maybeLevel] = constraint
             if (maybeConstraint == null || isConstraintType(maybeConstraint)) {
                 constraint = maybeConstraint
                 message = maybeMessage

@@ -1,12 +1,12 @@
 import { InternalValidationContext } from "../ValidationContext"
-import { fieldValidationDecorator, Groups } from "../Metadata"
-import { StringValue } from "./string"
-import { MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
-import { CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
+import { fieldValidationDecorator, type Groups } from "../Metadata"
+import type { StringValue } from "./string"
+import { type MinMaxConstraints, validateMinMaxConstraints } from "../constraints/MinMaxConstraints"
+import { type CommonConstraints, validateTypeConstraint } from "../constraints/CommonConstraints"
 import { isFunction, isString, isStringArray } from "../TypesUtil"
-import { OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
-import { TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
-import { Message } from "../constraints/Constraint"
+import { type OneOfConstraint, validateOneOfConstraint } from "../constraints/OneOfConstraint"
+import { type TestConstraint, validateTestConstraint } from "../constraints/TestConstraint"
+import type { Message } from "../constraints/Constraint"
 
 /**
  * Interface for time field constraints, combining common, min/max, oneOf, and test constraints.

@@ -1,4 +1,4 @@
-import { equal, get, joinPath, type Path, set, type SetResult, shallowSet, shallowUnset } from "../yop/ObjectsUtil"
+import { equal, get, joinPath, type Path, type SetResult, shallowSet, shallowUnset } from "../yop/ObjectsUtil"
 import type { ValidationStatus } from "../yop/ValidationContext"
 import { type ConstraintsAtSettings, type ResolvedConstraints, type UnsafeResolvedConstraints, type ValidationForm, type ValidationSettings, Yop } from "../yop/Yop"
 import { ignored } from "../yop/decorators/ignored"
@@ -51,11 +51,6 @@ export type SetValueOptions = {
  * @category Form Management
  */
 export interface FormManager<T> extends ValidationForm {
-
-    /**
-     * Renders the form, causing any changes to be reflected in the UI.
-     */
-    render(): void
 
     /**
      * Sets the submitting state of the form. Submitting state is automatically set to `true` when the form is submitted, and
@@ -269,12 +264,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return this.ref.yop.store
     }
 
-    get render() {
-        return () => {}
-    }
-
     setSubmitting(submitting: boolean): void {
-        this.setState?.({ ...this.state, submitting })
+        this.setState({ ...this.state, submitting })
     }
 
     get initialValues(): T | null | undefined {
@@ -294,6 +285,11 @@ export class InternalFormManager<T extends object | null | undefined> implements
             this.setState(this.state)
             this.initialState = this.state
         }
+    }
+
+    reset() {
+        this.state = createInternalFormState(undefined)
+        this.commit()
     }
 
     shallowSetState(stateProperty: keyof InternalFormState, path: string | Path, value: unknown, options?: Parameters<typeof shallowSet>[4]) {
@@ -362,7 +358,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
     untouch(path: string | Path = [], commit = true) {
         if (this.isTouched(path)) {
             if (path.length === 0)
-                this.shallowSetState("touched", "", null)
+                this.shallowSetState("touched", [], null)
             else {
                 const result = shallowUnset(this.state.touched, path, this.ref.pathCache)
                 if (result != null)
@@ -377,16 +373,18 @@ export class InternalFormManager<T extends object | null | undefined> implements
         return get(this.state.touched, path, this.ref.pathCache) as T
     }
 
-    setTouchedValue(path: string | Path, value: any) {
-        this.state.touched = set(this.state.touched, path, value, this.ref.pathCache)?.root ?? null
-    }
-
     get statuses(): Map<string, ValidationStatus> {
         return this.state.statuses
     }
 
     get errors(): ValidationStatus[] {
         return Array.from(this.state.statuses.values()).filter(status => status.level === "error")
+    }
+
+    private prepareForStatusesUpdate(clear = false) {
+        if (this.state === this.initialState)
+            this.state = { ...this.state, statuses: clear ? new Map() : new Map(this.state.statuses) }
+        return this.state.statuses
     }
 
     validate(touchedOnly = true, ignore?: (path: Path, form: FormManager<T>) => boolean): Map<string, ValidationStatus> {
@@ -413,8 +411,8 @@ export class InternalFormManager<T extends object | null | undefined> implements
             groups: this.config.validationGroups,
             ignore: ignoreFn != null ? path => ignoreFn(path, this) : undefined
         }
+        this.prepareForStatusesUpdate(true)
         if (Array.isArray(this.config.validationPath)) {
-            this.state.statuses = new Map()
             for (const path of this.config.validationPath) {
                 options.path = path
                 this.ref.yop.rawValidate(this.values, schema, options)?.statuses?.forEach((status, path) => this.state.statuses.set(path, status))
@@ -424,6 +422,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
             options.path = this.config.validationPath
             this.state.statuses = this.ref.yop.rawValidate(this.values, schema, options)?.statuses ?? new Map()
         }
+        this.commit()
         return this.state.statuses
     }
 
@@ -435,7 +434,7 @@ export class InternalFormManager<T extends object | null | undefined> implements
         const prefix = typeof path === "string" ? path : joinPath(path)
         for (const key of this.state.statuses.keys()) {
             if (key.startsWith(prefix) && (key.length === prefix.length || ['.', '['].includes(key.charAt(prefix.length)))) {
-                this.state.statuses.delete(key)
+                this.prepareForStatusesUpdate().delete(key)
                 changed = true
             }
         }
@@ -450,7 +449,10 @@ export class InternalFormManager<T extends object | null | undefined> implements
         }
         
         const statuses = this.ref.yop.rawValidate(this.values, this.config.validationSchema ?? ignored(), options)?.statuses ?? new Map<string, ValidationStatus>()
-        statuses.forEach((status, path) => this.state.statuses.set(path, status))
+        if (statuses.size > 0) {
+            this.prepareForStatusesUpdate()
+            statuses.forEach((status, path) => this.state.statuses.set(path, status))
+        }
         return { changed: changed || statuses.size > 0, statuses }
     }
 
@@ -462,30 +464,30 @@ export class InternalFormManager<T extends object | null | undefined> implements
     updateAsyncStatus(path: string | Path) {
         const status = this.ref.yop.getAsyncStatus(path)
         if (status != null)
-            this.state.statuses.set(status.path, status)
+            this.prepareForStatusesUpdate().set(status.path, status)
         else {
             path = typeof path === "string" ? path : joinPath(path)
             if (this.state.statuses.get(path)?.level === "pending")
-                this.state.statuses.delete(path)
+                this.prepareForStatusesUpdate().delete(path)
         }
+        this.commit()
     }
 
     submit(e: React.SubmitEvent<HTMLFormElement>): void {
         e.preventDefault()
         e.stopPropagation()
 
-        // this._submitted = true
-        this.setSubmitting(true)
+        this.setState({ ...this.state, submitting: true, submitted: true })
 
         setTimeout(async () => {
             let statuses = Array.from(this.validate(false).values())
             const pendings = statuses.filter(status => status.level === "pending")
             
             if (pendings.length > 0) {
-                this.render()
                 const asyncStatuses = (await Promise.all<ValidationStatus | undefined>(pendings.map(status => status.constraint)))
                     .filter(status => status != null)
                 if (asyncStatuses.length > 0) {
+                    this.prepareForStatusesUpdate()
                     asyncStatuses.forEach(status => this.state.statuses.set(status.path, status))
                     statuses = Array.from(this.state.statuses.values())
                 }

@@ -190,10 +190,8 @@ function createReformEventListener(model: ClassConstructor<any>) {
             }
         })
         
-        if (setValueCalled.value) {
+        if (setValueCalled.value)
             event.detail.form.validate()
-            event.detail.form.render()
-        }
     }) as EventListener
 }
 

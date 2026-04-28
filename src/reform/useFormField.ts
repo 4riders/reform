@@ -57,10 +57,8 @@ export function useFormField<Value, MinMax, Root = any>(name: string, unsafeMeta
         if (status?.level === "pending" && isPromise(status.constraint) && promiseRef.current !== status.constraint) {
             promiseRef.current = status.constraint
             status.constraint.finally(() => {
-                if (promiseRef.current === status.constraint) {
+                if (promiseRef.current === status.constraint)
                     form.updateAsyncStatus(name)
-                    form.render()
-                }
             })
         }
     }, [status, name, form])

@@ -188,10 +188,10 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
     }
 
     const resetState = useEffectEvent((initialValues?: unknown) => setState(createInternalFormState(initialValues)))
-
     useEffect(() => {
         if (state.initialValues == null) {
             if (model != null)
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 resetState(new model())
             else if (config?.initialValues != null) {
                 const initialValues = typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
@@ -202,6 +202,7 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [model, config?.initialValues])
 
+    // eslint-disable-next-line react-hooks/refs
     const manager = new InternalFormManager(state, setState, getInternalFormRef())
     useObservers(model, manager)
     return manager

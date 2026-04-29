@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { instance } from "../yop/decorators/instance"
 import type { Path } from "../yop/ObjectsUtil"
 import type { Group } from "../yop/ValidationContext"
@@ -187,20 +187,15 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
         return ref.current
     }
 
-    const resetState = useEffectEvent((initialValues?: unknown) => setState(createInternalFormState(initialValues)))
-    useEffect(() => {
-        if (state.initialValues == null) {
-            if (model != null)
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                resetState(new model())
-            else if (config?.initialValues != null) {
-                const initialValues = typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
-                if (initialValues != null)
-                    resetState(initialValues)
-            }
+    if (state.initialValues == null) {
+        if (model != null)
+            setState(createInternalFormState(new model()))
+        else if (config?.initialValues != null) {
+            const initialValues = typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
+            if (initialValues != null)
+                setState(createInternalFormState(initialValues))
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [model, config?.initialValues])
+    }
 
     // eslint-disable-next-line react-hooks/refs
     const manager = new InternalFormManager(state, setState, getInternalFormRef())

@@ -169,12 +169,6 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
         { model: undefined, config: configOrModel as FormConfig<any> }
 
     const ref = useRef<InternalFormRef>(undefined)
-    const [state, setState] = useState(() => createInternalFormState(
-        model != null ?
-        new model() :
-        typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
-    ))
-
     function getInternalFormRef() {
         if (ref.current == null)
             ref.current = createInternalFormRef()
@@ -187,10 +181,15 @@ export function useForm(configOrModel: any, onSubmit?: (form: FormManager<any>) 
         return ref.current
     }
 
-    if (state.initialValues == null) {
+    const [state, setState] = useState(() => createInternalFormState(
+        model != null ?
+        new model() :
+        typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
+    ))
+    if (state.initialValues === undefined) {
         if (model != null)
             setState(createInternalFormState(new model()))
-        else if (config?.initialValues != null) {
+        else if (config.initialValues != null) {
             const initialValues = typeof config.initialValues === "function" ? config.initialValues() : config.initialValues
             if (initialValues != null)
                 setState(createInternalFormState(initialValues))

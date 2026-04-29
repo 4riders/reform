@@ -147,6 +147,10 @@ export interface FormManager<T> extends ValidationForm {
      * @param listener - The event listener to remove.
      */
     removeReformEventListener(listener: EventListener): void
+
+    reset(): void
+
+    commit(): void
 }
 
 /**
